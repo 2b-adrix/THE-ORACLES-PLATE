@@ -11,7 +11,7 @@
         android:id="@+id/nextbutton"
         android:layout_width="157dp"
         android:layout_height="57dp"
-        android:layout_marginTop="88dp"
+        android:layout_marginTop="96dp"
         android:background="@drawable/redbutton"
         android:fontFamily="sans-serif-black"
         android:text="@string/next"
