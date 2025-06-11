@@ -2,4 +2,6 @@
     <string name="app_name">THE ORACLE\'S PLATE</string>
     <string name="next">Next</string>
     <string name="enjoy_restaurant_quality_meal_nat_home">Enjoy Restaurant Quality Meal\nAt Home</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
