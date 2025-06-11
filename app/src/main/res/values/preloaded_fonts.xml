@@ -2,6 +2,8 @@
 <resources>
     <array name="preloaded_fonts" translatable="false">
 
+        <item>@font/lato</item>
+        <item>@font/yeon_sung</item>
         <item>@font/yeseva_one</item>
     </array>
 </resources>
