@@ -34,14 +34,11 @@
         app:srcCompat="@drawable/bell" />
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragmentContainerView5"
+        android:id="@+id/fragmentContainerView8"
         android:name="androidx.navigation.fragment.NavHostFragment"
-        android:layout_width="450dp"
-        android:layout_height="19dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="411dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:defaultNavHost="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         app:navGraph="@navigation/navigation" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
