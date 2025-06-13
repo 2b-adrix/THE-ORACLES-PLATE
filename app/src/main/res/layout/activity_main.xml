@@ -8,8 +8,8 @@
     tools:context=".MainActivity">
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:layout_width="481dp"
-        android:layout_height="78dp"
+        android:layout_width="413dp"
+        android:layout_height="79dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:menu="@menu/menu" />
@@ -34,7 +34,7 @@
         app:srcCompat="@drawable/bell" />
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragmentContainerView8"
+        android:id="@+id/fragmentContainerView"
         android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
