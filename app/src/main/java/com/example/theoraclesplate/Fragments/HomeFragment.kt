@@ -7,11 +7,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.theoraclesplate.R
-import com.example.theoraclesplate.databinding.FragmentHomeBinding
+import com.example.theoraclesplate.adapter.PopularAdaptor
 
 
 class HomeFragment : Fragment() {
-private lateinit var binding: FragmentHomeBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,43 +20,41 @@ private lateinit var binding: FragmentHomeBinding
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding= FragmentHomeBinding.inflate(inflater,container,false)
+        binding: FragmentHomeBinding = FragmentHomeBinding.inflate(layoutInflater)
         return binding.root
-
     }
+       override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+           super.onViewCreated(view, savedInstanceState)
+
+           val imageList = ArrayList<SlideModel>()
+           imageList,add(SlideModel(R.drawable.banner1,ScaleTypes.FIT))
+           imageList,add(SlideModel(R.drawable.banner2,ScaleTypes.FIT))
+           imageList,add(SlideModel(R.drawable.banner1,ScaleTypes.FIT))
+
+           val imageSlider = binding.imageSlider
+           imageSlider.setImageList(imageList)
+           imageSlider.setImageList(imageList, ScaleTypes.FIT)
 
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+           imageSlider.setItemClickListener(object : ItemClickListener {
+               override doubleClick(position: Int) {
 
-            val imageList = ArrayList<SlideModel>()
-            imageList.add(SlideModel(R.drawable.banner1,ScaleTypes.FIT))
-            imageList.add(SlideModel(R.drawable.banner2,ScaleTypes.FIT))
-            imageList.add(SlideModel(R.drawable.banner2,ScaleTypes.FIT))
+               }
 
-            val imageSlider = binding.imageSlider
-            imageSlider.setImageList(imageList)
-            imageSlider.setImageList(imageList, ScaleTypes.FIT)
+               override fun onItemSelected(position: Int) {
+                   val itemPosition = imageList[position]
+                   val itemMessage = "Selected Image $position"
+                   Toast.makeText(requireContext(),itemMessage,Toast.LENGTH_SHORT).show()
+               }
+       })
 
+           val foodName = listOf("Pizza","Burger","Hotdog","Pizza","Burger","Hotdog","Pizza","Burger","Hotdog")
+           val price = listOf("$5","$2","$6","$5","$2","$6","$5","$2","$6")
+           val popularFoodImages = listOf(R.drawable.food1,R.drawable.food2,R.drawable.food3,)
 
-        imageSlider.setItemClickListener(object : ItemClickListener {
-
-
-            override fun doubleClick(position: Int) {
-
-            }
-
-            override fun onItemSelected(position: Int) {
-                val itemPosinList: Int = imageList[position]
-                val itemMessage = "Selected Image $position"
-                Toast.makeText(requireContext(), itemMessage, Toast.LENGTH_SHORT).show()
-            }
-
-        }
-        }
-
-    }
-
+           val adapter = PopularAdaptor(foodName,price,popularFoodImages)
+           binding.recyclerView.adapter = adapter
+       }
     companion object {
 
     }

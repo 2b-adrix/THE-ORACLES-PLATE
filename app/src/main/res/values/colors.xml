@@ -3,4 +3,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="TextColor">#BE1515</color>
+    <color name="StartColor">#BE1505</color>
+    <color name="EndColor">#BE1555</color>
     </resources>
