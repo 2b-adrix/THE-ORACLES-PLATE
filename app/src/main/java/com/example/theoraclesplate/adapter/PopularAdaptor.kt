@@ -18,8 +18,8 @@ return PopularViewHolder(PopularItemBinding.inflate(LayoutInflater.from(parent.c
         position: Int
     ) {
 val item = items[position]
+        val images = image[position]
         val price=price[position]
-    val images = image[position]
       holder.bind(item,price,images)
 
     }
