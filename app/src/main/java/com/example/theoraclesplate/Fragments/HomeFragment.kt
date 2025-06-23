@@ -12,7 +12,6 @@ import com.denzcoskun.imageslider.interfaces.ItemClickListener
 import com.denzcoskun.imageslider.models.SlideModel
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.adapter.PopularAdaptor
-import com.example.theoraclesplate.databinding.ActivityStartBinding
 import com.example.theoraclesplate.databinding.FragmentHomeBinding
 
 

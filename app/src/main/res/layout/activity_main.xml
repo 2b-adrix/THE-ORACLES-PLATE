@@ -21,6 +21,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:layout_marginStart="16dp"
+        android:textColor="@color/black"
+        android:fontFamily="@font/yeseva_one"
         android:text="Explore Your Favorite Food"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
