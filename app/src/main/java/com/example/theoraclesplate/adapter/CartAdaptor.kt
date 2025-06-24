@@ -5,7 +5,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.theoraclesplate.databinding.CartItemBinding
 
-class CartAdaptor (private val CartItems: MutableList<String>,private val CartItemPrice:MutableList<String>,private var cartImage : MutableList<Int>): RecyclerView.Adapter<CartAdaptor.CartViewHolder>() {
+class CartAdaptor (private val CartItems: MutableList<String>,
+                   private val CartItemPrice:MutableList<String>,
+                   private var cartImage : MutableList<Int>):
+                   RecyclerView.Adapter<CartAdaptor.CartViewHolder>()
+{
 private val itemQuantities = IntArray(CartItems.size){1}
     override fun onCreateViewHolder(
         parent: ViewGroup,
