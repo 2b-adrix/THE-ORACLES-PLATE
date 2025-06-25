@@ -30,7 +30,7 @@ val binding = CartItemBinding.inflate(LayoutInflater.from(parent.context),parent
     override fun getItemCount(): Int = CartItems.size
 
    inner class CartViewHolder(private val binding: CartItemBinding) : RecyclerView.ViewHolder(binding.root){
-        fun bind(position: Int) {
+        fun bind(position: Int) { 
             binding.apply{
                 val quantity = itemQuantities[position]
                 cartFoodName.text = CartItems[position]
