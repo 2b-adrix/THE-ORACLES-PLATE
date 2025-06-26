@@ -12,7 +12,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         app:cardCornerRadius="15dp"
-        app:cardElevation="5dp"
+        app:cardElevation="6dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -38,7 +38,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginBottom="38dp"
+                android:fontFamily="@font/lato_bold"
                 android:text="TextView"
+                android:textSize="16dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/cartimage"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -50,6 +52,8 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="38dp"
                 android:text="TextView"
+                android:textColor="@color/TextColor"
+                android:textSize="16dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/cartimage"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -59,10 +63,9 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginEnd="8dp"
-
+                android:text="Button"
                 android:padding="2dp"
                 android:src="@drawable/minus"
-                android:text="Button"
                 app:layout_constraintBottom_toBottomOf="@+id/cartItemQuantity"
                 app:layout_constraintEnd_toStartOf="@+id/cartItemQuantity"
                 app:layout_constraintTop_toTopOf="@+id/cartItemQuantity" />
@@ -72,6 +75,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
+                android:fontFamily="@font/lato_bold"
                 android:text="1"
                 app:layout_constraintBottom_toBottomOf="@+id/plusbutton"
                 app:layout_constraintStart_toEndOf="@+id/minusbutton"
@@ -85,11 +89,10 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="16dp"
-
+                android:text="Button"
                 android:background="@drawable/addtocartshape"
                 android:padding="2dp"
                 android:src="@drawable/plus"
-                android:text="Button"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/cartItemQuantity"
                 app:layout_constraintTop_toTopOf="parent" />
