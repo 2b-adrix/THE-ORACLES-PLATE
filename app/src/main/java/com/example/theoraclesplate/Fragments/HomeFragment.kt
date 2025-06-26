@@ -1,5 +1,6 @@
 package com.example.theoraclesplate.Fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,9 +11,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.denzcoskun.imageslider.constants.ScaleTypes
 import com.denzcoskun.imageslider.interfaces.ItemClickListener
 import com.denzcoskun.imageslider.models.SlideModel
+import com.example.theoraclesplate.MenuBottomSheetFragment
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.adapter.PopularAdaptor
 import com.example.theoraclesplate.databinding.FragmentHomeBinding
+import kotlin.jvm.java
 
 
 class HomeFragment : Fragment() {
@@ -28,6 +31,11 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentHomeBinding.inflate(inflater,container,false)
+
+        binding.viewAllMenu.setOnClickListener {
+            val bottomSheetDialog= MenuBottomSheetFragment()
+bottomSheetDialog.show(parentFragmentManager,"Test")
+        }
         return binding.root
     }
        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
