@@ -30,7 +30,13 @@ class MenuBottomSheetFragment : BottomSheetDialogFragment() {
         val cartMenuFoodName = listOf("Pizza","Burger","Pasta","Pizza","Burger","Pasta")
         val cartMenuItemPrice = listOf("$5","$2","$6","$5","$2","$6")
 
-        val cartMenuImage = listOf(R.drawable.food1,R.drawable.food2,R.drawable.food3,R.drawable.food1,R.drawable.food2,R.drawable.food3)
+        val cartMenuImage = listOf(
+            R.drawable.food1,
+            R.drawable.food2,
+            R.drawable.food3,
+            R.drawable.food1,
+            R.drawable.food2,
+             R.drawable.food3)
 
 
         val adaptor = MenuAdapter(

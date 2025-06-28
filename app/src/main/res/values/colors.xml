@@ -5,5 +5,6 @@
     <color name="TextColor">#BE1515</color>
     <color name="StartColor">#BE1505</color>
     <color name="EndColor">#BE1555</color>
-    <color name="iconcolor">#FEAD1D</color>
+    <color name="iconcolor">#880808</color>
+    <color name="iconcolor2">#FFCCCB</color>
     </resources>
