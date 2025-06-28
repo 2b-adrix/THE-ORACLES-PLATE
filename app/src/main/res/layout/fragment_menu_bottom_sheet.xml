@@ -30,7 +30,7 @@
         android:text="Cart" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/menuRecycleView"
+        android:id="@+id/menuRecyclerView"
         android:layout_marginTop="8dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

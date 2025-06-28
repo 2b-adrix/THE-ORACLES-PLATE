@@ -5,56 +5,104 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.theoraclesplate.R
+import com.example.theoraclesplate.adapter.MenuAdapter
+import com.example.theoraclesplate.databinding.FragmentSearchBinding
+import androidx.appcompat.widget.SearchView
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [SearchFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class SearchFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private lateinit var binding: FragmentSearchBinding
+    private val originalMenuFoodName = listOf("Pizza", "Burger", "Salad", "Pasta", "Sushi","Pizza")
+      private lateinit var adaptor: MenuAdapter
+   private val OriginalMenuItemPrice = listOf("$5","$2","$6","$5","$2","$6")
+
+   private val OriginalMenuImage = listOf(
+        R.drawable.food1,
+        R.drawable.food2,
+        R.drawable.food3,
+        R.drawable.food1,
+        R.drawable.food2,
+        R.drawable.food3)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+
     }
+     private val filteredMenuFoodName = mutableListOf<String>()
+    private val filteredMenuItemPrices = mutableListOf<String>()
+    private val filteredMenuImages = mutableListOf<Int>()
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_search, container, false)
+        binding = FragmentSearchBinding.inflate(inflater, container, false)
+        adaptor = MenuAdapter(filteredMenuFoodName,filteredMenuItemPrices,filteredMenuImages)
+        binding.menuRecyclerView.layoutManager= LinearLayoutManager(requireContext())
+        binding.menuRecyclerView.adapter = adaptor
+
+
+        //setup search view
+
+        setupSearchView()
+
+        // show All menus Items
+
+        showAllMenuItems()
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment SearchFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            SearchFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    private fun showAllMenuItems() {
+        filteredMenuFoodName.clear()
+        filteredMenuItemPrices.clear()
+        filteredMenuImages.clear()
+
+        filteredMenuFoodName.addAll(originalMenuFoodName)
+        filteredMenuItemPrices.addAll(OriginalMenuItemPrice)
+        filteredMenuImages.addAll(OriginalMenuImage)
+
+
+        adaptor.notifyDataSetChanged()
+    }
+
+
+    private fun setupSearchView() {
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+         override fun onQueryTextSubmit(query: String?): Boolean {
+             filterMenuItems(query)
+             return true
+         }
+
+
+
+         override fun onQueryTextChange(newText: String?): Boolean {
+         filterMenuItems(newText)
+         return true
+         } })
+    }
+    private fun filterMenuItems(query: String?) {
+        filteredMenuFoodName.clear()
+        filteredMenuItemPrices.clear()
+        filteredMenuImages.clear()
+
+        originalMenuFoodName.forEachIndexed { index, foodName ->
+            if (foodName.contains(query, ignoreCase = true)) {
+                filteredMenuFoodName.add(foodName)
+                filteredMenuItemPrices.add(OriginalMenuItemPrice[index])
+                filteredMenuImages.add(OriginalMenuImage[index])
+
             }
+
+        }
+          adaptor.notifyDataSetChanged()
+
+    }
+
+
+    companion object {
+
     }
 }
