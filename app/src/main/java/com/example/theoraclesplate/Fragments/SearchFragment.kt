@@ -5,11 +5,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.adapter.MenuAdapter
 import com.example.theoraclesplate.databinding.FragmentSearchBinding
-import androidx.appcompat.widget.SearchView
 
 
 class SearchFragment : Fragment() {
@@ -51,11 +51,11 @@ class SearchFragment : Fragment() {
 
         // show All menus Items
 
-        showAllMenuItems()
+        showAllMenu()
         return binding.root
     }
 
-    private fun showAllMenuItems() {
+    private fun showAllMenu() {
         filteredMenuFoodName.clear()
         filteredMenuItemPrices.clear()
         filteredMenuImages.clear()
@@ -70,20 +70,22 @@ class SearchFragment : Fragment() {
 
 
     private fun setupSearchView() {
-        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-         override fun onQueryTextSubmit(query: String?): Boolean {
+        binding.searchView.setOnQueryTextListener(object :SearchView.OnQueryTextListener {
+         override fun onQueryTextSubmit(query: String): Boolean {
              filterMenuItems(query)
              return true
          }
 
 
 
-         override fun onQueryTextChange(newText: String?): Boolean {
+         override fun onQueryTextChange(newText: String): Boolean {
          filterMenuItems(newText)
          return true
+
+
          } })
     }
-    private fun filterMenuItems(query: String?) {
+    private fun filterMenuItems(query: String) {
         filteredMenuFoodName.clear()
         filteredMenuItemPrices.clear()
         filteredMenuImages.clear()
