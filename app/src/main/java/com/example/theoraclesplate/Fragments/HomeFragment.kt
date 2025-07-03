@@ -64,7 +64,7 @@ bottomSheetDialog.show(parentFragmentManager,"Test")
            val price = listOf("$5","$2","$6","$5","$2","$6","$5","$2","$6")
            val popularFoodImages = listOf(R.drawable.food1,R.drawable.food2,R.drawable.food3,)
 
-           val adapter = PopularAdaptor(foodName,price,popularFoodImages)
+           val adapter = PopularAdaptor(foodName,price,popularFoodImages,requireContext())
            binding.PopularRecycleView.layoutManager = LinearLayoutManager(requireContext())
            binding.PopularRecycleView.adapter = adapter
        }

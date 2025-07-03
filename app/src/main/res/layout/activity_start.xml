@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
-    android:background="@drawable/background"
+    android:background="@drawable/background3"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".StartActivity">
@@ -36,11 +36,11 @@
 
     <TextView
         android:id="@+id/textView2"
-        android:layout_width="258dp"
-        android:layout_height="50dp"
+        android:layout_width="260dp"
+        android:layout_height="60dp"
         android:layout_marginTop="32dp"
         android:fontFamily="@font/yeseva_one"
-        android:text="Enjoy Restaurant Quality Meal \n At Home"
+        android:text="Enjoy Restaurant Quality Meal At Home"
         android:textAlignment="center"
         android:textColor="#BB0C24"
         android:textSize="20sp"
