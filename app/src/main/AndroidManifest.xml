@@ -16,6 +16,9 @@
         android:theme="@style/Theme.THEORACLESPLATE"
         tools:targetApi="31">
         <activity
+            android:name=".PayOutActivity"
+            android:exported="false" />
+        <activity
             android:name=".ChooseLocationActivity"
             android:exported="false" />
         <activity
@@ -30,18 +33,17 @@
         <activity
             android:name=".SplashScreen"
             android:exported="true">
-
             <activity
                 android:name=".MainActivity"
                 android:exported="true"
-                android:windowSoftInputMode="adjustPan"/>
+                android:windowSoftInputMode="adjustPan" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
 
         <meta-data
             android:name="preloaded_fonts"
