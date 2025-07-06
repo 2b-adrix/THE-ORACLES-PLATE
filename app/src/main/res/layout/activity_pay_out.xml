@@ -58,7 +58,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="20dp"
-            android:textColor="@color/black"
             android:fontFamily="@font/lato"
             android:paddingLeft="8dp"
             android:text="Name" />
@@ -69,7 +68,6 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:ems="10"
-            android:textColor="@color/grey_font"
             android:inputType="text"
             android:text="Name" />
 
@@ -95,7 +93,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="20dp"
-            android:textColor="@color/black"
             android:paddingLeft="8dp"
             android:text="Address" />
 
@@ -107,10 +104,8 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:ems="10"
-            android:textColor="@color/grey_font"
             android:gravity="center_vertical"
             android:inputType="textMultiLine"
-            android:text="What's Your Address ? Give your full address!" />
 
     </LinearLayout>
 
@@ -130,13 +125,9 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout2">
 
         <TextView
-            android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textColor="@color/black"
             android:paddingLeft="8dp"
-            android:text="Phone"
-            android:textSize="20dp" />
 
         <EditText
             android:layout_width="wrap_content"
@@ -144,7 +135,6 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:ems="10"
-            android:textColor="@color/grey_font"
             android:inputType="phone"
             android:text="+91 9876543210" />
 
@@ -169,7 +159,6 @@
             android:layout_width="122dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textColor="@color/black"
             android:fontFamily="@font/lato"
             android:paddingLeft="8dp"
             android:text="Payment Method" />
@@ -199,10 +188,8 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout4">
 
         <TextView
-            android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textColor="@color/black"
             android:paddingLeft="8dp"
             android:text="Total Amount" />
 
@@ -225,7 +212,6 @@
     </LinearLayout>
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/PlaceMyOrderButton"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_gravity="bottom"

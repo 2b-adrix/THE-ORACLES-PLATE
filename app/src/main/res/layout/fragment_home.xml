@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/background3"
     tools:context=".Fragments.HomeFragment">
 
     <androidx.cardview.widget.CardView
@@ -33,9 +34,10 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/PopularRecycleView"
-        android:layout_width="411dp"
+        android:layout_width="match_parent"
         android:layout_height="620dp"
         android:layout_marginTop="16dp"
+        tools:listitem="@layout/popular_item"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
