@@ -13,9 +13,8 @@ class login : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         binding.loginbutton.setOnClickListener {
-          val intent = Intent(this,SigninActivity::class.java)
+          val intent = Intent(this, MainActivity::class.java)
           startActivity(intent)
-
         }
         binding.dontHaveButton.setOnClickListener {
           val intent = Intent(this,SigninActivity::class.java)

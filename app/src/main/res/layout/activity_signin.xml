@@ -165,7 +165,7 @@
         app:layout_constraintTop_toBottomOf="@+id/textView10" />
 
     <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/button6"
+        android:id="@+id/CreateAccount"
         android:layout_width="157dp"
         android:layout_height="57dp"
         android:layout_marginTop="16dp"
@@ -185,7 +185,7 @@
         android:textColor="#BE1515"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button6" />
+        app:layout_constraintTop_toBottomOf="@+id/CreateAccount" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

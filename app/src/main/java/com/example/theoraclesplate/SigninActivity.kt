@@ -17,5 +17,10 @@ class SigninActivity : AppCompatActivity() {
            startActivity(intent)
 
        }
+        binding.CreateAccount.setOnClickListener{
+           val intent = Intent(this,login::class.java)
+           startActivity(intent)
+
+       }
     }
 }
