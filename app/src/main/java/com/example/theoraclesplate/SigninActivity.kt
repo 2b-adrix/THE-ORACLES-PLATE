@@ -12,15 +12,15 @@ class SigninActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-       binding.haveaccountbutton.setOnClickListener{
-           val intent = Intent(this,login::class.java)
-           startActivity(intent)
+        binding.haveaccountbutton.setOnClickListener {
+            val intent = Intent(this, login::class.java)
+            startActivity(intent)
 
-       }
-        binding.CreateAccount.setOnClickListener{
-           val intent = Intent(this,login::class.java)
-           startActivity(intent)
+        }
+            binding.CreateAccount.setOnClickListener {
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
 
-       }
+            }
+        }
     }
-}
