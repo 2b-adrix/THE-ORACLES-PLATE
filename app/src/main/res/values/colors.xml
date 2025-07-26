@@ -2,9 +2,11 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="TextColor">#BE1515</color>
-    <color name="StartColor">#BE1505</color>
-    <color name="EndColor">#BE1555</color>
-    <color name="iconcolor">#880808</color>
-    <color name="iconcolor2">#FFCCCB</color>
-    </resources>
+    <!-- Zomato Red / Swiggy Orange Mix -->
+    <color name="TextColor">#E23744</color>
+    <color name="StartColor">#FC8019</color>
+    <color name="EndColor">#E23744</color>
+    <color name="iconcolor">#D32F2F</color>
+    <color name="iconcolor2">#FFEBEE</color>
+    <color name="grey_font">#757575</color>
+</resources>
