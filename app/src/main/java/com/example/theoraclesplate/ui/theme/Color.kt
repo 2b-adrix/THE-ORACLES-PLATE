@@ -2,8 +2,8 @@ package com.example.theoraclesplate.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val StartColor = Color(0xFFFC8019) // Swiggy Orange
-val EndColor = Color(0xFFE23744) // Zomato Red
+val StartColor = Color(0xFFCD0F5D)
+val EndColor = Color(0xFFE23744)
 val TextColor = Color(0xFFE23744)
 val Black = Color(0xFF000000)
 val White = Color(0xFFFFFFFF)

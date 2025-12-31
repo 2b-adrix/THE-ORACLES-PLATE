@@ -11,6 +11,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,10 +23,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.ui.theme.StartColor
+import kotlinx.coroutines.delay
 
 @Composable
-fun HomeScreen(rootNavController: NavController) {
-    val banners = listOf(R.drawable.banner1, R.drawable.banner2, R.drawable.banner1)
+fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
+    val banners = listOf(R.drawable.banner1, R.drawable.banner2)
     val popularFood = listOf(
         FoodItem("Pizza", "$5", R.drawable.food1),
         FoodItem("Burger", "$2", R.drawable.food2),
@@ -33,6 +35,14 @@ fun HomeScreen(rootNavController: NavController) {
     )
     
     val pagerState = rememberPagerState(pageCount = { banners.size })
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(3000)
+            val nextPage = (pagerState.currentPage + 1) % banners.size
+            pagerState.animateScrollToPage(nextPage)
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -80,7 +90,7 @@ fun HomeScreen(rootNavController: NavController) {
                     color = StartColor,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable { 
-                         // Navigate to Search or Menu
+                         onViewMenuClick()
                     }
                 )
             }
