@@ -73,9 +73,15 @@ fun ProfileScreen(rootNavController: NavController) {
         
         Spacer(modifier = Modifier.height(32.dp))
         
-        ProfileMenuItem("Edit Profile", onClick = {})
-        ProfileMenuItem("Payment Methods", onClick = {})
+        ProfileMenuItem("Edit Profile", onClick = { rootNavController.navigate("edit_profile") })
+        ProfileMenuItem("Payment Methods", onClick = { Toast.makeText(context, "Coming Soon", Toast.LENGTH_SHORT).show() })
         ProfileMenuItem("Order History", onClick = { rootNavController.navigate("history") })
+        
+        // --- Add Support / Contact Us ---
+        ProfileMenuItem("Contact Support", onClick = { 
+            Toast.makeText(context, "Email support@oracleplate.com", Toast.LENGTH_LONG).show() 
+        })
+        
         ProfileMenuItem("Log Out", onClick = {
             auth.signOut()
             Toast.makeText(context, "Logged out successfully", Toast.LENGTH_SHORT).show()

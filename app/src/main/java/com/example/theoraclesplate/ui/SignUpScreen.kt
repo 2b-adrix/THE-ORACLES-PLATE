@@ -21,10 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.theoraclesplate.R
+import com.example.theoraclesplate.model.User
 import com.example.theoraclesplate.ui.theme.StartColor
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
 @Composable
@@ -122,30 +124,36 @@ fun SignUpScreen(navController: NavController) {
                         auth.createUserWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
-                                    val user = auth.currentUser
-                                    val profileUpdates = UserProfileChangeRequest.Builder()
-                                        .setDisplayName(name)
-                                        .build()
+                                    val firebaseUser = auth.currentUser
+                                    val userId = firebaseUser?.uid
+                                    
+                                    if (userId != null) {
+                                        val user = User(name = name, email = email, role = "buyer")
+                                        Firebase.database.reference.child("users").child(userId).setValue(user)
+                                            .addOnSuccessListener {
+                                                // Update profile name
+                                                 val profileUpdates = UserProfileChangeRequest.Builder()
+                                                    .setDisplayName(name)
+                                                    .build()
 
-                                    user?.updateProfile(profileUpdates)
-                                        ?.addOnCompleteListener { profileTask ->
-                                            isLoading = false
-                                            if (profileTask.isSuccessful) {
-                                                navController.navigate("home") {
-                                                    popUpTo("start") { inclusive = true }
-                                                }
-                                            } else {
-                                                 Toast.makeText(
-                                                    context,
-                                                    "Failed to update profile: ${profileTask.exception?.message}",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                                // Still navigate to home as account is created
-                                                navController.navigate("home") {
-                                                    popUpTo("start") { inclusive = true }
-                                                }
+                                                firebaseUser.updateProfile(profileUpdates)
+                                                    .addOnCompleteListener { profileTask ->
+                                                        isLoading = false
+                                                        if (profileTask.isSuccessful) {
+                                                            navController.navigate("home") {
+                                                                popUpTo("start") { inclusive = true }
+                                                            }
+                                                        } else {
+                                                             Toast.makeText(context, "Profile update failed", Toast.LENGTH_SHORT).show()
+                                                             navController.navigate("home")
+                                                        }
+                                                    }
                                             }
-                                        }
+                                            .addOnFailureListener { e ->
+                                                isLoading = false
+                                                Toast.makeText(context, "Failed to save user data: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            }
+                                    }
                                 } else {
                                     isLoading = false
                                     Toast.makeText(

@@ -1,9 +1,11 @@
 package com.example.theoraclesplate.ui
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.theoraclesplate.ui.theme.THEORACLESPLATETheme
 
 @Composable
@@ -17,10 +19,21 @@ fun MainApp() {
             composable("signup") { SignUpScreen(navController) }
             composable("home") { MainScreen(navController) }
             composable("history") { HistoryScreen(navController) }
-            composable("details/{name}/{price}/{image}") { backStackEntry ->
+            composable("edit_profile") { EditProfileScreen(navController) }
+            composable("cart_screen") { CartScreen(navController) }
+            composable("checkout_screen") { CheckoutScreen(navController) }
+            composable("seller_dashboard") { SellerDashboardScreen(navController) }
+            composable("admin_panel") { AdminPanelScreen(navController) }
+            composable("delivery_dashboard") { DeliveryDashboardScreen(navController) }
+            composable(
+                route = "details/{name}/{price}?image={image}",
+                arguments = listOf(
+                    navArgument("image") { nullable = true }
+                )
+            ) { backStackEntry ->
                 val name = backStackEntry.arguments?.getString("name")
                 val price = backStackEntry.arguments?.getString("price")
-                val image = backStackEntry.arguments?.getString("image")?.toIntOrNull()
+                val image = backStackEntry.arguments?.getString("image")
                 DetailsScreen(navController, name, price, image) 
             }
         }

@@ -1,7 +1,6 @@
 package com.example.theoraclesplate.ui
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,19 +10,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.theoraclesplate.R
+import coil.compose.AsyncImage
 import com.example.theoraclesplate.ui.theme.StartColor
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
 @Composable
-fun DetailsScreen(navController: NavController, foodName: String?, foodPrice: String?, foodImage: Int?) {
+fun DetailsScreen(navController: NavController, foodName: String?, foodPrice: String?, foodImage: String?) {
     val context = LocalContext.current
     val auth = Firebase.auth
     val database = Firebase.database
@@ -49,8 +47,8 @@ fun DetailsScreen(navController: NavController, foodName: String?, foodPrice: St
                 modifier = Modifier.fillMaxWidth().height(250.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
-                Image(
-                    painter = painterResource(id = foodImage ?: R.drawable.food1),
+                AsyncImage(
+                    model = foodImage ?: "https://picsum.photos/200/300", // Fallback image
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -88,7 +86,8 @@ fun DetailsScreen(navController: NavController, foodName: String?, foodPrice: St
                         val cartItem = hashMapOf(
                             "name" to foodName,
                             "price" to foodPrice,
-                            "quantity" to 1
+                            "quantity" to 1,
+                            "image" to (foodImage ?: "")
                         )
                         database.reference.child("users").child(user.uid).child("cart").push().setValue(cartItem)
                             .addOnSuccessListener {

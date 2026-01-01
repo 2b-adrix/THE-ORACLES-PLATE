@@ -25,13 +25,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.theoraclesplate.R
+import com.example.theoraclesplate.model.User
 import com.example.theoraclesplate.ui.theme.StartColor
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import java.util.Calendar
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -40,6 +43,45 @@ fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
     val auth = remember { Firebase.auth }
     var isLoading by remember { mutableStateOf(false) }
+
+    // Check for Device Time Issue
+    LaunchedEffect(Unit) {
+        val year = Calendar.getInstance().get(Calendar.YEAR)
+        if (year >= 2026) {
+             Toast.makeText(context, "CRITICAL ERROR: Device time is set to $year! Please fix your Emulator Date & Time settings or Firebase will not work.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    fun checkRoleAndNavigate(userId: String) {
+        val database = Firebase.database.reference
+        database.child("users").child(userId).get().addOnSuccessListener { snapshot ->
+            isLoading = false
+            val user = snapshot.getValue(User::class.java)
+            if (user != null) {
+                when (user.role) {
+                    "seller" -> navController.navigate("seller_dashboard") {
+                        popUpTo("start") { inclusive = true }
+                    }
+                    "admin" -> navController.navigate("admin_panel") {
+                        popUpTo("start") { inclusive = true }
+                    }
+                    else -> navController.navigate("home") {
+                        popUpTo("start") { inclusive = true }
+                    }
+                }
+            } else {
+                 // Fallback if user data missing (e.g. old user)
+                 Toast.makeText(context, "User profile not found, defaulting to Buyer", Toast.LENGTH_SHORT).show()
+                 navController.navigate("home") {
+                    popUpTo("start") { inclusive = true }
+                }
+            }
+        }.addOnFailureListener { e ->
+            isLoading = false
+            // SHOW EXACT ERROR MESSAGE
+            Toast.makeText(context, "DB Error: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -52,12 +94,13 @@ fun LoginScreen(navController: NavController) {
                 isLoading = true
                 auth.signInWithCredential(credential)
                     .addOnCompleteListener { authTask ->
-                        isLoading = false
                         if (authTask.isSuccessful) {
-                            navController.navigate("home") {
-                                popUpTo("start") { inclusive = true }
+                            val userId = auth.currentUser?.uid
+                            if (userId != null) {
+                                checkRoleAndNavigate(userId)
                             }
                         } else {
+                            isLoading = false
                             Toast.makeText(context, "Google Sign-In failed: ${authTask.exception?.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -138,12 +181,13 @@ fun LoginScreen(navController: NavController) {
                         isLoading = true
                         auth.signInWithEmailAndPassword(email, password)
                             .addOnCompleteListener { task ->
-                                isLoading = false
                                 if (task.isSuccessful) {
-                                    navController.navigate("home") {
-                                        popUpTo("start") { inclusive = true }
+                                    val userId = auth.currentUser?.uid
+                                    if (userId != null) {
+                                        checkRoleAndNavigate(userId)
                                     }
                                 } else {
+                                    isLoading = false
                                     Toast.makeText(
                                         context,
                                         "Authentication failed: ${task.exception?.message}",

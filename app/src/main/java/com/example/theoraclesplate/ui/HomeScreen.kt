@@ -1,5 +1,7 @@
 package com.example.theoraclesplate.ui
 
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,37 +12,63 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.theoraclesplate.R
+import com.example.theoraclesplate.model.FoodItem
 import com.example.theoraclesplate.ui.theme.StartColor
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
     val banners = listOf(R.drawable.banner1, R.drawable.banner2)
-    val popularFood = listOf(
-        FoodItem("Pizza", "$5", R.drawable.food1),
-        FoodItem("Burger", "$2", R.drawable.food2),
-        FoodItem("Pasta", "$6", R.drawable.food3)
-    )
-    
+    val popularFood = remember { mutableStateListOf<FoodItem>() }
     val pagerState = rememberPagerState(pageCount = { banners.size })
+    val database = Firebase.database
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
+        val menuRef = database.reference.child("menu")
+        menuRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                popularFood.clear()
+                for (child in snapshot.children) {
+                    val item = child.getValue(FoodItem::class.java)
+                    if (item != null) {
+                        popularFood.add(item)
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // CHANGED: Show exact error message
+                Toast.makeText(context, "Menu Error: ${error.message}", Toast.LENGTH_LONG).show()
+            }
+        })
+    }
+
+    LaunchedEffect(pagerState) {
         while (true) {
             delay(3000)
-            val nextPage = (pagerState.currentPage + 1) % banners.size
-            pagerState.animateScrollToPage(nextPage)
+            if (!pagerState.isScrollInProgress) {
+                val nextPage = (pagerState.currentPage + 1) % banners.size
+                pagerState.animateScrollToPage(nextPage)
+            }
         }
     }
 
@@ -59,7 +87,10 @@ fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
                     .height(200.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
-                HorizontalPager(state = pagerState) { page ->
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
                     Image(
                         painter = painterResource(id = banners[page]),
                         contentDescription = null,
@@ -95,10 +126,26 @@ fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
                 )
             }
         }
+        
+        item {
+            Button(onClick = {
+                val menuRef = database.reference.child("menu")
+                val items = listOf(
+                    FoodItem("Pizza", "$5", "https://picsum.photos/id/10/200", "Delicious cheese pizza"),
+                    FoodItem("Burger", "$2", "https://picsum.photos/id/20/200", "Juicy beef burger"),
+                    FoodItem("Pasta", "$6", "https://picsum.photos/id/30/200", "Creamy pasta")
+                )
+                items.forEach { menuRef.push().setValue(it) }
+                Toast.makeText(context, "Menu populated", Toast.LENGTH_SHORT).show()
+            }) {
+                Text("Populate DB (Click Once)")
+            }
+        }
 
         items(popularFood) { food ->
             PopularFoodItem(food) {
-                rootNavController.navigate("details/${food.name}/${food.price.replace("$","")}/${food.image}")
+                val encodedImage = Uri.encode(food.image)
+                rootNavController.navigate("details/${food.name}/${food.price.replace("$","")}/?image=${encodedImage}")
             }
         }
     }
@@ -123,8 +170,8 @@ fun PopularFoodItem(food: FoodItem, onClick: () -> Unit) {
                 shape = RoundedCornerShape(12.dp),
                  modifier = Modifier.size(80.dp)
             ) {
-                Image(
-                    painter = painterResource(id = food.image),
+                AsyncImage(
+                    model = food.image.ifEmpty { R.drawable.food1 },
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -162,5 +209,3 @@ fun PopularFoodItem(food: FoodItem, onClick: () -> Unit) {
         }
     }
 }
-
-data class FoodItem(val name: String, val price: String, val image: Int)
