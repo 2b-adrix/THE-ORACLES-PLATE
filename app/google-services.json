@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "633134483900",
+    "firebase_url": "https://the-oracle-s-plate-default-rtdb.firebaseio.com",
     "project_id": "the-oracle-s-plate",
     "storage_bucket": "the-oracle-s-plate.firebasestorage.app"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.example.theoraclesplate"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "633134483900-odn7iq5iumn2hvdr3a7uem3m9s9l0rmn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.theoraclesplate",
+            "certificate_hash": "e4c70b90facf019a90d159b6a6a8aecd55b31a16"
+          }
+        },
+        {
+          "client_id": "633134483900-qjad03qpanmq465s55ssgmk7ojk5eeqi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCihKbOnI2XhymNj2IPSoOQloRqaagUG20"
@@ -20,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "633134483900-qjad03qpanmq465s55ssgmk7ojk5eeqi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

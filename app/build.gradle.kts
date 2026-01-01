@@ -1,6 +1,9 @@
 import org.gradle.kotlin.dsl.androidTestImplementation
 import org.gradle.kotlin.dsl.implementation
 import org.gradle.kotlin.dsl.testImplementation
+import java.io.FileInputStream
+import java.security.KeyStore
+import java.security.MessageDigest
 
 plugins {
     alias(libs.plugins.android.application)
@@ -85,4 +88,26 @@ dependencies {
 
     // Coil
     implementation(libs.coil.compose)
+}
+
+tasks.register("printSHA1") {
+    doLast {
+        try {
+            val keystoreFile = File(System.getProperty("user.home"), ".android/debug.keystore")
+            if (keystoreFile.exists()) {
+                val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
+                keystore.load(FileInputStream(keystoreFile), "android".toCharArray())
+                val cert = keystore.getCertificate("androiddebugkey")
+                val digest = MessageDigest.getInstance("SHA-1")
+                val hash = digest.digest(cert.encoded)
+                val hex = hash.joinToString(":") { "%02X".format(it) }
+                File(project.rootDir, "debug_sha1.txt").writeText("SHA1: $hex")
+                println("SHA1 Written to debug_sha1.txt")
+            } else {
+                File(project.rootDir, "debug_sha1.txt").writeText("Error: Debug keystore not found at ${keystoreFile.absolutePath}")
+            }
+        } catch (e: Exception) {
+            File(project.rootDir, "debug_sha1.txt").writeText("Error: ${e.message}")
+        }
+    }
 }
