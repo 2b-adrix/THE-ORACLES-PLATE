@@ -1,15 +1,17 @@
 package com.example.theoraclesplate.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -17,9 +19,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.ui.theme.StartColor
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 @Composable
 fun ProfileScreen(rootNavController: NavController) {
+    val auth = Firebase.auth
+    val user = auth.currentUser
+    val context = LocalContext.current
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -51,14 +59,14 @@ fun ProfileScreen(rootNavController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "User Name",
+            text = user?.displayName ?: "User Name",
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black
         )
         
         Text(
-            text = "user@example.com",
+            text = user?.email ?: "user@example.com",
             fontSize = 16.sp,
             color = Color.Gray
         )
@@ -69,6 +77,8 @@ fun ProfileScreen(rootNavController: NavController) {
         ProfileMenuItem("Payment Methods", onClick = {})
         ProfileMenuItem("Order History", onClick = { rootNavController.navigate("history") })
         ProfileMenuItem("Log Out", onClick = {
+            auth.signOut()
+            Toast.makeText(context, "Logged out successfully", Toast.LENGTH_SHORT).show()
             rootNavController.navigate("login") {
                 popUpTo("home") { inclusive = true }
             }

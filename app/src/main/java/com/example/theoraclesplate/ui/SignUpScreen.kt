@@ -1,5 +1,6 @@
 package com.example.theoraclesplate.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -11,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -21,12 +22,19 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.ui.theme.StartColor
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 @Composable
 fun SignUpScreen(navController: NavController) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val auth = remember { Firebase.auth }
+    var isLoading by remember { mutableStateOf(false) }
 
     val gradient = Brush.linearGradient(
         colors = listOf(Color(0xFFFAA1A1), Color.White),
@@ -108,15 +116,60 @@ fun SignUpScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { navController.navigate("home") {
-                    popUpTo("start") { inclusive = true }
-                } },
+                onClick = {
+                    if (name.isNotEmpty() && email.isNotEmpty() && password.isNotEmpty()) {
+                        isLoading = true
+                        auth.createUserWithEmailAndPassword(email, password)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    val user = auth.currentUser
+                                    val profileUpdates = UserProfileChangeRequest.Builder()
+                                        .setDisplayName(name)
+                                        .build()
+
+                                    user?.updateProfile(profileUpdates)
+                                        ?.addOnCompleteListener { profileTask ->
+                                            isLoading = false
+                                            if (profileTask.isSuccessful) {
+                                                navController.navigate("home") {
+                                                    popUpTo("start") { inclusive = true }
+                                                }
+                                            } else {
+                                                 Toast.makeText(
+                                                    context,
+                                                    "Failed to update profile: ${profileTask.exception?.message}",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                // Still navigate to home as account is created
+                                                navController.navigate("home") {
+                                                    popUpTo("start") { inclusive = true }
+                                                }
+                                            }
+                                        }
+                                } else {
+                                    isLoading = false
+                                    Toast.makeText(
+                                        context,
+                                        "Registration failed: ${task.exception?.message}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                    } else {
+                        Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = StartColor)
             ) {
-                Text(text = "Create Account", fontSize = 18.sp, color = Color.White)
+                if (isLoading) {
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                } else {
+                    Text(text = "Create Account", fontSize = 18.sp, color = Color.White)
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

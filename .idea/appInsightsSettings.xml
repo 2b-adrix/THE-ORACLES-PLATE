@@ -9,10 +9,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.theoraclesplate" />
+                  <option name="mobileSdkAppId" value="1:633134483900:android:55b7b12f9ecb3fbaf683b9" />
+                  <option name="projectId" value="the-oracle-s-plate" />
+                  <option name="projectNumber" value="633134483900" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

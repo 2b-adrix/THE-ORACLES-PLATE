@@ -1,5 +1,6 @@
 package com.example.theoraclesplate.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -16,9 +18,16 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.ui.theme.StartColor
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 
 @Composable
 fun DetailsScreen(navController: NavController, foodName: String?, foodPrice: String?, foodImage: Int?) {
+    val context = LocalContext.current
+    val auth = Firebase.auth
+    val database = Firebase.database
+    
     Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp)
@@ -73,7 +82,25 @@ fun DetailsScreen(navController: NavController, foodName: String?, foodPrice: St
             Spacer(modifier = Modifier.weight(1f))
             
             Button(
-                onClick = { /* Add to Cart logic */ },
+                onClick = { 
+                    val user = auth.currentUser
+                    if (user != null) {
+                        val cartItem = hashMapOf(
+                            "name" to foodName,
+                            "price" to foodPrice,
+                            "quantity" to 1
+                        )
+                        database.reference.child("users").child(user.uid).child("cart").push().setValue(cartItem)
+                            .addOnSuccessListener {
+                                Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
+                            }
+                            .addOnFailureListener {
+                                Toast.makeText(context, "Failed to add to cart", Toast.LENGTH_SHORT).show()
+                            }
+                    } else {
+                        Toast.makeText(context, "Please login first", Toast.LENGTH_SHORT).show()
+                    }
+                },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = StartColor),
                 shape = RoundedCornerShape(12.dp)

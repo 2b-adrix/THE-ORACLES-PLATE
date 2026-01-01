@@ -1,5 +1,6 @@
 package com.example.theoraclesplate.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -12,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -19,14 +21,50 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.ui.theme.StartColor
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 
 @Composable
 fun CartScreen(rootNavController: NavController) {
-    val cartItems = remember { mutableStateListOf(
-        CartItemData("Pizza", "$5", R.drawable.food1, 1),
-        CartItemData("Burger", "$2", R.drawable.food2, 2),
-        CartItemData("Pasta", "$6", R.drawable.food3, 1)
-    ) }
+    val context = LocalContext.current
+    val auth = Firebase.auth
+    val database = Firebase.database
+    val currentUser = auth.currentUser
+    
+    val cartItems = remember { mutableStateListOf<CartItemData>() }
+    var isLoading by remember { mutableStateOf(true) }
+    var isPlacingOrder by remember { mutableStateOf(false) }
+
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            val cartRef = database.reference.child("users").child(currentUser.uid).child("cart")
+            cartRef.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    cartItems.clear()
+                    for (child in snapshot.children) {
+                        val name = child.child("name").getValue(String::class.java) ?: ""
+                        val price = child.child("price").getValue(String::class.java) ?: ""
+                        val quantity = child.child("quantity").getValue(Int::class.java) ?: 1
+                        // For now we don't store image url in firebase, so using a placeholder or resource
+                        
+                        cartItems.add(CartItemData(child.key ?: "", name, price, R.drawable.food1, quantity))
+                    }
+                    isLoading = false
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(context, "Failed to load cart: ${error.message}", Toast.LENGTH_SHORT).show()
+                    isLoading = false
+                }
+            })
+        } else {
+             isLoading = false
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -41,36 +79,88 @@ fun CartScreen(rootNavController: NavController) {
             modifier = Modifier.padding(16.dp)
         )
 
-        LazyColumn(
-            modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
-        ) {
-            items(cartItems) { item ->
-                CartItemRow(item, 
-                    onIncrease = { 
-                        val index = cartItems.indexOf(item)
-                        if (index != -1) cartItems[index] = item.copy(quantity = item.quantity + 1)
-                    },
-                    onDecrease = { 
-                        if (item.quantity > 1) {
-                            val index = cartItems.indexOf(item)
-                            if (index != -1) cartItems[index] = item.copy(quantity = item.quantity - 1)
-                        }
-                    },
-                    onDelete = { cartItems.remove(item) }
-                )
+        if (isLoading) {
+            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = StartColor)
             }
-        }
-        
-        Button(
-            onClick = { /* Proceed to Checkout */ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = StartColor),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text("Proceed to Checkout", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        } else if (cartItems.isEmpty()) {
+             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text("Your cart is empty", color = Color.Gray)
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
+            ) {
+                items(cartItems) { item ->
+                    CartItemRow(item, 
+                        onIncrease = { 
+                            if (currentUser != null) {
+                                database.reference.child("users").child(currentUser.uid).child("cart")
+                                    .child(item.id).child("quantity").setValue(item.quantity + 1)
+                            }
+                        },
+                        onDecrease = { 
+                            if (item.quantity > 1 && currentUser != null) {
+                                database.reference.child("users").child(currentUser.uid).child("cart")
+                                    .child(item.id).child("quantity").setValue(item.quantity - 1)
+                            }
+                        },
+                        onDelete = { 
+                             if (currentUser != null) {
+                                database.reference.child("users").child(currentUser.uid).child("cart")
+                                    .child(item.id).removeValue()
+                            }
+                        }
+                    )
+                }
+            }
+            
+            Button(
+                onClick = { 
+                    if (currentUser != null && cartItems.isNotEmpty()) {
+                        isPlacingOrder = true
+                        val historyRef = database.reference.child("users").child(currentUser.uid).child("order_history")
+                        val cartRef = database.reference.child("users").child(currentUser.uid).child("cart")
+                        
+                        val timestamp = System.currentTimeMillis()
+                        
+                        // Add each cart item to history
+                        cartItems.forEach { item ->
+                            val historyItem = hashMapOf(
+                                "name" to if(item.quantity > 1) "${item.quantity} x ${item.name}" else item.name,
+                                "price" to item.price,
+                                "timestamp" to timestamp
+                            )
+                            historyRef.push().setValue(historyItem)
+                        }
+                        
+                        // Clear cart
+                        cartRef.removeValue()
+                            .addOnSuccessListener {
+                                isPlacingOrder = false
+                                Toast.makeText(context, "Order Placed Successfully!", Toast.LENGTH_SHORT).show()
+                                rootNavController.navigate("history")
+                            }
+                            .addOnFailureListener {
+                                isPlacingOrder = false
+                                Toast.makeText(context, "Failed to place order", Toast.LENGTH_SHORT).show()
+                            }
+                    }
+                },
+                enabled = !isPlacingOrder,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = StartColor),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                if (isPlacingOrder) {
+                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                } else {
+                    Text("Proceed to Checkout", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                }
+            }
         }
     }
 }
@@ -91,6 +181,7 @@ fun CartItemRow(item: CartItemData, onIncrease: () -> Unit, onDecrease: () -> Un
                 shape = RoundedCornerShape(12.dp),
                  modifier = Modifier.size(80.dp)
             ) {
+                // Using resource for now as we don't have URL
                 Image(
                     painter = painterResource(id = item.image),
                     contentDescription = null,
@@ -126,4 +217,4 @@ fun CartItemRow(item: CartItemData, onIncrease: () -> Unit, onDecrease: () -> Un
     }
 }
 
-data class CartItemData(val name: String, val price: String, val image: Int, val quantity: Int)
+data class CartItemData(val id: String, val name: String, val price: String, val image: Int, val quantity: Int)

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "633134483900",
+    "project_id": "the-oracle-s-plate",
+    "storage_bucket": "the-oracle-s-plate.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:633134483900:android:55b7b12f9ecb3fbaf683b9",
+        "android_client_info": {
+          "package_name": "com.example.theoraclesplate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCihKbOnI2XhymNj2IPSoOQloRqaagUG20"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
