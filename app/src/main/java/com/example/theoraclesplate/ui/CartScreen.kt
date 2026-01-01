@@ -49,8 +49,7 @@ fun CartScreen(rootNavController: NavController) {
                         val name = child.child("name").getValue(String::class.java) ?: ""
                         val price = child.child("price").getValue(String::class.java) ?: ""
                         val quantity = child.child("quantity").getValue(Int::class.java) ?: 1
-                        // For now we don't store image url in firebase, so using a placeholder or resource
-                        
+
                         cartItems.add(CartItemData(child.key ?: "", name, price, R.drawable.food1, quantity))
                     }
                     isLoading = false
