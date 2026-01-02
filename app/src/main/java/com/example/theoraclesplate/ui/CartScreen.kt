@@ -19,10 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
 import com.example.theoraclesplate.R
-import com.example.theoraclesplate.model.Order
-import com.example.theoraclesplate.model.OrderItem
 import com.example.theoraclesplate.ui.theme.StartColor
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
@@ -40,6 +37,7 @@ fun CartScreen(rootNavController: NavController) {
     
     val cartItems = remember { mutableStateListOf<CartItemData>() }
     var isLoading by remember { mutableStateOf(true) }
+    var isPlacingOrder by remember { mutableStateOf(false) }
 
     LaunchedEffect(currentUser) {
         if (currentUser != null) {
@@ -51,9 +49,9 @@ fun CartScreen(rootNavController: NavController) {
                         val name = child.child("name").getValue(String::class.java) ?: ""
                         val price = child.child("price").getValue(String::class.java) ?: ""
                         val quantity = child.child("quantity").getValue(Int::class.java) ?: 1
-                        val image = child.child("image").getValue(String::class.java) ?: ""
-
-                        cartItems.add(CartItemData(child.key ?: "", name, price, image, quantity))
+                        // For now we don't store image url in firebase, so using a placeholder or resource
+                        
+                        cartItems.add(CartItemData(child.key ?: "", name, price, R.drawable.food1, quantity))
                     }
                     isLoading = false
                 }
@@ -120,9 +118,36 @@ fun CartScreen(rootNavController: NavController) {
             Button(
                 onClick = { 
                     if (currentUser != null && cartItems.isNotEmpty()) {
-                        rootNavController.navigate("checkout_screen")
+                        isPlacingOrder = true
+                        val historyRef = database.reference.child("users").child(currentUser.uid).child("order_history")
+                        val cartRef = database.reference.child("users").child(currentUser.uid).child("cart")
+                        
+                        val timestamp = System.currentTimeMillis()
+                        
+                        // Add each cart item to history
+                        cartItems.forEach { item ->
+                            val historyItem = hashMapOf(
+                                "name" to if(item.quantity > 1) "${item.quantity} x ${item.name}" else item.name,
+                                "price" to item.price,
+                                "timestamp" to timestamp
+                            )
+                            historyRef.push().setValue(historyItem)
+                        }
+                        
+                        // Clear cart
+                        cartRef.removeValue()
+                            .addOnSuccessListener {
+                                isPlacingOrder = false
+                                Toast.makeText(context, "Order Placed Successfully!", Toast.LENGTH_SHORT).show()
+                                rootNavController.navigate("history")
+                            }
+                            .addOnFailureListener {
+                                isPlacingOrder = false
+                                Toast.makeText(context, "Failed to place order", Toast.LENGTH_SHORT).show()
+                            }
                     }
                 },
+                enabled = !isPlacingOrder,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -130,7 +155,11 @@ fun CartScreen(rootNavController: NavController) {
                 colors = ButtonDefaults.buttonColors(containerColor = StartColor),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Proceed to Checkout", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                if (isPlacingOrder) {
+                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                } else {
+                    Text("Proceed to Checkout", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                }
             }
         }
     }
@@ -152,8 +181,9 @@ fun CartItemRow(item: CartItemData, onIncrease: () -> Unit, onDecrease: () -> Un
                 shape = RoundedCornerShape(12.dp),
                  modifier = Modifier.size(80.dp)
             ) {
-                AsyncImage(
-                    model = if (item.image.isNotEmpty()) item.image else R.drawable.food1,
+                // Using resource for now as we don't have URL
+                Image(
+                    painter = painterResource(id = item.image),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -187,4 +217,4 @@ fun CartItemRow(item: CartItemData, onIncrease: () -> Unit, onDecrease: () -> Un
     }
 }
 
-data class CartItemData(val id: String, val name: String, val price: String, val image: String, val quantity: Int)
+data class CartItemData(val id: String, val name: String, val price: String, val image: Int, val quantity: Int)
