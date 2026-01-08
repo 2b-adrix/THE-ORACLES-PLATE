@@ -12,7 +12,6 @@ import androidx.compose.ui.platform.LocalDensity
 import com.example.theoraclesplate.ui.theme.StartColor
 import kotlin.random.Random
 
-// Data class to hold the state of each moving circle
 data class CircleParticle(
     var x: Float,
     var y: Float,

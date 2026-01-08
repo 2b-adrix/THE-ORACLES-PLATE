@@ -26,7 +26,7 @@ fun SplashScreen(navController: NavController) {
     val database = Firebase.database.reference
 
     LaunchedEffect(key1 = true) {
-        delay(2000) // Short delay to show logo
+        delay(3000) // Increased delay to enjoy the animation
         val currentUser = auth.currentUser
         
         if (currentUser != null) {
@@ -61,11 +61,15 @@ fun SplashScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(Color(0xFF1A1A2E)), // Set dark base background
         contentAlignment = Alignment.Center
     ) {
+        // Add the animated background
+        AnimatedCircleBackground(modifier = Modifier.fillMaxSize())
+
+        // Your logo on top
         Image(
-            painter = painterResource(id = R.drawable.logo), // Assuming logo exists
+            painter = painterResource(id = R.drawable.logo),
             contentDescription = "Logo",
             modifier = Modifier.size(200.dp)
         )

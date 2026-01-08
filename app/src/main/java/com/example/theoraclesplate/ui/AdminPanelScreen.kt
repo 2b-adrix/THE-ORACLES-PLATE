@@ -104,7 +104,6 @@ fun AdminPanelScreen(navController: NavController) {
         }
     }
 }
-
 @Composable
 fun UserRoleItem(userId: String, user: User) {
     val database = Firebase.database
