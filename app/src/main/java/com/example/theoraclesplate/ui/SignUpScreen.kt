@@ -144,8 +144,11 @@ fun SignUpScreen(navController: NavController) {
                                                                 popUpTo("start") { inclusive = true }
                                                             }
                                                         } else {
-                                                             Toast.makeText(context, "Profile update failed", Toast.LENGTH_SHORT).show()
-                                                             navController.navigate("home")
+                                                             Toast.makeText(context, "Profile update failed: ${profileTask.exception?.message}", Toast.LENGTH_SHORT).show()
+                                                             // Even if profile update fails, we can proceed
+                                                             navController.navigate("home") {
+                                                                 popUpTo("start") { inclusive = true }
+                                                             }
                                                         }
                                                     }
                                             }
@@ -156,11 +159,14 @@ fun SignUpScreen(navController: NavController) {
                                     }
                                 } else {
                                     isLoading = false
-                                    Toast.makeText(
-                                        context,
-                                        "Registration failed: ${task.exception?.message}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    // Improved error handling
+                                    val exception = task.exception
+                                    val errorMessage = if (exception?.message?.contains("The email address is already in use") == true) {
+                                        "Email already registered"
+                                    } else {
+                                        exception?.localizedMessage ?: "Registration failed"
+                                    }
+                                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                                 }
                             }
                     } else {

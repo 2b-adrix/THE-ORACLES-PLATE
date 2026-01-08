@@ -188,11 +188,14 @@ fun LoginScreen(navController: NavController) {
                                     }
                                 } else {
                                     isLoading = false
-                                    Toast.makeText(
-                                        context,
-                                        "Authentication failed: ${task.exception?.message}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    // Use a simpler error message for common issues
+                                    val exception = task.exception
+                                    val errorMessage = if (exception?.message?.contains("INVALID_LOGIN_CREDENTIALS") == true) {
+                                        "Invalid email or password"
+                                    } else {
+                                        exception?.localizedMessage ?: "Authentication failed"
+                                    }
+                                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                                 }
                             }
                     } else {
@@ -225,6 +228,7 @@ fun LoginScreen(navController: NavController) {
             OutlinedButton(
                 onClick = { 
                     try {
+                        // Use string resource safely
                         val clientId = context.getString(R.string.default_web_client_id)
                         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                             .requestIdToken(clientId)

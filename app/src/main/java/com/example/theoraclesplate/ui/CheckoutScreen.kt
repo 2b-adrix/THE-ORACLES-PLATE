@@ -29,6 +29,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import java.util.Locale
 
 @Composable
 fun CheckoutScreen(navController: NavController) {
@@ -48,8 +49,8 @@ fun CheckoutScreen(navController: NavController) {
     var cardExpiry by remember { mutableStateOf("") }
     var cardCVC by remember { mutableStateOf("") }
     
-    val cartItems = remember { mutableStateListOf<CartItemData>() }
-    var totalPrice by remember { mutableStateOf(0.0) }
+    val cartItems = remember { mutableStateListOf<CheckoutItemData>() }
+    var totalPrice by remember { mutableDoubleStateOf(0.0) }
 
     LaunchedEffect(currentUser) {
         if (currentUser != null) {
@@ -67,7 +68,7 @@ fun CheckoutScreen(navController: NavController) {
                         val price = priceStr.replace("$", "").toDoubleOrNull() ?: 0.0
                         total += price * quantity
                         
-                        cartItems.add(CartItemData(child.key ?: "", name, priceStr, image, quantity))
+                        cartItems.add(CheckoutItemData(child.key ?: "", name, priceStr, image, quantity))
                     }
                     totalPrice = total
                 }
@@ -184,11 +185,11 @@ fun CheckoutScreen(navController: NavController) {
             }
         }
         
-        Divider(modifier = Modifier.padding(vertical = 8.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
         
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("Total", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Text("$${String.format("%.2f", totalPrice)}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = StartColor)
+            Text("$${String.format(Locale.US, "%.2f", totalPrice)}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = StartColor)
         }
         
         Spacer(modifier = Modifier.height(32.dp))
@@ -220,7 +221,7 @@ fun CheckoutScreen(navController: NavController) {
                             userId = currentUser.uid,
                             userName = currentUser.displayName ?: "Unknown",
                             items = orderItems,
-                            totalAmount = "$${String.format("%.2f", totalPrice)}",
+                            totalAmount = "$${String.format(Locale.US, "%.2f", totalPrice)}",
                             address = fullAddress,
                             paymentMethod = paymentMethod,
                             status = "Pending",
@@ -294,3 +295,5 @@ fun PaymentOption(title: String, selected: Boolean, onClick: () -> Unit) {
         )
     }
 }
+
+data class CheckoutItemData(val id: String, val name: String, val price: String, val image: String, val quantity: Int)
