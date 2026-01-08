@@ -2,10 +2,12 @@ package com.example.theoraclesplate.di
 
 import com.example.theoraclesplate.data.repository.AdminRepositoryImpl
 import com.example.theoraclesplate.data.repository.AuthRepositoryImpl
+import com.example.theoraclesplate.data.repository.DeliveryRepositoryImpl
 import com.example.theoraclesplate.data.repository.MenuRepositoryImpl
 import com.example.theoraclesplate.data.repository.OrderRepositoryImpl
 import com.example.theoraclesplate.domain.repository.AdminRepository
 import com.example.theoraclesplate.domain.repository.AuthRepository
+import com.example.theoraclesplate.domain.repository.DeliveryRepository
 import com.example.theoraclesplate.domain.repository.MenuRepository
 import com.example.theoraclesplate.domain.repository.OrderRepository
 import com.example.theoraclesplate.domain.use_case.*
@@ -88,6 +90,22 @@ object AppModule {
             signupUser = SignupUserUseCase(repository),
             logoutUser = LogoutUserUseCase(repository),
             getCurrentUser = GetCurrentUserUseCase(repository)
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideDeliveryRepository(): DeliveryRepository {
+        return DeliveryRepositoryImpl()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDeliveryUseCases(repository: DeliveryRepository): DeliveryUseCases {
+        return DeliveryUseCases(
+            getReadyForPickupOrders = GetReadyForPickupOrdersUseCase(repository),
+            getOutForDeliveryOrders = GetOutForDeliveryOrdersUseCase(repository),
+            getDeliveredOrders = GetDeliveredOrdersUseCase(repository)
         )
     }
 }
