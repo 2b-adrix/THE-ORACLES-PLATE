@@ -13,8 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -55,9 +53,9 @@ fun LoginScreen(navController: NavController) {
     fun checkRoleAndNavigate(userId: String) {
         val database = Firebase.database.reference
         database.child("users").child(userId).get().addOnSuccessListener { snapshot ->
-            isLoading = false
             val user = snapshot.getValue(User::class.java)
             if (user != null) {
+                isLoading = false
                 when (user.role) {
                     "seller" -> navController.navigate("seller_dashboard") {
                         popUpTo("start") { inclusive = true }
@@ -65,21 +63,63 @@ fun LoginScreen(navController: NavController) {
                     "admin" -> navController.navigate("admin_panel") {
                         popUpTo("start") { inclusive = true }
                     }
+                    "driver" -> navController.navigate("delivery_dashboard") {
+                        popUpTo("start") { inclusive = true }
+                    }
                     else -> navController.navigate("home") {
                         popUpTo("start") { inclusive = true }
                     }
                 }
             } else {
-                 // Fallback if user data missing (e.g. old user)
-                 Toast.makeText(context, "User profile not found, defaulting to Buyer", Toast.LENGTH_SHORT).show()
-                 navController.navigate("home") {
-                    popUpTo("start") { inclusive = true }
-                }
+                // User doesn't exist in DB (e.g. first time Google login)
+                val firebaseUser = auth.currentUser
+                val newUser = User(
+                    name = firebaseUser?.displayName ?: "User",
+                    email = firebaseUser?.email ?: "",
+                    role = "buyer",
+                    profileImage = firebaseUser?.photoUrl?.toString() ?: ""
+                )
+                
+                // Try to create the user, but handle potential permission errors gracefully
+                database.child("users").child(userId).setValue(newUser)
+                    .addOnSuccessListener {
+                        isLoading = false
+                        navController.navigate("home") {
+                            popUpTo("start") { inclusive = true }
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        isLoading = false
+                        // If we can't write to DB (e.g. due to rules), still let them in as a buyer temporarily or show specific error
+                        if (e.message?.contains("Permission denied") == true) {
+                             // Fallback: Just navigate home, assuming read-only access might work later or rules are messed up
+                             // But show a toast so dev knows
+                             Toast.makeText(context, "Warning: Profile creation failed (Permission Denied). Navigating home.", Toast.LENGTH_LONG).show()
+                             navController.navigate("home") {
+                                popUpTo("start") { inclusive = true }
+                             }
+                        } else {
+                            Toast.makeText(context, "Failed to create user profile: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
             }
         }.addOnFailureListener { e ->
             isLoading = false
-            // SHOW EXACT ERROR MESSAGE
-            Toast.makeText(context, "DB Error: ${e.message}", Toast.LENGTH_LONG).show()
+            // Enhanced Error Handling
+            val errorMessage = e.message ?: "Unknown Error"
+            if (errorMessage.contains("Permission denied")) {
+                // If we can't read the user role, it's likely a rules issue.
+                // However, if the auth was successful, we might want to let them in as a default user
+                // or at least give a very clear message.
+                Toast.makeText(context, "Database Permission Denied. Please check Firebase Rules.", Toast.LENGTH_LONG).show()
+                
+                // OPTIONAL: Auto-navigate for now if you want to bypass strict role checks during dev
+                // navController.navigate("home") 
+            } else if (errorMessage.contains("Client is offline")) {
+                Toast.makeText(context, "Network Error: Check internet connection.", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(context, "DB Error: $errorMessage", Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -111,17 +151,14 @@ fun LoginScreen(navController: NavController) {
         }
     }
 
-    val gradient = Brush.linearGradient(
-        colors = listOf(Color(0xFFFAA1A1), Color.White),
-        start = Offset(0f, 0f),
-        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
-    )
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(gradient)
+            .background(Color(0xFF1A1A2E)) // Dark background for consistency
     ) {
+        
+        AnimatedCircleBackground(modifier = Modifier.fillMaxSize())
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -139,8 +176,18 @@ fun LoginScreen(navController: NavController) {
                 text = "Login",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
-                color = StartColor,
+                color = Color.White,
                 modifier = Modifier.padding(vertical = 16.dp)
+            )
+
+            val textFieldColors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = StartColor,
+                unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                focusedLabelColor = Color.White,
+                unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                cursorColor = StartColor
             )
 
             OutlinedTextField(
@@ -149,11 +196,8 @@ fun LoginScreen(navController: NavController) {
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = StartColor,
-                    focusedLabelColor = StartColor,
-                    unfocusedBorderColor = Color.Gray
-                )
+                 colors = textFieldColors,
+                 shape = MaterialTheme.shapes.medium
             )
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -166,11 +210,8 @@ fun LoginScreen(navController: NavController) {
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = StartColor,
-                    focusedLabelColor = StartColor,
-                    unfocusedBorderColor = Color.Gray
-                )
+                colors = textFieldColors,
+                shape = MaterialTheme.shapes.medium
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -206,7 +247,9 @@ fun LoginScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = StartColor)
+                colors = ButtonDefaults.buttonColors(containerColor = StartColor),
+                shape = MaterialTheme.shapes.medium,
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
@@ -218,9 +261,9 @@ fun LoginScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                HorizontalDivider(modifier = Modifier.weight(1f))
-                Text(" OR ", color = Color.Gray)
-                HorizontalDivider(modifier = Modifier.weight(1f))
+                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.3f))
+                Text(" OR ", color = Color.White.copy(alpha = 0.5f), modifier = Modifier.padding(horizontal = 8.dp))
+                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.White.copy(alpha = 0.3f))
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -242,10 +285,11 @@ fun LoginScreen(navController: NavController) {
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                  colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.White,
+                    containerColor = Color.White.copy(alpha = 0.9f),
                     contentColor = Color.Black
                 ),
-                border = BorderStroke(1.dp, Color.LightGray)
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
+                shape = MaterialTheme.shapes.medium
             ) {
                  Image(
                     painter = painterResource(id = R.drawable.google_icon_1),

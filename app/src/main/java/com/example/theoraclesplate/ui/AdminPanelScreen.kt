@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.theoraclesplate.model.User
 import com.example.theoraclesplate.ui.theme.StartColor
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -32,6 +34,7 @@ fun AdminPanelScreen(navController: NavController) {
     val users = remember { mutableStateListOf<Pair<String, User>>() }
     var isLoading by remember { mutableStateOf(true) }
     val context = LocalContext.current
+    val auth = Firebase.auth
 
     LaunchedEffect(Unit) {
         val usersRef = database.reference.child("users")
@@ -71,7 +74,14 @@ fun AdminPanelScreen(navController: NavController) {
                 color = Color.Red,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable {
-                    Firebase.auth.signOut()
+                    auth.signOut()
+                    try {
+                        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+                        val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                        googleSignInClient.signOut()
+                    } catch (e: Exception) {
+                        // Ignore
+                    }
                     navController.navigate("login") {
                         popUpTo("admin_panel") { inclusive = true }
                     }

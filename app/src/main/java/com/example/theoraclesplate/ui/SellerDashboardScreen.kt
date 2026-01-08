@@ -25,6 +25,8 @@ import androidx.navigation.NavController
 import com.example.theoraclesplate.model.FoodItem
 import com.example.theoraclesplate.model.Order
 import com.example.theoraclesplate.ui.theme.StartColor
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -62,6 +64,13 @@ fun SellerDashboardScreen(navController: NavController) {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable {
                     auth.signOut()
+                    try {
+                        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+                        val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                        googleSignInClient.signOut()
+                    } catch (e: Exception) {
+                        // Ignore
+                    }
                     navController.navigate("login") {
                         popUpTo("seller_dashboard") { inclusive = true }
                     }

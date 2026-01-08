@@ -88,6 +88,9 @@ dependencies {
 
     // Coil
     implementation(libs.coil.compose)
+    
+    // Cloudinary
+    implementation("com.cloudinary:cloudinary-android:3.0.2")
 }
 
 tasks.register("printSHA1") {

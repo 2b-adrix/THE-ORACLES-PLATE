@@ -17,8 +17,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.ui.theme.StartColor
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -28,6 +31,10 @@ fun ProfileScreen(rootNavController: NavController) {
     val user = auth.currentUser
     val context = LocalContext.current
     
+    // We can use the photoUrl from the Firebase User object directly.
+    // This URL will come from Google Sign-In or if updated via updateProfile.
+    val profileImageUrl = user?.photoUrl
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -48,12 +55,23 @@ fun ProfileScreen(rootNavController: NavController) {
             modifier = Modifier.size(120.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.profile),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
+            if (profileImageUrl != null) {
+                AsyncImage(
+                    model = profileImageUrl,
+                    contentDescription = "Profile Picture",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                    placeholder = painterResource(id = R.drawable.profile),
+                    error = painterResource(id = R.drawable.profile)
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.profile),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
         
         Spacer(modifier = Modifier.height(16.dp))
@@ -83,7 +101,18 @@ fun ProfileScreen(rootNavController: NavController) {
         })
         
         ProfileMenuItem("Log Out", onClick = {
+            // Sign out from Firebase
             auth.signOut()
+            
+            // Also sign out from Google to allow account switching
+            try {
+                val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+                val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                googleSignInClient.signOut()
+            } catch (e: Exception) {
+                // Ignore Google sign out errors
+            }
+
             Toast.makeText(context, "Logged out successfully", Toast.LENGTH_SHORT).show()
             rootNavController.navigate("login") {
                 popUpTo("home") { inclusive = true }

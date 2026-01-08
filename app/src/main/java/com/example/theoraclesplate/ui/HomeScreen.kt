@@ -126,21 +126,6 @@ fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
                 )
             }
         }
-        
-        item {
-            Button(onClick = {
-                val menuRef = database.reference.child("menu")
-                val items = listOf(
-                    FoodItem("Pizza", "$5", "https://picsum.photos/id/10/200", "Delicious cheese pizza"),
-                    FoodItem("Burger", "$2", "https://picsum.photos/id/20/200", "Juicy beef burger"),
-                    FoodItem("Pasta", "$6", "https://picsum.photos/id/30/200", "Creamy pasta")
-                )
-                items.forEach { menuRef.push().setValue(it) }
-                Toast.makeText(context, "Menu populated", Toast.LENGTH_SHORT).show()
-            }) {
-                Text("Populate DB (Click Once)")
-            }
-        }
 
         items(popularFood) { food ->
             PopularFoodItem(food) {

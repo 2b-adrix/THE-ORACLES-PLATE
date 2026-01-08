@@ -141,7 +141,7 @@ fun HistoryScreen(navController: NavController) {
                         },
                         onCancel = {
                             if (currentUser != null) {
-                                database.reference.child("orders").child(item.orderId).removeValue()
+                                database.reference.child("orders").child(item.orderId).child("status").setValue("Cancelled")
                                 database.reference.child("users").child(currentUser.uid).child("order_history").child(item.orderId).child("status").setValue("Cancelled")
                             }
                         }
