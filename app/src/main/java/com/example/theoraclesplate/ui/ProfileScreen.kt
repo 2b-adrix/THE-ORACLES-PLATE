@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -31,14 +32,12 @@ fun ProfileScreen(rootNavController: NavController) {
     val user = auth.currentUser
     val context = LocalContext.current
     
-    // We can use the photoUrl from the Firebase User object directly.
-    // This URL will come from Google Sign-In or if updated via updateProfile.
     val profileImageUrl = user?.photoUrl
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color.Transparent) // Themed for dark mode
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -46,33 +45,18 @@ fun ProfileScreen(rootNavController: NavController) {
             text = "Profile",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            color = Color.White, // Themed for dark mode
             modifier = Modifier.padding(bottom = 32.dp).align(Alignment.Start)
         )
         
-        Card(
-            shape = CircleShape,
-            modifier = Modifier.size(120.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            if (profileImageUrl != null) {
-                AsyncImage(
-                    model = profileImageUrl,
-                    contentDescription = "Profile Picture",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                    placeholder = painterResource(id = R.drawable.profile),
-                    error = painterResource(id = R.drawable.profile)
-                )
-            } else {
-                Image(
-                    painter = painterResource(id = R.drawable.profile),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-        }
+        AsyncImage(
+            model = profileImageUrl ?: R.drawable.profile,
+            contentDescription = "Profile Picture",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+        )
         
         Spacer(modifier = Modifier.height(16.dp))
         
@@ -80,13 +64,13 @@ fun ProfileScreen(rootNavController: NavController) {
             text = user?.displayName ?: "User Name",
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = Color.White // Themed for dark mode
         )
         
         Text(
             text = user?.email ?: "user@example.com",
             fontSize = 16.sp,
-            color = Color.Gray
+            color = Color.White.copy(alpha = 0.7f) // Themed for dark mode
         )
         
         Spacer(modifier = Modifier.height(32.dp))
@@ -95,16 +79,13 @@ fun ProfileScreen(rootNavController: NavController) {
         ProfileMenuItem("Payment Methods", onClick = { Toast.makeText(context, "Coming Soon", Toast.LENGTH_SHORT).show() })
         ProfileMenuItem("Order History", onClick = { rootNavController.navigate("history") })
         
-        // --- Add Support / Contact Us ---
         ProfileMenuItem("Contact Support", onClick = { 
             Toast.makeText(context, "Email support@oracleplate.com", Toast.LENGTH_LONG).show() 
         })
         
         ProfileMenuItem("Log Out", onClick = {
-            // Sign out from Firebase
             auth.signOut()
             
-            // Also sign out from Google to allow account switching
             try {
                 val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
                 val googleSignInClient = GoogleSignIn.getClient(context, gso)
@@ -130,8 +111,8 @@ fun ProfileMenuItem(text: String, onClick: () -> Unit, isDestructive: Boolean = 
             .padding(vertical = 8.dp)
             .height(50.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isDestructive) Color.Red.copy(alpha = 0.1f) else Color.LightGray.copy(alpha = 0.1f),
-            contentColor = if (isDestructive) Color.Red else Color.Black
+            containerColor = if (isDestructive) StartColor.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.1f),
+            contentColor = if (isDestructive) StartColor else Color.White
         ),
         shape = MaterialTheme.shapes.medium
     ) {

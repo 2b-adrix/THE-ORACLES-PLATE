@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -26,7 +27,12 @@ fun DetailsScreen(navController: NavController, foodName: String?, foodPrice: St
     val auth = Firebase.auth
     val database = Firebase.database
     
-    Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(Color(0xFF1A1A2E))) { // Themed for dark mode
+
+        AnimatedCircleBackground(modifier = Modifier.fillMaxSize())
+
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp)
         ) {
@@ -38,22 +44,16 @@ fun DetailsScreen(navController: NavController, foodName: String?, foodPrice: St
                 text = foodName ?: "Food Name",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                color = Color.White, // Themed for dark mode
                 modifier = Modifier.padding(vertical = 16.dp)
             )
 
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier.fillMaxWidth().height(250.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                AsyncImage(
-                    model = foodImage ?: "https://picsum.photos/200/300", // Fallback image
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            AsyncImage(
+                model = foodImage ?: "https://picsum.photos/200/300", // Fallback image
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth().height(250.dp).clip(RoundedCornerShape(20.dp))
+            )
             
             Text(
                 text = "Price: $foodPrice",
@@ -67,13 +67,14 @@ fun DetailsScreen(navController: NavController, foodName: String?, foodPrice: St
                 text = "Description",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
+                color = Color.White, // Themed for dark mode
                 modifier = Modifier.padding(top = 24.dp)
             )
             
             Text(
                 text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                 fontSize = 16.sp,
-                color = Color.Gray,
+                color = Color.White.copy(alpha = 0.7f), // Themed for dark mode
                 modifier = Modifier.padding(top = 8.dp)
             )
             

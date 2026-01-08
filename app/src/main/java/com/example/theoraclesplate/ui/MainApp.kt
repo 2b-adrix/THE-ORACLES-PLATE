@@ -25,6 +25,8 @@ fun MainApp() {
             composable("seller_dashboard") { SellerDashboardScreen(navController) }
             composable("admin_panel") { AdminPanelScreen(navController) }
             composable("delivery_dashboard") { DeliveryDashboardScreen(navController) }
+            composable("admin_login") { AdminLoginScreen(navController) }
+            composable("admin_dashboard") { AdminDashboardScreen(navController) }
             composable(
                 route = "details/{name}/{price}?image={image}",
                 arguments = listOf(

@@ -6,8 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,15 +28,72 @@ import com.google.firebase.ktx.Firebase
 
 @Composable
 fun DeliveryDashboardScreen(navController: NavController) {
+    val auth = Firebase.auth
+    var selectedTab by remember { mutableStateOf(0) }
+    val tabs = listOf("Ready for Pickup", "Out for Delivery", "Delivered")
+
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .background(Color(0xFF1A1A2E))) {
+
+        // Header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Delivery Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(
+                text = "Logout",
+                color = StartColor,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable {
+                    auth.signOut()
+                    navController.navigate("start") {
+                        popUpTo("delivery_dashboard") { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // Tabs
+        TabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = Color.Transparent,
+            contentColor = StartColor,
+            indicator = { tabPositions ->
+                TabRowDefaults.SecondaryIndicator(
+                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                    color = StartColor
+                )
+            }
+        ) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = { selectedTab = index },
+                    text = { Text(title) },
+                    selectedContentColor = StartColor,
+                    unselectedContentColor = Color.White.copy(alpha = 0.7f)
+                )
+            }
+        }
+
+        when (selectedTab) {
+            0 -> ReadyForPickupView()
+            1 -> OutForDeliveryView()
+            2 -> DeliveredView()
+        }
+    }
+}
+
+@Composable
+fun ReadyForPickupView() {
     val database = Firebase.database
-    val orders = remember { mutableStateListOf<Order>() }
-    var isLoading by remember { mutableStateOf(true) }
+    val orders = remember { mutableStateListOf<Pair<String, Order>>() }
     val context = LocalContext.current
-    
-    // Filter for orders that are relevant to delivery
-    val relevantOrders = orders.filter { 
-        it.status == "Ready" || it.status == "Out for Delivery" 
-    }.sortedByDescending { it.timestamp }
 
     LaunchedEffect(Unit) {
         val ordersRef = database.reference.child("orders")
@@ -45,126 +102,125 @@ fun DeliveryDashboardScreen(navController: NavController) {
                 orders.clear()
                 for (child in snapshot.children) {
                     val order = child.getValue(Order::class.java)
-                    if (order != null) {
-                        orders.add(order)
+                    if (order != null && order.status == "Ready") {
+                        orders.add(Pair(child.key!!, order))
                     }
                 }
-                isLoading = false
             }
 
             override fun onCancelled(error: DatabaseError) {
-                isLoading = false
-                // CHANGED: Show detailed error message
-                Toast.makeText(context, "Delivery Error: ${error.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Error fetching orders: ${error.message}", Toast.LENGTH_LONG).show()
             }
         })
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Delivery Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Text(
-                text = "Logout",
-                color = Color.Red,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable {
-                    Firebase.auth.signOut()
-                    navController.navigate("login") {
-                        popUpTo("delivery_dashboard") { inclusive = true }
-                    }
-                }
-            )
-        }
-        
-        Text("Available for Pickup & Delivery", color = Color.Gray, modifier = Modifier.padding(vertical = 8.dp))
-
-        if (isLoading) {
-            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = StartColor)
-            }
-        } else if (relevantOrders.isEmpty()) {
-            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("No active deliveries", color = Color.Gray)
-            }
-        } else {
-            LazyColumn {
-                items(relevantOrders) { order ->
-                    DeliveryOrderItem(order)
-                }
-            }
+    LazyColumn(modifier = Modifier.padding(16.dp)) {
+        items(orders) { (key, order) ->
+            DeliveryOrderCard(order = order, onUpdate = {
+                database.reference.child("orders").child(key).child("status").setValue("Out for Delivery")
+                database.reference.child("users").child(order.userId).child("order_history").child(order.orderId).child("status").setValue("Out for Delivery")
+            })
         }
     }
 }
 
 @Composable
-fun DeliveryOrderItem(order: Order) {
+fun OutForDeliveryView() {
     val database = Firebase.database
-    
+    val orders = remember { mutableStateListOf<Pair<String, Order>>() }
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        val ordersRef = database.reference.child("orders")
+        ordersRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                orders.clear()
+                for (child in snapshot.children) {
+                    val order = child.getValue(Order::class.java)
+                    if (order != null && order.status == "Out for Delivery") {
+                        orders.add(Pair(child.key!!, order))
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(context, "Error fetching orders: ${error.message}", Toast.LENGTH_LONG).show()
+            }
+        })
+    }
+
+    LazyColumn(modifier = Modifier.padding(16.dp)) {
+        items(orders) { (key, order) ->
+            DeliveryOrderCard(order = order, onUpdate = {
+                database.reference.child("orders").child(key).child("status").setValue("Delivered")
+                database.reference.child("users").child(order.userId).child("order_history").child(order.orderId).child("status").setValue("Delivered")
+            })
+        }
+    }
+}
+
+@Composable
+fun DeliveredView() {
+    val database = Firebase.database
+    val orders = remember { mutableStateListOf<Order>() }
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        val ordersRef = database.reference.child("orders")
+        ordersRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                orders.clear()
+                for (child in snapshot.children) {
+                    val order = child.getValue(Order::class.java)
+                    if (order != null && order.status == "Delivered") {
+                        orders.add(order)
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(context, "Error fetching orders: ${error.message}", Toast.LENGTH_LONG).show()
+            }
+        })
+    }
+
+    LazyColumn(modifier = Modifier.padding(16.dp)) {
+        items(orders) { order ->
+            DeliveryOrderCard(order = order, onUpdate = null)
+        }
+    }
+}
+
+@Composable
+fun DeliveryOrderCard(order: Order, onUpdate: (() -> Unit)?) {
     Card(
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                Text("Order #${order.orderId.takeLast(6)}", fontWeight = FontWeight.Bold)
-                Text(order.status, fontWeight = FontWeight.Bold, color = if (order.status == "Ready") StartColor else Color(0xFF4CAF50))
-            }
-            Text("Customer: ${order.userName}", fontSize = 14.sp, color = Color.Gray)
-            
-            // Show Address
-            Text(
-                text = "Address: ${if (order.address.isNotEmpty()) order.address else "Pickup at Counter"}", 
-                fontSize = 14.sp, 
-                color = Color.Black,
-                fontWeight = FontWeight.Medium
-            )
-            
-            // Show Payment Info
-            Row(modifier = Modifier.padding(vertical = 4.dp)) {
-                Text("Payment: ", fontSize = 14.sp, color = Color.Gray)
-                Text(
-                    text = order.paymentMethod, 
-                    fontSize = 14.sp, 
-                    fontWeight = FontWeight.Bold,
-                    color = if (order.paymentMethod == "COD") Color.Red else Color.Blue
-                )
-                Text(" (${order.totalAmount})", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            }
-            
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            
-            // Action Button
-            Button(
-                onClick = {
-                    if (order.status == "Ready") {
-                        database.reference.child("orders").child(order.orderId).child("status").setValue("Out for Delivery")
-                        // Also update user history
-                         database.reference.child("users").child(order.userId).child("order_history").child(order.orderId).child("status").setValue("Out for Delivery")
-                    } else if (order.status == "Out for Delivery") {
-                        database.reference.child("orders").child(order.orderId).child("status").setValue("Completed")
-                        database.reference.child("users").child(order.userId).child("order_history").child(order.orderId).child("status").setValue("Completed")
+            Text("Order #${order.orderId.takeLast(6)}", fontWeight = FontWeight.Bold, color = Color.White)
+            Text("User: ${order.userName}", color = Color.White.copy(alpha = 0.7f))
+            Text("Address: ${order.address}", color = Color.White.copy(alpha = 0.7f))
+            Text("Total: ${order.totalAmount}", color = Color.White.copy(alpha = 0.7f))
+            Text("Status: ${order.status}", color = when (order.status) {
+                "Ready" -> Color.Yellow
+                "Out for Delivery" -> Color.Cyan
+                "Delivered" -> Color.Green
+                else -> Color.White
+            })
+
+            onUpdate?.let {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    Button(
+                        onClick = it,
+                        colors = ButtonDefaults.buttonColors(containerColor = if (order.status == "Ready") StartColor else Color(0xFF00C851))
+                    ) {
+                        Text(if (order.status == "Ready") "Pick Up Order" else "Mark as Delivered")
                     }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (order.status == "Ready") StartColor else Color(0xFF4CAF50)
-                )
-            ) {
-                Text(
-                    text = if (order.status == "Ready") "Pick Up Order" else "Mark as Delivered",
-                    color = Color.White
-                )
+                }
             }
         }
     }

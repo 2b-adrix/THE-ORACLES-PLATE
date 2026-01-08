@@ -15,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -50,7 +51,6 @@ fun EditProfileScreen(navController: NavController) {
         } catch (e: Exception) {
             try {
                 // Initialize with your cloud name and unsigned preset
-                // REPLACE "your_cloud_name" AND "your_unsigned_preset" WITH ACTUAL VALUES
                 val config = HashMap<String, String>()
                 config["cloud_name"] = "dhlw6320" 
                 config["secure"] = "true"
@@ -70,7 +70,7 @@ fun EditProfileScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color(0xFF1A1A2E)) // Themed for dark mode
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -85,7 +85,7 @@ fun EditProfileScreen(navController: NavController) {
                 text = "Edit Profile",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                color = Color.White, // Themed for dark mode
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
@@ -98,60 +98,47 @@ fun EditProfileScreen(navController: NavController) {
                 pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             }
         ) {
-            Card(
-                shape = CircleShape,
-                modifier = Modifier.size(120.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                if (selectedImageUri != null) {
-                     AsyncImage(
-                        model = selectedImageUri,
-                        contentDescription = "Selected Image",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else if (user?.photoUrl != null) {
-                    AsyncImage(
-                        model = user.photoUrl,
-                        contentDescription = "Current Profile Image",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(id = R.drawable.profile),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
-            }
+            AsyncImage(
+                model = selectedImageUri ?: user?.photoUrl ?: R.drawable.profile,
+                contentDescription = "Profile Image",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+            )
             
             // Camera Icon overlay
-            Card(
-                shape = CircleShape,
-                colors = CardDefaults.cardColors(containerColor = StartColor),
-                modifier = Modifier.size(36.dp).offset(x = (-4).dp, y = (-4).dp)
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(36.dp)
+                    .offset(x = (-4).dp, y = (-4).dp)
+                    .background(StartColor, CircleShape)
+                    
             ) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("+", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                }
+                Text("+", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
         }
         
         Spacer(modifier = Modifier.height(32.dp))
         
+        val textFieldColors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = StartColor,
+            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+            focusedLabelColor = Color.White,
+            unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
+            focusedTextColor = Color.White,
+            unfocusedTextColor = Color.White,
+            cursorColor = StartColor
+        )
+
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
             label = { Text("Display Name") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = StartColor,
-                focusedLabelColor = StartColor,
-                unfocusedBorderColor = Color.Gray
-            )
+            colors = textFieldColors
         )
         
         Spacer(modifier = Modifier.height(32.dp))
@@ -163,8 +150,8 @@ fun EditProfileScreen(navController: NavController) {
                     
                     if (selectedImageUri != null) {
                         // Upload Image to Cloudinary first
-                        val requestId = MediaManager.get().upload(selectedImageUri)
-                            .unsigned("unsigned_preset") // You need to set this up in Cloudinary Dashboard settings -> Upload -> Upload presets
+                        MediaManager.get().upload(selectedImageUri)
+                            .unsigned("unsigned_preset") // You need to set this up in Cloudinary Dashboard
                             .callback(object : UploadCallback {
                                 override fun onStart(requestId: String) {}
                                 override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {}
@@ -188,8 +175,6 @@ fun EditProfileScreen(navController: NavController) {
                                 }
                                 override fun onError(requestId: String, error: ErrorInfo) {
                                     isLoading = false
-                                    // Fallback: Try updating just the name if image fails, or show error
-                                    // Often fails if "unsigned upload" is not enabled in Cloudinary console
                                     Toast.makeText(context, "Image upload error: ${error.description}. Check Cloudinary Settings.", Toast.LENGTH_LONG).show()
                                 }
                                 override fun onReschedule(requestId: String, error: ErrorInfo) {}

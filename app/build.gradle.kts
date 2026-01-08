@@ -10,6 +10,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.hilt)
+    kotlin("kapt")
 }
 
 android {
@@ -20,8 +22,8 @@ android {
         applicationId = "com.example.theoraclesplate"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -75,7 +77,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation("com.github.denzcoskun:ImageSlideshow:0.0.7")
     
     // Firebase
     implementation(platform(libs.firebase.bom))
@@ -91,6 +92,13 @@ dependencies {
     
     // Cloudinary
     implementation("com.cloudinary:cloudinary-android:3.0.2")
+
+    // Hilt
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.compiler)
+    kapt(libs.androidx.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+
 }
 
 tasks.register("printSHA1") {

@@ -65,14 +65,14 @@ fun SearchScreen(rootNavController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color.Transparent) // Use transparent background
             .padding(16.dp)
     ) {
         Text(
             text = "Search",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            color = Color.White, // Changed to white
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
@@ -80,12 +80,15 @@ fun SearchScreen(rootNavController: NavController) {
             value = query,
             onValueChange = { query = it },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Order to eat!") },
+            placeholder = { Text("Order to eat!", color = Color.White.copy(alpha = 0.5f)) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = StartColor) },
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = StartColor,
-                unfocusedBorderColor = Color.LightGray
+                unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                cursorColor = StartColor
             ),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search)
         )
@@ -94,7 +97,7 @@ fun SearchScreen(rootNavController: NavController) {
             text = "Menu",
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            color = Color.White, // Changed to white
             modifier = Modifier.padding(vertical = 16.dp)
         )
 
@@ -105,6 +108,7 @@ fun SearchScreen(rootNavController: NavController) {
         } else {
             LazyColumn {
                 items(filteredMenu) { food ->
+                     // Assuming PopularFoodItem is also themed for dark mode
                      PopularFoodItem(food) {
                          val encodedImage = Uri.encode(food.image)
                          rootNavController.navigate("details/${food.name}/${food.price.replace("$","")}/?image=${encodedImage}")

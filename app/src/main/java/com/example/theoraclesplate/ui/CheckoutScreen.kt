@@ -80,7 +80,7 @@ fun CheckoutScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color(0xFF1A1A2E)) // Themed for dark mode
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
@@ -92,21 +92,32 @@ fun CheckoutScreen(navController: NavController) {
                 text = "Checkout",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                color = Color.White, // Themed for dark mode
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        Text("Delivery Address", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Text("Delivery Address", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.White)
         Spacer(modifier = Modifier.height(8.dp))
         
+        val textFieldColors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = StartColor,
+            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+            focusedLabelColor = Color.White,
+            unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
+            focusedTextColor = Color.White,
+            unfocusedTextColor = Color.White,
+            cursorColor = StartColor
+        )
+
         OutlinedTextField(
             value = address, 
             onValueChange = { address = it },
             label = { Text("Street Address") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = textFieldColors
         )
         
         Spacer(modifier = Modifier.height(8.dp))
@@ -115,7 +126,8 @@ fun CheckoutScreen(navController: NavController) {
             value = city, 
             onValueChange = { city = it },
             label = { Text("City / Zip Code") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = textFieldColors
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -125,12 +137,13 @@ fun CheckoutScreen(navController: NavController) {
             onValueChange = { phoneNumber = it },
             label = { Text("Phone Number") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = textFieldColors
         )
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        Text("Payment Method", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Text("Payment Method", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.White)
         Spacer(modifier = Modifier.height(8.dp))
         
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -154,41 +167,44 @@ fun CheckoutScreen(navController: NavController) {
                 onValueChange = { if (it.length <= 16) cardNumber = it },
                 label = { Text("Card Number") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = textFieldColors
             )
             Row(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = cardExpiry,
                     onValueChange = { if (it.length <= 5) cardExpiry = it },
                     label = { Text("MM/YY") },
-                    modifier = Modifier.weight(1f).padding(end = 4.dp)
+                    modifier = Modifier.weight(1f).padding(end = 4.dp),
+                    colors = textFieldColors
                 )
                 OutlinedTextField(
                     value = cardCVC,
                     onValueChange = { if (it.length <= 3) cardCVC = it },
                     label = { Text("CVC") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.weight(1f).padding(start = 4.dp)
+                    modifier = Modifier.weight(1f).padding(start = 4.dp),
+                    colors = textFieldColors
                 )
             }
         }
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        Text("Order Summary", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Text("Order Summary", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.White)
         Spacer(modifier = Modifier.height(8.dp))
         
         cartItems.forEach { item ->
             Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("${item.quantity} x ${item.name}", color = Color.Gray)
-                Text(item.price, fontWeight = FontWeight.SemiBold)
+                Text("${item.quantity} x ${item.name}", color = Color.White.copy(alpha = 0.7f))
+                Text(item.price, fontWeight = FontWeight.SemiBold, color = Color.White)
             }
         }
         
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color.White.copy(alpha = 0.2f))
         
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Total", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text("Total", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.White)
             Text("$${String.format(Locale.US, "%.2f", totalPrice)}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = StartColor)
         }
         
@@ -277,7 +293,7 @@ fun PaymentOption(title: String, selected: Boolean, onClick: () -> Unit) {
             .height(50.dp)
             .border(
                 width = if (selected) 2.dp else 1.dp,
-                color = if (selected) StartColor else Color.LightGray,
+                color = if (selected) StartColor else Color.White.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(8.dp)
             )
             .background(
@@ -290,7 +306,7 @@ fun PaymentOption(title: String, selected: Boolean, onClick: () -> Unit) {
     ) {
         Text(
             text = title,
-            color = if (selected) StartColor else Color.Black,
+            color = if (selected) StartColor else Color.White,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
         )
     }

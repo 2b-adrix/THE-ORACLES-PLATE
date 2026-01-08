@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.ui.theme.StartColor
 import com.google.firebase.auth.ktx.auth
@@ -37,7 +39,6 @@ fun CartScreen(rootNavController: NavController) {
     
     val cartItems = remember { mutableStateListOf<CartItemData>() }
     var isLoading by remember { mutableStateOf(true) }
-    var isPlacingOrder by remember { mutableStateOf(false) }
 
     LaunchedEffect(currentUser) {
         if (currentUser != null) {
@@ -49,9 +50,9 @@ fun CartScreen(rootNavController: NavController) {
                         val name = child.child("name").getValue(String::class.java) ?: ""
                         val price = child.child("price").getValue(String::class.java) ?: ""
                         val quantity = child.child("quantity").getValue(Int::class.java) ?: 1
-                        // For now we don't store image url in firebase, so using a placeholder or resource
+                        val image = child.child("image").getValue(String::class.java) ?: ""
                         
-                        cartItems.add(CartItemData(child.key ?: "", name, price, R.drawable.food1, quantity))
+                        cartItems.add(CartItemData(child.key ?: "", name, price, image, quantity))
                     }
                     isLoading = false
                 }
@@ -69,13 +70,13 @@ fun CartScreen(rootNavController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color.Transparent) // Themed for dark mode
     ) {
         Text(
             text = "Your Cart",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            color = Color.White, // Themed for dark mode
             modifier = Modifier.padding(16.dp)
         )
 
@@ -85,7 +86,7 @@ fun CartScreen(rootNavController: NavController) {
             }
         } else if (cartItems.isEmpty()) {
              Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("Your cart is empty", color = Color.Gray)
+                Text("Your cart is empty", color = Color.White.copy(alpha = 0.7f)) // Themed for dark mode
             }
         } else {
             LazyColumn(
@@ -116,38 +117,7 @@ fun CartScreen(rootNavController: NavController) {
             }
             
             Button(
-                onClick = { 
-                    if (currentUser != null && cartItems.isNotEmpty()) {
-                        isPlacingOrder = true
-                        val historyRef = database.reference.child("users").child(currentUser.uid).child("order_history")
-                        val cartRef = database.reference.child("users").child(currentUser.uid).child("cart")
-                        
-                        val timestamp = System.currentTimeMillis()
-                        
-                        // Add each cart item to history
-                        cartItems.forEach { item ->
-                            val historyItem = hashMapOf(
-                                "name" to if(item.quantity > 1) "${item.quantity} x ${item.name}" else item.name,
-                                "price" to item.price,
-                                "timestamp" to timestamp
-                            )
-                            historyRef.push().setValue(historyItem)
-                        }
-                        
-                        // Clear cart
-                        cartRef.removeValue()
-                            .addOnSuccessListener {
-                                isPlacingOrder = false
-                                Toast.makeText(context, "Order Placed Successfully!", Toast.LENGTH_SHORT).show()
-                                rootNavController.navigate("history")
-                            }
-                            .addOnFailureListener {
-                                isPlacingOrder = false
-                                Toast.makeText(context, "Failed to place order", Toast.LENGTH_SHORT).show()
-                            }
-                    }
-                },
-                enabled = !isPlacingOrder,
+                onClick = { rootNavController.navigate("checkout_screen") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -155,11 +125,7 @@ fun CartScreen(rootNavController: NavController) {
                 colors = ButtonDefaults.buttonColors(containerColor = StartColor),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                if (isPlacingOrder) {
-                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                } else {
-                    Text("Proceed to Checkout", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                }
+                Text("Proceed to Checkout", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
         }
     }
@@ -169,36 +135,33 @@ fun CartScreen(rootNavController: NavController) {
 fun CartItemRow(item: CartItemData, onIncrease: () -> Unit, onDecrease: () -> Unit, onDelete: () -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)), // Glassmorphism
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-             Card(
-                shape = RoundedCornerShape(12.dp),
-                 modifier = Modifier.size(80.dp)
-            ) {
-                // Using resource for now as we don't have URL
-                Image(
-                    painter = painterResource(id = item.image),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            AsyncImage(
+                model = item.image.ifEmpty { R.drawable.food1 },
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(12.dp))
+            )
             
             Column(
                 modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
             ) {
-                Text(item.name, fontSize = 18.sp, fontWeight = FontWeight.Bold, color=Color.Black)
-                Text(item.price, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color=Color.Black)
+                Text(item.name, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(item.price, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White.copy(alpha = 0.8f))
                 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = 8.dp).background(StartColor, RoundedCornerShape(8.dp))
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .background(StartColor, RoundedCornerShape(8.dp))
                 ) {
                     IconButton(onClick = onDecrease, modifier = Modifier.size(32.dp)) {
                         Icon(painterResource(R.drawable.minus), null, tint = Color.White, modifier = Modifier.size(16.dp))
@@ -211,10 +174,10 @@ fun CartItemRow(item: CartItemData, onIncrease: () -> Unit, onDecrease: () -> Un
             }
             
             IconButton(onClick = onDelete) {
-                Icon(painterResource(R.drawable.trash), null, tint = Color.Gray)
+                Icon(painterResource(R.drawable.trash), null, tint = Color.White.copy(alpha = 0.7f))
             }
         }
     }
 }
 
-data class CartItemData(val id: String, val name: String, val price: String, val image: Int, val quantity: Int)
+data class CartItemData(val id: String, val name: String, val price: String, val image: String, val quantity: Int)

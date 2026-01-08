@@ -60,7 +60,7 @@ fun AdminPanelScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color(0xFF1A1A2E)) // Themed for dark mode
             .padding(16.dp)
     ) {
         Row(
@@ -68,10 +68,10 @@ fun AdminPanelScreen(navController: NavController) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Admin Panel", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text("Admin Panel", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
             Text(
                 text = "Logout",
-                color = Color.Red,
+                color = StartColor,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable {
                     auth.signOut()
@@ -89,7 +89,7 @@ fun AdminPanelScreen(navController: NavController) {
             )
         }
         
-        Text("Manage User Roles", color = Color.Gray, modifier = Modifier.padding(vertical = 8.dp))
+        Text("Manage User Roles", color = Color.White.copy(alpha = 0.7f), modifier = Modifier.padding(vertical = 8.dp))
 
         if (isLoading) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
@@ -112,9 +112,8 @@ fun UserRoleItem(userId: String, user: User) {
     
     Card(
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)) // Glassmorphism
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -122,26 +121,27 @@ fun UserRoleItem(userId: String, user: User) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(user.name.ifEmpty { "Unknown" }, fontWeight = FontWeight.Bold)
-                Text(user.email, fontSize = 12.sp, color = Color.Gray)
+                Text(user.name.ifEmpty { "Unknown" }, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(user.email, fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
                 Text("Current Role: ${user.role}", fontSize = 12.sp, color = StartColor)
             }
             
             Box {
                 Button(
                     onClick = { expanded = true },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.2f))
                 ) {
-                    Text("Change Role", color = Color.Black, fontSize = 12.sp)
+                    Text("Change Role", color = Color.White, fontSize = 12.sp)
                 }
                 
                 DropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.background(Color(0xFF2C2C4E))
                 ) {
                     roles.forEach { role ->
                         DropdownMenuItem(
-                            text = { Text(role.capitalize()) },
+                            text = { Text(role.capitalize(), color = Color.White) },
                             onClick = {
                                 database.reference.child("users").child(userId).child("role").setValue(role)
                                 expanded = false

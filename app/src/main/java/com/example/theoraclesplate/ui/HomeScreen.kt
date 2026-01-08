@@ -2,6 +2,7 @@ package com.example.theoraclesplate.ui
 
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -34,6 +36,7 @@ import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
     val banners = listOf(R.drawable.banner1, R.drawable.banner2)
@@ -56,7 +59,6 @@ fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // CHANGED: Show exact error message
                 Toast.makeText(context, "Menu Error: ${error.message}", Toast.LENGTH_LONG).show()
             }
         })
@@ -66,7 +68,7 @@ fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
         while (true) {
             delay(3000)
             if (!pagerState.isScrollInProgress) {
-                val nextPage = (pagerState.currentPage + 1) % banners.size
+                val nextPage = (pagerState.currentPage + 1) % pagerState.pageCount
                 pagerState.animateScrollToPage(nextPage)
             }
         }
@@ -75,29 +77,25 @@ fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
-            .padding(16.dp)
+            .background(Color.Transparent) // Make background transparent
+            .padding(horizontal = 16.dp),
+        contentPadding = PaddingValues(vertical = 16.dp)
     ) {
         item {
             // Banner Section
-            Card(
-                shape = RoundedCornerShape(16.dp),
+            HorizontalPager(
+                state = pagerState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                HorizontalPager(
-                    state = pagerState,
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(16.dp))
+            ) { page ->
+                Image(
+                    painter = painterResource(id = banners[page]),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
-                ) { page ->
-                    Image(
-                        painter = painterResource(id = banners[page]),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                )
             }
         }
 
@@ -113,7 +111,7 @@ fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
                     text = "Popular Items",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = Color.White // Changed to white
                 )
                 
                 Text(
@@ -140,8 +138,9 @@ fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
 fun PopularFoodItem(food: FoodItem, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.1f) // Glassmorphism effect
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
@@ -151,17 +150,14 @@ fun PopularFoodItem(food: FoodItem, onClick: () -> Unit) {
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Card(
-                shape = RoundedCornerShape(12.dp),
-                 modifier = Modifier.size(80.dp)
-            ) {
-                AsyncImage(
-                    model = food.image.ifEmpty { R.drawable.food1 },
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            AsyncImage(
+                model = food.image.ifEmpty { R.drawable.food1 },
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(12.dp))
+            )
             
             Column(
                 modifier = Modifier
@@ -172,13 +168,13 @@ fun PopularFoodItem(food: FoodItem, onClick: () -> Unit) {
                     text = food.name,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = Color.White // Changed to white
                 )
                 Text(
                     text = food.price,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.Black
+                    color = Color.White.copy(alpha = 0.8f) // Changed to light gray
                 )
             }
             

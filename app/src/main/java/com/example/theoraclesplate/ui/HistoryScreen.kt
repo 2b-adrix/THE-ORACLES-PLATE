@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -54,7 +55,6 @@ fun HistoryScreen(navController: NavController) {
                         val totalAmount = child.child("totalAmount").getValue(String::class.java) ?: ""
                         val timestamp = child.child("timestamp").getValue(Long::class.java) ?: 0L
                         
-                        // Construct a display name from items if possible
                         var displayName = "Order"
                         val itemsSnapshot = child.child("items")
                         if (itemsSnapshot.exists()) {
@@ -64,7 +64,6 @@ fun HistoryScreen(navController: NavController) {
                                 displayName = if (count > 1) "$firstItemName + ${count - 1} more" else firstItemName
                             }
                         } else {
-                             // Fallback for old data structure
                              displayName = child.child("name").getValue(String::class.java) ?: "Food Item"
                         }
                         
@@ -85,7 +84,6 @@ fun HistoryScreen(navController: NavController) {
 
                         historyItems.add(HistoryItem(orderId, displayName, totalAmount, date, image, status))
                     }
-                    // Reverse to show newest first
                     historyItems.sortByDescending { 
                          try {
                             SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault()).parse(it.date)?.time ?: 0L
@@ -96,7 +94,6 @@ fun HistoryScreen(navController: NavController) {
 
                 override fun onCancelled(error: DatabaseError) {
                     isLoading = false
-                    // CHANGED: Show exact error message
                     Toast.makeText(context, "History Error: ${error.message}", Toast.LENGTH_LONG).show()
                 }
             })
@@ -108,7 +105,7 @@ fun HistoryScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color(0xFF1A1A2E)) // Themed for dark mode
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -119,7 +116,7 @@ fun HistoryScreen(navController: NavController) {
                 text = "Order History",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
+                color = Color.White, // Themed for dark mode
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
@@ -130,7 +127,7 @@ fun HistoryScreen(navController: NavController) {
             }
         } else if (historyItems.isEmpty()) {
              Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("No order history", color = Color.Gray)
+                Text("No order history", color = Color.White.copy(alpha = 0.7f)) // Themed for dark mode
             }
         } else {
             LazyColumn(modifier = Modifier.padding(top = 16.dp)) {
@@ -156,40 +153,40 @@ fun HistoryScreen(navController: NavController) {
 fun HistoryItemRow(item: HistoryItem, onReorder: () -> Unit, onCancel: () -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)), // Glassmorphism
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Card(
-                shape = RoundedCornerShape(12.dp),
-                 modifier = Modifier.size(60.dp)
-            ) {
-                AsyncImage(
-                    model = if (item.image.isNotEmpty()) item.image else R.drawable.food1,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            AsyncImage(
+                model = if (item.image.isNotEmpty()) item.image else R.drawable.food1,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(60.dp).clip(RoundedCornerShape(12.dp))
+            )
 
             Column(
                 modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
             ) {
-                Text(item.name, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(item.name, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 Text(item.price, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = StartColor)
-                Text(item.date, fontSize = 12.sp, color = Color.Gray)
+                Text(item.date, fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f))
                 Text("Status: ${item.status}", fontSize = 12.sp, fontWeight = FontWeight.Bold, 
-                    color = if(item.status == "Pending") Color.Blue else if(item.status == "Cancelled") Color.Red else Color.Green)
+                    color = when(item.status) {
+                        "Pending" -> Color(0xFF33B5E5) // Light Blue
+                        "Cancelled" -> Color(0xFFFF4444) // Red
+                        "Completed" -> Color(0xFF00C851) // Green
+                        else -> Color.White
+                    }
+                )
             }
 
             if (item.status == "Pending") {
                  Button(
                     onClick = onCancel,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF4444)),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                     modifier = Modifier.height(36.dp)

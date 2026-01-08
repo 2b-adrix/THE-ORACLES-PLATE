@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,9 +22,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.theoraclesplate.model.FoodItem
 import com.example.theoraclesplate.model.Order
+import com.example.theoraclesplate.ui.seller.menu.SellerMenuEvent
+import com.example.theoraclesplate.ui.seller.menu.SellerMenuViewModel
+import com.example.theoraclesplate.ui.seller.orders.SellerOrdersEvent
+import com.example.theoraclesplate.ui.seller.orders.SellerOrdersViewModel
 import com.example.theoraclesplate.ui.theme.StartColor
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -40,27 +46,21 @@ fun SellerDashboardScreen(navController: NavController) {
     val tabs = listOf("Orders", "Menu")
     val context = LocalContext.current
     val auth = Firebase.auth
-    
-    // Debug: Check if user is actually logged in
-    LaunchedEffect(Unit) {
-        if (auth.currentUser == null) {
-             Toast.makeText(context, "DEBUG: User is NOT logged in!", Toast.LENGTH_LONG).show()
-        } else {
-             Toast.makeText(context, "DEBUG: Logged in as ${auth.currentUser?.email}", Toast.LENGTH_SHORT).show()
-        }
-    }
 
-    Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .background(Color(0xFF1A1A2E))) { // Themed for dark mode
+
         // Header
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Seller Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text("Seller Dashboard", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
             Text(
                 text = "Logout",
-                color = Color.Red,
+                color = StartColor,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable {
                     auth.signOut()
@@ -68,7 +68,7 @@ fun SellerDashboardScreen(navController: NavController) {
                         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
                         val googleSignInClient = GoogleSignIn.getClient(context, gso)
                         googleSignInClient.signOut()
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         // Ignore
                     }
                     navController.navigate("login") {
@@ -77,32 +77,26 @@ fun SellerDashboardScreen(navController: NavController) {
                 }
             )
         }
-        
-        // Debug Connection Button
-        Button(
-            onClick = {
-                val testRef = Firebase.database.reference.child("test_connection")
-                testRef.setValue("Connected at ${System.currentTimeMillis()}")
-                    .addOnSuccessListener { 
-                        Toast.makeText(context, "Connection Success! Rules are good.", Toast.LENGTH_SHORT).show() 
-                    }
-                    .addOnFailureListener { e -> 
-                        Toast.makeText(context, "Connection FAILED: ${e.message}", Toast.LENGTH_LONG).show() 
-                    }
-            },
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
-        ) {
-            Text("Test Database Connection")
-        }
 
         // Tabs
-        TabRow(selectedTabIndex = selectedTab, containerColor = Color.White, contentColor = StartColor) {
+        TabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = Color.Transparent,
+            contentColor = StartColor,
+            indicator = { tabPositions ->
+                TabRowDefaults.SecondaryIndicator(
+                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                    color = StartColor
+                )
+            }
+        ) {
             tabs.forEachIndexed { index, title ->
                 Tab(
                     selected = selectedTab == index,
                     onClick = { selectedTab = index },
-                    text = { Text(title) }
+                    text = { Text(title) },
+                    selectedContentColor = StartColor,
+                    unselectedContentColor = Color.White.copy(alpha = 0.7f)
                 )
             }
         }
@@ -116,135 +110,104 @@ fun SellerDashboardScreen(navController: NavController) {
 }
 
 @Composable
-fun SellerOrdersView() {
-    val database = Firebase.database
-    val orders = remember { mutableStateListOf<Order>() }
-    var isLoading by remember { mutableStateOf(true) }
-    val context = LocalContext.current
+fun SellerOrdersView(viewModel: SellerOrdersViewModel = hiltViewModel()) {
+    val state = viewModel.state.value
 
-    LaunchedEffect(Unit) {
-        val ordersRef = database.reference.child("orders")
-        ordersRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                orders.clear()
-                for (child in snapshot.children) {
-                    val order = child.getValue(Order::class.java)
-                    if (order != null) {
-                        orders.add(order)
-                    }
-                }
-                orders.sortByDescending { it.timestamp }
-                isLoading = false
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                isLoading = false
-                Toast.makeText(context, "Error fetching orders: ${error.message}", Toast.LENGTH_LONG).show()
-            }
-        })
-    }
-
-    if (isLoading) {
+    if (state.isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = StartColor)
         }
-    } else if (orders.isEmpty()) {
+    } else if (state.orders.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("No orders yet", color = Color.Gray)
+            Text("No orders yet", color = Color.White.copy(alpha = 0.7f))
         }
     } else {
         LazyColumn(modifier = Modifier.padding(16.dp)) {
-            items(orders) { order ->
-                SellerOrderItem(order)
+            items(state.orders) { order ->
+                SellerOrderItem(order, onUpdateStatus = {
+                    viewModel.onEvent(SellerOrdersEvent.UpdateOrderStatus(order.orderId, it))
+                })
             }
         }
     }
 }
 
 @Composable
-fun SellerOrderItem(order: Order) {
-    val database = Firebase.database
-    
+fun SellerOrderItem(order: Order, onUpdateStatus: (String) -> Unit) {
+
     Card(
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)) // Glassmorphism
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                Text("Order #${order.orderId.takeLast(6)}", fontWeight = FontWeight.Bold)
+                Text("Order #${order.orderId.takeLast(6)}", fontWeight = FontWeight.Bold, color = Color.White)
                 Text(order.totalAmount, fontWeight = FontWeight.Bold, color = StartColor)
             }
-            Text("User: ${order.userName}", fontSize = 14.sp, color = Color.Gray)
+            Text("User: ${order.userName}", fontSize = 14.sp, color = Color.White.copy(alpha = 0.7f))
             if (order.address.isNotEmpty()) {
-                 Text("Addr: ${order.address}", fontSize = 12.sp, color = Color.Gray, lineHeight = 14.sp)
+                 Text("Addr: ${order.address}", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f), lineHeight = 14.sp)
             }
-            Text("Status: ${order.status}", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, 
+            Text("Status: ${order.status}", fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
                 color = when (order.status) {
-                    "Completed" -> Color.Green
-                    "Cancelled" -> Color.Red
-                    else -> Color.Blue
+                    "Completed" -> Color(0xFF00C851)
+                    "Cancelled" -> Color(0xFFFF4444)
+                    else -> Color(0xFF33B5E5)
                 })
-            
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color.White.copy(alpha = 0.2f))
+
             order.items.forEach { item ->
                 Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                    Text("${item.quantity} x ${item.name}")
+                    Text("${item.quantity} x ${item.name}", color = Color.White)
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
-                 if (order.status == "Pending") {
-                     Button(
-                        onClick = {
-                             database.reference.child("orders").child(order.orderId).child("status").setValue("Preparing")
-                             database.reference.child("users").child(order.userId).child("order_history").child(order.orderId).child("status").setValue("Preparing")
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = StartColor)
-                    ) {
-                        Text("Accept & Prepare")
+                when (order.status) {
+                    "Pending" -> {
+                        Button(
+                           onClick = { onUpdateStatus("Preparing") },
+                           colors = ButtonDefaults.buttonColors(containerColor = StartColor)
+                       ) {
+                           Text("Accept & Prepare")
+                       }
                     }
-                 } else if (order.status == "Preparing") {
-                     Button(
-                        onClick = {
-                             database.reference.child("orders").child(order.orderId).child("status").setValue("Ready")
-                             database.reference.child("users").child(order.userId).child("order_history").child(order.orderId).child("status").setValue("Ready")
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)) // Green
-                    ) {
-                        Text("Mark Ready")
+                    "Preparing" -> {
+                        Button(
+                           onClick = { onUpdateStatus("Ready") },
+                           colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00C851)) // Green
+                       ) {
+                           Text("Mark Ready")
+                       }
                     }
-                 } else if (order.status == "Ready") {
-                     Button(
-                        onClick = {
-                             database.reference.child("orders").child(order.orderId).child("status").setValue("Completed")
-                             database.reference.child("users").child(order.userId).child("order_history").child(order.orderId).child("status").setValue("Completed")
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)) // Green
-                    ) {
-                        Text("Mark Completed")
+                    "Ready" -> {
+                        Button(
+                           onClick = { onUpdateStatus("Completed") },
+                           colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00C851)) // Green
+                       ) {
+                           Text("Mark Completed")
+                       }
                     }
-                 } else {
-                     Text("Status: ${order.status}", fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
-                 }
+                    else -> {
+                        Text("Status: ${order.status}", fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, color = Color.White.copy(alpha = 0.7f))
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun SellerMenuView() {
-    val database = Firebase.database
-    val context = LocalContext.current
+fun SellerMenuView(viewModel: SellerMenuViewModel = hiltViewModel()) {
+    val state = viewModel.state.value
     var showAddDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var editingItem by remember { mutableStateOf<Pair<String, FoodItem>?>(null) }
-    
-    // Add/Edit Item State
+
     var itemName by remember { mutableStateOf("") }
     var itemPrice by remember { mutableStateOf("") }
     var itemDesc by remember { mutableStateOf("") }
@@ -265,9 +228,7 @@ fun SellerMenuView() {
             confirmButton = {
                 Button(onClick = {
                     if (itemName.isNotEmpty() && itemPrice.isNotEmpty()) {
-                        val newItem = FoodItem(itemName, itemPrice, itemImage, itemDesc)
-                        database.reference.child("menu").push().setValue(newItem)
-                        Toast.makeText(context, "Item Added!", Toast.LENGTH_SHORT).show()
+                        viewModel.onEvent(SellerMenuEvent.AddItem(FoodItem(itemName, itemPrice, itemImage, itemDesc)))
                         showAddDialog = false
                         itemName = ""; itemPrice = ""; itemDesc = ""; itemImage = ""
                     }
@@ -280,7 +241,7 @@ fun SellerMenuView() {
             }
         )
     }
-    
+
     if (showEditDialog && editingItem != null) {
         AlertDialog(
             onDismissRequest = { showEditDialog = false },
@@ -296,11 +257,9 @@ fun SellerMenuView() {
             confirmButton = {
                 Button(onClick = {
                     if (itemName.isNotEmpty() && itemPrice.isNotEmpty()) {
-                        val updatedItem = FoodItem(itemName, itemPrice, itemImage, itemDesc)
-                        editingItem?.let { (key, _) ->
-                             database.reference.child("menu").child(key).setValue(updatedItem)
+                        editingItem?.let {
+                            viewModel.onEvent(SellerMenuEvent.UpdateItem(it.first, FoodItem(itemName, itemPrice, itemImage, itemDesc)))
                         }
-                        Toast.makeText(context, "Item Updated!", Toast.LENGTH_SHORT).show()
                         showEditDialog = false
                         itemName = ""; itemPrice = ""; itemDesc = ""; itemImage = ""
                         editingItem = null
@@ -310,7 +269,7 @@ fun SellerMenuView() {
                 }
             },
             dismissButton = {
-                TextButton(onClick = { 
+                TextButton(onClick = {
                     showEditDialog = false
                     editingItem = null
                 }) { Text("Cancel") }
@@ -319,63 +278,32 @@ fun SellerMenuView() {
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Pair of Key -> Item
-        val menuItems = remember { mutableStateListOf<Pair<String, FoodItem>>() }
-        
-        LaunchedEffect(Unit) {
-            val menuRef = database.reference.child("menu")
-            menuRef.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    menuItems.clear()
-                    for (child in snapshot.children) {
-                        val item = child.getValue(FoodItem::class.java)
-                        if (item != null) {
-                            menuItems.add(Pair(child.key ?: "", item))
-                        }
-                    }
-                }
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(context, "Error fetching menu: ${error.message}", Toast.LENGTH_LONG).show()
-                }
-            })
-        }
-        
         LazyColumn(modifier = Modifier.padding(16.dp)) {
-            items(menuItems) { (key, item) ->
+            items(state.menuItems) { (key, item) ->
                 Card(
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f))
                 ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp).fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(item.name, fontWeight = FontWeight.Bold)
-                            Text(item.price, color = StartColor)
+                    Row(modifier = Modifier.padding(12.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(item.name, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(item.price, color = Color.White.copy(alpha = 0.8f))
                         }
-                        
-                        Row {
-                             IconButton(onClick = {
-                                editingItem = key to item
-                                itemName = item.name
-                                itemPrice = item.price
-                                itemDesc = item.description
-                                itemImage = item.image
-                                showEditDialog = true
-                            }) {
-                                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.Gray)
-                            }
-                            
-                            IconButton(onClick = {
-                                database.reference.child("menu").child(key).removeValue()
-                                Toast.makeText(context, "Item Deleted", Toast.LENGTH_SHORT).show()
-                            }) {
-                                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Gray)
-                            }
+                        IconButton(onClick = {
+                            editingItem = Pair(key, item)
+                            itemName = item.name
+                            itemPrice = item.price
+                            itemDesc = item.description
+                            itemImage = item.image
+                            showEditDialog = true
+                        }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Edit", tint = StartColor)
+                        }
+                        IconButton(onClick = {
+                             viewModel.onEvent(SellerMenuEvent.DeleteItem(key))
+                        }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
                         }
                     }
                 }
@@ -387,10 +315,10 @@ fun SellerMenuView() {
                 itemName = ""; itemPrice = ""; itemDesc = ""; itemImage = ""
                 showAddDialog = true 
             },
-            modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp),
+            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
             containerColor = StartColor
         ) {
-            Text("+", fontSize = 24.sp, color = Color.White)
+            Icon(Icons.Default.Edit, contentDescription = "Add Item")
         }
     }
 }
