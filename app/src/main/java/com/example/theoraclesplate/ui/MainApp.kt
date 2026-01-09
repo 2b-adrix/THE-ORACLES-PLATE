@@ -1,16 +1,18 @@
 package com.example.theoraclesplate.ui
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.theoraclesplate.ui.theme.THEORACLESPLATETheme
 
 @Composable
 fun MainApp() {
     THEORACLESPLATETheme {
         val navController = rememberNavController()
-        NavHost(navController = navController, startDestination = "splash") {
+        NavHost(navController = navController, startDestination = "admin_login") {
             composable("splash") { SplashScreen(navController) }
             composable("start") { StartScreen(navController) }
             composable("login") { LoginScreen(navController) }
@@ -26,9 +28,10 @@ fun MainApp() {
             composable("admin_login") { AdminLoginScreen(navController) }
             composable("admin_dashboard") { AdminDashboardScreen(navController) }
             composable(
-                route = "details/{name}"
+                route = "details/{name}",
+                arguments = listOf(navArgument("name") { type = NavType.StringType })
             ) { 
-                DetailsScreen(navController)
+                DetailsScreen(onBack = { navController.popBackStack() })
             }
         }
     }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -15,13 +16,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.theoraclesplate.ui.details.DetailsEvent
 import com.example.theoraclesplate.ui.details.DetailsViewModel
 import com.example.theoraclesplate.ui.theme.StartColor
 
 @Composable
-fun DetailsScreen(navController: NavController, viewModel: DetailsViewModel = hiltViewModel()) {
+fun DetailsScreen(
+    onBack: () -> Unit,
+    viewModel: DetailsViewModel = hiltViewModel()
+) {
     val state = viewModel.state.value
     val context = LocalContext.current
     
@@ -32,7 +36,7 @@ fun DetailsScreen(navController: NavController, viewModel: DetailsViewModel = hi
         AnimatedCircleBackground(modifier = Modifier.fillMaxSize())
 
         if (state.isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = StartColor)
             }
         } else if (state.foodItem != null) {
@@ -40,7 +44,7 @@ fun DetailsScreen(navController: NavController, viewModel: DetailsViewModel = hi
             Column(
                 modifier = Modifier.fillMaxSize().padding(16.dp)
             ) {
-                 Button(onClick = { navController.popBackStack() }, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = StartColor)) {
+                 Button(onClick = onBack, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = StartColor)) {
                      Text("< Back", fontSize = 18.sp)
                  }
                  
@@ -86,7 +90,7 @@ fun DetailsScreen(navController: NavController, viewModel: DetailsViewModel = hi
                 
                 Button(
                     onClick = { 
-                        // TODO: Add to cart via ViewModel
+                        viewModel.onEvent(DetailsEvent.AddToCart(foodItem))
                         Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -97,7 +101,7 @@ fun DetailsScreen(navController: NavController, viewModel: DetailsViewModel = hi
                 }
             }
         } else {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("Food item not found", color = Color.White.copy(alpha = 0.7f))
             }
         }

@@ -5,8 +5,5 @@ import com.example.theoraclesplate.model.FoodItem
 import kotlinx.coroutines.flow.Flow
 
 class GetMyMenuItemsUseCase(private val repository: MenuRepository) {
-
-    operator fun invoke(sellerId: String): Flow<List<Pair<String, FoodItem>>> {
-        return repository.getMyMenuItems(sellerId)
-    }
+    operator fun invoke(sellerId: String): Flow<List<Pair<String, FoodItem>>> = repository.getMyMenuItems(sellerId)
 }

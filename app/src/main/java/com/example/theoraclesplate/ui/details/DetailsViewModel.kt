@@ -5,16 +5,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.theoraclesplate.domain.use_case.AuthUseCases
+import com.example.theoraclesplate.domain.use_case.CartUseCases
 import com.example.theoraclesplate.domain.use_case.DetailsUseCases
+import com.example.theoraclesplate.model.CartItem
 import com.example.theoraclesplate.model.FoodItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class DetailsViewModel @Inject constructor(
     private val detailsUseCases: DetailsUseCases,
+    private val cartUseCases: CartUseCases,
+    private val authUseCases: AuthUseCases,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -24,6 +30,27 @@ class DetailsViewModel @Inject constructor(
     init {
         savedStateHandle.get<String>("name")?.let {
             getFoodItemDetails(it)
+        }
+    }
+
+    fun onEvent(event: DetailsEvent) {
+        when(event) {
+            is DetailsEvent.AddToCart -> {
+                viewModelScope.launch {
+                    val userId = authUseCases.getCurrentUser()?.uid
+                    if (userId != null) {
+                        val cartItem = CartItem(
+                            id = event.item.name, // Using name as ID
+                            name = event.item.name,
+                            price = event.item.price,
+                            image = event.item.image,
+                            quantity = 1,
+                            sellerId = event.item.sellerId
+                        )
+                        cartUseCases.addToCart(userId, cartItem)
+                    }
+                }
+            }
         }
     }
 
@@ -38,3 +65,7 @@ data class DetailsState(
     val foodItem: FoodItem? = null,
     val isLoading: Boolean = true
 )
+
+sealed class DetailsEvent {
+    data class AddToCart(val item: FoodItem): DetailsEvent()
+}

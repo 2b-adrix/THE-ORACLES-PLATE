@@ -99,6 +99,9 @@ dependencies {
     kapt(libs.androidx.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
+    // Google Maps
+    implementation("com.google.maps.android:maps-compose:7.0.0")
+
 }
 
 tasks.register("printSHA1") {

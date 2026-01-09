@@ -56,4 +56,13 @@ class AuthRepositoryImpl : AuthRepository {
     override suspend fun createUser(user: User, userId: String) {
         database.child("users").child(userId).setValue(user).await()
     }
+
+    override suspend fun getUserRole(userId: String): String? {
+        return try {
+            val snapshot = database.child("users").child(userId).child("role").get().await()
+            snapshot.getValue(String::class.java)
+        } catch (e: Exception) {
+            null
+        }
+    }
 }

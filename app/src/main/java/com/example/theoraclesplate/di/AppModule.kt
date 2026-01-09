@@ -3,16 +3,20 @@ package com.example.theoraclesplate.di
 import com.example.theoraclesplate.data.repository.AdminRepositoryImpl
 import com.example.theoraclesplate.data.repository.AuthRepositoryImpl
 import com.example.theoraclesplate.data.repository.CartRepositoryImpl
+import com.example.theoraclesplate.data.repository.CheckoutRepositoryImpl
 import com.example.theoraclesplate.data.repository.DeliveryRepositoryImpl
 import com.example.theoraclesplate.data.repository.DetailsRepositoryImpl
+import com.example.theoraclesplate.data.repository.HistoryRepositoryImpl
 import com.example.theoraclesplate.data.repository.HomeRepositoryImpl
 import com.example.theoraclesplate.data.repository.MenuRepositoryImpl
 import com.example.theoraclesplate.data.repository.OrderRepositoryImpl
 import com.example.theoraclesplate.domain.repository.AdminRepository
 import com.example.theoraclesplate.domain.repository.AuthRepository
 import com.example.theoraclesplate.domain.repository.CartRepository
+import com.example.theoraclesplate.domain.repository.CheckoutRepository
 import com.example.theoraclesplate.domain.repository.DeliveryRepository
 import com.example.theoraclesplate.domain.repository.DetailsRepository
+import com.example.theoraclesplate.domain.repository.HistoryRepository
 import com.example.theoraclesplate.domain.repository.HomeRepository
 import com.example.theoraclesplate.domain.repository.MenuRepository
 import com.example.theoraclesplate.domain.repository.OrderRepository
@@ -96,7 +100,8 @@ object AppModule {
             logoutUser = LogoutUserUseCase(repository),
             getCurrentUser = GetCurrentUserUseCase(repository),
             loginWithGoogle = LoginWithGoogleUseCase(repository),
-            createUser = CreateUserUseCase(repository)
+            createUser = CreateUserUseCase(repository),
+            getUserRole = GetUserRoleUseCase(repository)
         )
     }
 
@@ -145,7 +150,8 @@ object AppModule {
             addToCart = AddToCartUseCase(repository),
             removeFromCart = RemoveFromCartUseCase(repository),
             updateQuantity = UpdateQuantityUseCase(repository),
-            getCartItem = GetCartItemUseCase(repository)
+            getCartItem = GetCartItemUseCase(repository),
+            clearCart = ClearCartUseCase(repository)
         )
     }
 
@@ -160,6 +166,34 @@ object AppModule {
     fun provideDetailsUseCases(repository: DetailsRepository): DetailsUseCases {
         return DetailsUseCases(
             getFoodItemDetails = GetFoodItemDetailsUseCase(repository)
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideCheckoutRepository(): CheckoutRepository {
+        return CheckoutRepositoryImpl()
+    }
+
+    @Provides
+    @Singleton
+    fun provideCheckoutUseCases(repository: CheckoutRepository): CheckoutUseCases {
+        return CheckoutUseCases(
+            createOrder = CreateOrderUseCase(repository)
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideHistoryRepository(): HistoryRepository {
+        return HistoryRepositoryImpl()
+    }
+
+    @Provides
+    @Singleton
+    fun provideHistoryUseCases(repository: HistoryRepository): HistoryUseCases {
+        return HistoryUseCases(
+            getOrderHistory = GetOrderHistoryUseCase(repository)
         )
     }
 }

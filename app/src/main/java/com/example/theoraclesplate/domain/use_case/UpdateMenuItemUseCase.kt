@@ -4,8 +4,5 @@ import com.example.theoraclesplate.domain.repository.MenuRepository
 import com.example.theoraclesplate.model.FoodItem
 
 class UpdateMenuItemUseCase(private val repository: MenuRepository) {
-
-    suspend operator fun invoke(key: String, item: FoodItem) {
-        repository.updateMenuItem(key, item)
-    }
+    suspend operator fun invoke(sellerId: String, itemId: String, item: FoodItem) = repository.updateMenuItem(sellerId, itemId, item)
 }

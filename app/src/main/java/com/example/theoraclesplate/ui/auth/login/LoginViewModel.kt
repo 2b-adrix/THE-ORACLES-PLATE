@@ -39,7 +39,13 @@ class LoginViewModel @Inject constructor(
                         .onEach { result ->
                             _state.value = state.value.copy(isLoading = false)
                             result.onSuccess {
-                                _eventFlow.emit(UiEvent.LoginSuccess)
+                                val userId = authUseCases.getCurrentUser()?.uid
+                                if (userId != null) {
+                                    val role = authUseCases.getUserRole(userId) ?: "buyer"
+                                    _eventFlow.emit(UiEvent.LoginSuccess(role))
+                                } else {
+                                    _eventFlow.emit(UiEvent.ShowSnackbar("Could not get user ID"))
+                                }
                             }.onFailure {
                                 _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Unknown error"))
                             }
@@ -53,7 +59,13 @@ class LoginViewModel @Inject constructor(
                         .onEach { result ->
                             _state.value = state.value.copy(isLoading = false)
                             result.onSuccess {
-                                _eventFlow.emit(UiEvent.LoginSuccess)
+                                val userId = authUseCases.getCurrentUser()?.uid
+                                if (userId != null) {
+                                    val role = authUseCases.getUserRole(userId) ?: "buyer"
+                                    _eventFlow.emit(UiEvent.LoginSuccess(role))
+                                } else {
+                                    _eventFlow.emit(UiEvent.ShowSnackbar("Could not get user ID"))
+                                }
                             }.onFailure {
                                 _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Unknown error"))
                             }
@@ -65,7 +77,7 @@ class LoginViewModel @Inject constructor(
 
     sealed class UiEvent {
         data class ShowSnackbar(val message: String) : UiEvent()
-        object LoginSuccess : UiEvent()
+        data class LoginSuccess(val role: String) : UiEvent()
     }
 }
 

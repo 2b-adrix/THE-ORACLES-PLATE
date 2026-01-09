@@ -14,4 +14,6 @@ interface CartRepository {
     suspend fun updateQuantity(userId: String, cartItemId: String, newQuantity: Int)
 
     suspend fun getCartItem(userId: String, foodItemId: String): CartItem?
+
+    suspend fun clearCart(userId: String)
 }

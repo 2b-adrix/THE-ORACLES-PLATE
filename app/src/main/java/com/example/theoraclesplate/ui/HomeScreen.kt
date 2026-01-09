@@ -105,8 +105,7 @@ fun HomeScreen(
 
         items(state.popularFood) { food ->
             PopularFoodItem(food) {
-                val encodedImage = Uri.encode(food.image)
-                rootNavController.navigate("details/${food.name}/${food.price.replace("$","")}/?image=${encodedImage}")
+                rootNavController.navigate("details/${food.name}")
             }
         }
     }

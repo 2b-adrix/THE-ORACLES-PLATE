@@ -47,4 +47,8 @@ class CartRepositoryImpl : CartRepository {
     override suspend fun getCartItem(userId: String, foodItemId: String): CartItem? {
         return database.child("users").child(userId).child("cart").child(foodItemId).get().await().getValue(CartItem::class.java)
     }
+
+    override suspend fun clearCart(userId: String) {
+        database.child("users").child(userId).child("cart").removeValue().await()
+    }
 }

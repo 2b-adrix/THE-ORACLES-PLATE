@@ -14,25 +14,15 @@ import kotlinx.coroutines.tasks.await
 
 class OrderRepositoryImpl : OrderRepository {
 
-    private val database = Firebase.database.reference
+    private val database = Firebase.database.reference.child("orders")
 
     override fun getOrdersForSeller(sellerId: String): Flow<List<Order>> = callbackFlow {
-        val ordersRef = database.child("orders")
+        // This query will need a corresponding rule in your Firebase Security Rules.
+        // e.g. { "rules": { "orders": { ".indexOn": "sellerId" } } }
+        val ordersRef = database.orderByChild("items/0/sellerId").equalTo(sellerId)
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val orders = snapshot.children.mapNotNull { 
-                    val order = it.getValue(Order::class.java)
-                    if (order != null) {
-                        val sellerItems = order.items.filter { item -> item.sellerId == sellerId }
-                        if (sellerItems.isNotEmpty()) {
-                            order.copy(items = sellerItems)
-                        } else {
-                            null
-                        }
-                    } else {
-                        null
-                    }
-                }
+                val orders = snapshot.children.mapNotNull { it.getValue(Order::class.java) }
                 trySend(orders)
             }
 
@@ -45,11 +35,13 @@ class OrderRepositoryImpl : OrderRepository {
     }
 
     override suspend fun updateOrderStatus(orderId: String, newStatus: String) {
-        database.child("orders").child(orderId).child("status").setValue(newStatus).await()
-        // Also update the order status in the user's order history
-        val order = database.child("orders").child(orderId).get().await().getValue(Order::class.java)
+        database.child(orderId).child("status").setValue(newStatus).await()
+        
+        // Also update the order status in the user's order history if it exists
+        val order = database.child(orderId).get().await().getValue(Order::class.java)
         if (order != null) {
-            database.child("users").child(order.userId).child("order_history").child(orderId).child("status").setValue(newStatus).await()
+            val userHistoryRef = Firebase.database.reference.child("users").child(order.userId).child("order_history").child(orderId)
+            userHistoryRef.child("status").setValue(newStatus).await()
         }
     }
 }

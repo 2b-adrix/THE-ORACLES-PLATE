@@ -44,7 +44,13 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
                 is LoginViewModel.UiEvent.LoginSuccess -> {
-                    navController.navigate("home") {
+                    val destination = when (event.role) {
+                        "admin" -> "admin_dashboard"
+                        "seller" -> "seller_dashboard"
+                        "delivery" -> "delivery_dashboard"
+                        else -> "home"
+                    }
+                    navController.navigate(destination) {
                         popUpTo("start") { inclusive = true }
                     }
                 }

@@ -5,8 +5,5 @@ import com.example.theoraclesplate.model.Order
 import kotlinx.coroutines.flow.Flow
 
 class GetOrdersForSellerUseCase(private val repository: OrderRepository) {
-
-    operator fun invoke(sellerId: String): Flow<List<Order>> {
-        return repository.getOrdersForSeller(sellerId)
-    }
+    operator fun invoke(sellerId: String): Flow<List<Order>> = repository.getOrdersForSeller(sellerId)
 }

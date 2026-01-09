@@ -18,4 +18,6 @@ interface AuthRepository {
     suspend fun loginWithGoogle(idToken: String): Flow<Result<AuthResult>>
 
     suspend fun createUser(user: User, userId: String)
+
+    suspend fun getUserRole(userId: String): String?
 }
