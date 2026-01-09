@@ -5,5 +5,6 @@ data class AuthUseCases(
     val signupUser: SignupUserUseCase,
     val logoutUser: LogoutUserUseCase,
     val getCurrentUser: GetCurrentUserUseCase,
-    val loginWithGoogle: LoginWithGoogleUseCase
+    val loginWithGoogle: LoginWithGoogleUseCase,
+    val createUser: CreateUserUseCase
 )
