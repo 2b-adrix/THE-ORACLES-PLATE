@@ -1,11 +1,9 @@
 package com.example.theoraclesplate.ui
 
-import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.example.theoraclesplate.ui.theme.THEORACLESPLATETheme
 
 @Composable
@@ -28,15 +26,9 @@ fun MainApp() {
             composable("admin_login") { AdminLoginScreen(navController) }
             composable("admin_dashboard") { AdminDashboardScreen(navController) }
             composable(
-                route = "details/{name}/{price}?image={image}",
-                arguments = listOf(
-                    navArgument("image") { nullable = true }
-                )
-            ) { backStackEntry ->
-                val name = backStackEntry.arguments?.getString("name")
-                val price = backStackEntry.arguments?.getString("price")
-                val image = backStackEntry.arguments?.getString("image")
-                DetailsScreen(navController, name, price, image) 
+                route = "details/{name}"
+            ) { 
+                DetailsScreen(navController)
             }
         }
     }

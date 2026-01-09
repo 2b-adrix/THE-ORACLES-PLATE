@@ -1,6 +1,5 @@
 package com.example.theoraclesplate.ui
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -8,109 +7,69 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.theoraclesplate.R
+import com.example.theoraclesplate.model.CartItem
+import com.example.theoraclesplate.ui.cart.CartEvent
+import com.example.theoraclesplate.ui.cart.CartViewModel
 import com.example.theoraclesplate.ui.theme.StartColor
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
 
 @Composable
-fun CartScreen(rootNavController: NavController) {
-    val context = LocalContext.current
-    val auth = Firebase.auth
-    val database = Firebase.database
-    val currentUser = auth.currentUser
-    
-    val cartItems = remember { mutableStateListOf<CartItemData>() }
-    var isLoading by remember { mutableStateOf(true) }
-
-    LaunchedEffect(currentUser) {
-        if (currentUser != null) {
-            val cartRef = database.reference.child("users").child(currentUser.uid).child("cart")
-            cartRef.addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    cartItems.clear()
-                    for (child in snapshot.children) {
-                        val name = child.child("name").getValue(String::class.java) ?: ""
-                        val price = child.child("price").getValue(String::class.java) ?: ""
-                        val quantity = child.child("quantity").getValue(Int::class.java) ?: 1
-                        val image = child.child("image").getValue(String::class.java) ?: ""
-                        
-                        cartItems.add(CartItemData(child.key ?: "", name, price, image, quantity))
-                    }
-                    isLoading = false
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(context, "Failed to load cart: ${error.message}", Toast.LENGTH_SHORT).show()
-                    isLoading = false
-                }
-            })
-        } else {
-             isLoading = false
-        }
-    }
+fun CartScreen(rootNavController: NavController, viewModel: CartViewModel = hiltViewModel()) {
+    val state = viewModel.state.value
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Transparent) // Themed for dark mode
+            .background(Color.Transparent)
     ) {
         Text(
             text = "Your Cart",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White, // Themed for dark mode
+            color = Color.White,
             modifier = Modifier.padding(16.dp)
         )
 
-        if (isLoading) {
+        if (state.isLoading) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = StartColor)
             }
-        } else if (cartItems.isEmpty()) {
+        } else if (state.cartItems.isEmpty()) {
              Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("Your cart is empty", color = Color.White.copy(alpha = 0.7f)) // Themed for dark mode
+                Text("Your cart is empty", color = Color.White.copy(alpha = 0.7f))
             }
         } else {
             LazyColumn(
                 modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
             ) {
-                items(cartItems) { item ->
-                    CartItemRow(item, 
+                items(state.cartItems) { cartItem ->
+                    CartItemRow(
+                        item = cartItem, 
                         onIncrease = { 
-                            if (currentUser != null) {
-                                database.reference.child("users").child(currentUser.uid).child("cart")
-                                    .child(item.id).child("quantity").setValue(item.quantity + 1)
-                            }
+                            viewModel.onEvent(CartEvent.UpdateQuantity(cartItem.id, cartItem.quantity + 1))
                         },
                         onDecrease = { 
-                            if (item.quantity > 1 && currentUser != null) {
-                                database.reference.child("users").child(currentUser.uid).child("cart")
-                                    .child(item.id).child("quantity").setValue(item.quantity - 1)
+                            if (cartItem.quantity > 1) {
+                                viewModel.onEvent(CartEvent.UpdateQuantity(cartItem.id, cartItem.quantity - 1))
+                            } else {
+                                viewModel.onEvent(CartEvent.RemoveFromCart(cartItem.id))
                             }
                         },
                         onDelete = { 
-                             if (currentUser != null) {
-                                database.reference.child("users").child(currentUser.uid).child("cart")
-                                    .child(item.id).removeValue()
-                            }
+                            viewModel.onEvent(CartEvent.RemoveFromCart(cartItem.id))
                         }
                     )
                 }
@@ -132,10 +91,10 @@ fun CartScreen(rootNavController: NavController) {
 }
 
 @Composable
-fun CartItemRow(item: CartItemData, onIncrease: () -> Unit, onDecrease: () -> Unit, onDelete: () -> Unit) {
+fun CartItemRow(item: CartItem, onIncrease: () -> Unit, onDecrease: () -> Unit, onDelete: () -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)), // Glassmorphism
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
     ) {
         Row(
@@ -179,5 +138,3 @@ fun CartItemRow(item: CartItemData, onIncrease: () -> Unit, onDecrease: () -> Un
         }
     }
 }
-
-data class CartItemData(val id: String, val name: String, val price: String, val image: String, val quantity: Int)

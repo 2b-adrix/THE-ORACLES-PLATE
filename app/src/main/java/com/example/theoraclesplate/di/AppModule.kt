@@ -2,13 +2,17 @@ package com.example.theoraclesplate.di
 
 import com.example.theoraclesplate.data.repository.AdminRepositoryImpl
 import com.example.theoraclesplate.data.repository.AuthRepositoryImpl
+import com.example.theoraclesplate.data.repository.CartRepositoryImpl
 import com.example.theoraclesplate.data.repository.DeliveryRepositoryImpl
+import com.example.theoraclesplate.data.repository.DetailsRepositoryImpl
 import com.example.theoraclesplate.data.repository.HomeRepositoryImpl
 import com.example.theoraclesplate.data.repository.MenuRepositoryImpl
 import com.example.theoraclesplate.data.repository.OrderRepositoryImpl
 import com.example.theoraclesplate.domain.repository.AdminRepository
 import com.example.theoraclesplate.domain.repository.AuthRepository
+import com.example.theoraclesplate.domain.repository.CartRepository
 import com.example.theoraclesplate.domain.repository.DeliveryRepository
+import com.example.theoraclesplate.domain.repository.DetailsRepository
 import com.example.theoraclesplate.domain.repository.HomeRepository
 import com.example.theoraclesplate.domain.repository.MenuRepository
 import com.example.theoraclesplate.domain.repository.OrderRepository
@@ -33,6 +37,7 @@ object AppModule {
     @Singleton
     fun provideMenuUseCases(repository: MenuRepository): MenuUseCases {
         return MenuUseCases(
+            getMenuItems = GetMenuItemsUseCase(repository),
             getMyMenuItems = GetMyMenuItemsUseCase(repository),
             addMenuItem = AddMenuItemUseCase(repository),
             updateMenuItem = UpdateMenuItemUseCase(repository),
@@ -90,7 +95,8 @@ object AppModule {
             signupUser = SignupUserUseCase(repository),
             logoutUser = LogoutUserUseCase(repository),
             getCurrentUser = GetCurrentUserUseCase(repository),
-            loginWithGoogle = LoginWithGoogleUseCase(repository)
+            loginWithGoogle = LoginWithGoogleUseCase(repository),
+            createUser = CreateUserUseCase(repository)
         )
     }
 
@@ -122,6 +128,38 @@ object AppModule {
         return HomeUseCases(
             getBanners = GetBannersUseCase(repository),
             getPopularFood = GetPopularFoodUseCase(repository)
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideCartRepository(): CartRepository {
+        return CartRepositoryImpl()
+    }
+
+    @Provides
+    @Singleton
+    fun provideCartUseCases(repository: CartRepository): CartUseCases {
+        return CartUseCases(
+            getCartItems = GetCartItemsUseCase(repository),
+            addToCart = AddToCartUseCase(repository),
+            removeFromCart = RemoveFromCartUseCase(repository),
+            updateQuantity = UpdateQuantityUseCase(repository),
+            getCartItem = GetCartItemUseCase(repository)
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideDetailsRepository(): DetailsRepository {
+        return DetailsRepositoryImpl()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDetailsUseCases(repository: DetailsRepository): DetailsUseCases {
+        return DetailsUseCases(
+            getFoodItemDetails = GetFoodItemDetailsUseCase(repository)
         )
     }
 }
