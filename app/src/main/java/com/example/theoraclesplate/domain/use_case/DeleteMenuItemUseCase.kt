@@ -1,10 +1,10 @@
 package com.example.theoraclesplate.domain.use_case
 
-import com.example.theoraclesplate.domain.repository.AdminRepository
+import com.example.theoraclesplate.domain.repository.MenuRepository
 
-class DeleteMenuItemUseCase(private val repository: AdminRepository) {
+class DeleteMenuItemUseCase(private val repository: MenuRepository) {
 
-    suspend operator fun invoke(menuItemId: String) {
-        repository.deleteMenuItem(menuItemId)
+    suspend operator fun invoke(key: String) {
+        repository.deleteMenuItem(key)
     }
 }

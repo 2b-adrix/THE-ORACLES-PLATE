@@ -2,7 +2,6 @@ package com.example.theoraclesplate.data.repository
 
 import com.example.theoraclesplate.domain.repository.AdminRepository
 import com.example.theoraclesplate.model.AnalyticsData
-import com.example.theoraclesplate.model.FoodItem
 import com.example.theoraclesplate.model.Order
 import com.example.theoraclesplate.model.User
 import com.google.firebase.database.DataSnapshot
@@ -99,33 +98,6 @@ class AdminRepositoryImpl : AdminRepository {
 
     override suspend fun deleteOrder(orderId: String) {
         database.child("orders").child(orderId).removeValue().await()
-    }
-
-    override fun getAllMenuItems(): Flow<List<Pair<String, FoodItem>>> = callbackFlow {
-        val menuRef = database.child("menu")
-        val listener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val menuItems = snapshot.children.mapNotNull { 
-                    val item = it.getValue(FoodItem::class.java)
-                    if (item != null) {
-                        Pair(it.key!!, item)
-                    } else {
-                        null
-                    }
-                }
-                trySend(menuItems)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                close(error.toException())
-            }
-        }
-        menuRef.addValueEventListener(listener)
-        awaitClose { menuRef.removeEventListener(listener) }
-    }
-
-    override suspend fun deleteMenuItem(menuItemId: String) {
-        database.child("menu").child(menuItemId).removeValue().await()
     }
 
     override fun getDeliveryUsers(): Flow<List<Pair<String, User>>> = callbackFlow {

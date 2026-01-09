@@ -4,7 +4,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.theoraclesplate.domain.use_case.AdminUseCases
+import com.example.theoraclesplate.domain.use_case.MenuUseCases
 import com.example.theoraclesplate.model.FoodItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -15,31 +15,41 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AllMenuItemsViewModel @Inject constructor(
-    private val adminUseCases: AdminUseCases
+    private val menuUseCases: MenuUseCases
 ) : ViewModel() {
 
     private val _state = mutableStateOf(AllMenuItemsState())
     val state: State<AllMenuItemsState> = _state
 
-    private var getAllMenuItemsJob: Job? = null
+    private var getMenuItemsJob: Job? = null
 
     init {
-        getAllMenuItems()
+        getMenuItems()
     }
 
     fun onEvent(event: AllMenuItemsEvent) {
         when (event) {
+            is AllMenuItemsEvent.AddMenuItem -> {
+                viewModelScope.launch {
+                    menuUseCases.addMenuItem(event.item)
+                }
+            }
+            is AllMenuItemsEvent.UpdateMenuItem -> {
+                viewModelScope.launch {
+                    menuUseCases.updateMenuItem(event.key, event.item)
+                }
+            }
             is AllMenuItemsEvent.DeleteMenuItem -> {
                 viewModelScope.launch {
-                    adminUseCases.deleteMenuItem(event.menuItemId)
+                    menuUseCases.deleteMenuItem(event.menuItemId)
                 }
             }
         }
     }
 
-    private fun getAllMenuItems() {
-        getAllMenuItemsJob?.cancel()
-        getAllMenuItemsJob = adminUseCases.getAllMenuItems()
+    private fun getMenuItems() {
+        getMenuItemsJob?.cancel()
+        getMenuItemsJob = menuUseCases.getMenuItems()
             .onEach { menuItems ->
                 _state.value = state.value.copy(menuItems = menuItems)
             }
@@ -52,5 +62,7 @@ data class AllMenuItemsState(
 )
 
 sealed class AllMenuItemsEvent {
+    data class AddMenuItem(val item: FoodItem) : AllMenuItemsEvent()
+    data class UpdateMenuItem(val key: String, val item: FoodItem) : AllMenuItemsEvent()
     data class DeleteMenuItem(val menuItemId: String) : AllMenuItemsEvent()
 }

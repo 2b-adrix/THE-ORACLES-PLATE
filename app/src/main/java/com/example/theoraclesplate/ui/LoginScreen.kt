@@ -30,7 +30,6 @@ import com.example.theoraclesplate.ui.theme.StartColor
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -60,9 +59,9 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
                 val account = task.getResult(ApiException::class.java)
-                val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-                // For Google Sign-In, we will still use the old method for now
-                // TODO: Refactor Google Sign-In to use the ViewModel
+                account.idToken?.let {
+                    viewModel.onEvent(LoginEvent.LoginWithGoogle(it))
+                }
             } catch (e: ApiException) {
                 Toast.makeText(context, "Google Sign-In failed: ${e.message}", Toast.LENGTH_SHORT).show()
             }
@@ -196,7 +195,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(onClick = { navController.navigate("signup") }) {
-                Text("Don't have an account? Sign Up", color = StartColor)
+                Text("Don\'t have an account? Sign Up", color = StartColor)
             }
         }
     }

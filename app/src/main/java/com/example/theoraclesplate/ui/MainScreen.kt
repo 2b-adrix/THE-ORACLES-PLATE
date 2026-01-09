@@ -80,7 +80,7 @@ fun MainScreen(rootNavController: NavController) {
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(BottomNavItem.Home.route) { 
-                    HomeScreen(rootNavController) {
+                    HomeScreen(rootNavController = rootNavController, onViewMenuClick = {
                         bottomNavController.navigate(BottomNavItem.Search.route) {
                             popUpTo(bottomNavController.graph.findStartDestination().id) {
                                 saveState = true
@@ -88,7 +88,7 @@ fun MainScreen(rootNavController: NavController) {
                             launchSingleTop = true
                             restoreState = true
                         }
-                    } 
+                    }) 
                 }
                 composable(BottomNavItem.Search.route) { SearchScreen(rootNavController) }
                 composable(BottomNavItem.Cart.route) { CartScreen(rootNavController) }

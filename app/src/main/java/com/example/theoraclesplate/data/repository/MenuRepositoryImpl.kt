@@ -16,6 +16,29 @@ class MenuRepositoryImpl : MenuRepository {
 
     private val database = Firebase.database.reference
 
+    override fun getMenuItems(): Flow<List<Pair<String, FoodItem>>> = callbackFlow {
+        val menuRef = database.child("menu")
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val menuItems = snapshot.children.mapNotNull { 
+                    val item = it.getValue(FoodItem::class.java)
+                    if (item != null) {
+                        Pair(it.key!!, item)
+                    } else {
+                        null
+                    }
+                }
+                trySend(menuItems)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+        menuRef.addValueEventListener(listener)
+        awaitClose { menuRef.removeEventListener(listener) }
+    }
+
     override fun getMyMenuItems(sellerId: String): Flow<List<Pair<String, FoodItem>>> = callbackFlow {
         val menuRef = database.child("menu")
         val listener = object : ValueEventListener {

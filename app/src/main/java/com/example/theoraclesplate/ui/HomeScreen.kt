@@ -1,7 +1,6 @@
 package com.example.theoraclesplate.ui
 
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,50 +18,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.model.FoodItem
+import com.example.theoraclesplate.ui.home.HomeViewModel
 import com.example.theoraclesplate.ui.theme.StartColor
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
-    val banners = listOf(R.drawable.banner1, R.drawable.banner2)
-    val popularFood = remember { mutableStateListOf<FoodItem>() }
-    val pagerState = rememberPagerState(pageCount = { banners.size })
-    val database = Firebase.database
-    val context = LocalContext.current
-
-    LaunchedEffect(Unit) {
-        val menuRef = database.reference.child("menu")
-        menuRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                popularFood.clear()
-                for (child in snapshot.children) {
-                    val item = child.getValue(FoodItem::class.java)
-                    if (item != null) {
-                        popularFood.add(item)
-                    }
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(context, "Menu Error: ${error.message}", Toast.LENGTH_LONG).show()
-            }
-        })
-    }
+fun HomeScreen(
+    rootNavController: NavController, 
+    onViewMenuClick: () -> Unit, 
+    viewModel: HomeViewModel = hiltViewModel()
+) {
+    val state = viewModel.state.value
+    val pagerState = rememberPagerState(pageCount = { state.banners.size })
 
     LaunchedEffect(pagerState) {
         while (true) {
@@ -77,8 +54,7 @@ fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Transparent) // Make background transparent
-            .padding(horizontal = 16.dp),
+            .background(Color.Transparent),
         contentPadding = PaddingValues(vertical = 16.dp)
     ) {
         item {
@@ -88,10 +64,11 @@ fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
+                    .padding(horizontal = 16.dp)
                     .clip(RoundedCornerShape(16.dp))
             ) { page ->
                 Image(
-                    painter = painterResource(id = banners[page]),
+                    painter = painterResource(id = state.banners[page]),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -103,6 +80,7 @@ fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
              Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
                     .padding(vertical = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
@@ -111,7 +89,7 @@ fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
                     text = "Popular Items",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White // Changed to white
+                    color = Color.White
                 )
                 
                 Text(
@@ -125,7 +103,7 @@ fun HomeScreen(rootNavController: NavController, onViewMenuClick: () -> Unit) {
             }
         }
 
-        items(popularFood) { food ->
+        items(state.popularFood) { food ->
             PopularFoodItem(food) {
                 val encodedImage = Uri.encode(food.image)
                 rootNavController.navigate("details/${food.name}/${food.price.replace("$","")}/?image=${encodedImage}")
@@ -139,10 +117,11 @@ fun PopularFoodItem(food: FoodItem, onClick: () -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.1f) // Glassmorphism effect
+            containerColor = Color.White.copy(alpha = 0.1f)
         ),
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 16.dp)
             .padding(vertical = 8.dp)
             .clickable(onClick = onClick)
     ) {
@@ -168,13 +147,13 @@ fun PopularFoodItem(food: FoodItem, onClick: () -> Unit) {
                     text = food.name,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White // Changed to white
+                    color = Color.White
                 )
                 Text(
                     text = food.price,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.White.copy(alpha = 0.8f) // Changed to light gray
+                    color = Color.White.copy(alpha = 0.8f)
                 )
             }
             

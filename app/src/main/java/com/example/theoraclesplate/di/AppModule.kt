@@ -3,11 +3,13 @@ package com.example.theoraclesplate.di
 import com.example.theoraclesplate.data.repository.AdminRepositoryImpl
 import com.example.theoraclesplate.data.repository.AuthRepositoryImpl
 import com.example.theoraclesplate.data.repository.DeliveryRepositoryImpl
+import com.example.theoraclesplate.data.repository.HomeRepositoryImpl
 import com.example.theoraclesplate.data.repository.MenuRepositoryImpl
 import com.example.theoraclesplate.data.repository.OrderRepositoryImpl
 import com.example.theoraclesplate.domain.repository.AdminRepository
 import com.example.theoraclesplate.domain.repository.AuthRepository
 import com.example.theoraclesplate.domain.repository.DeliveryRepository
+import com.example.theoraclesplate.domain.repository.HomeRepository
 import com.example.theoraclesplate.domain.repository.MenuRepository
 import com.example.theoraclesplate.domain.repository.OrderRepository
 import com.example.theoraclesplate.domain.use_case.*
@@ -69,8 +71,6 @@ object AppModule {
             deleteUser = DeleteUserUseCase(repository),
             getAllOrders = GetAllOrdersUseCase(repository),
             deleteOrder = DeleteOrderUseCase(repository),
-            getAllMenuItems = GetAllMenuItemsUseCase(repository),
-            deleteMenuItem = DeleteMenuItemUseCase(repository),
             getDeliveryUsers = GetDeliveryUsersUseCase(repository),
             getAnalyticsData = GetAnalyticsDataUseCase(repository)
         )
@@ -89,7 +89,8 @@ object AppModule {
             loginUser = LoginUserUseCase(repository),
             signupUser = SignupUserUseCase(repository),
             logoutUser = LogoutUserUseCase(repository),
-            getCurrentUser = GetCurrentUserUseCase(repository)
+            getCurrentUser = GetCurrentUserUseCase(repository),
+            loginWithGoogle = LoginWithGoogleUseCase(repository)
         )
     }
 
@@ -106,6 +107,21 @@ object AppModule {
             getReadyForPickupOrders = GetReadyForPickupOrdersUseCase(repository),
             getOutForDeliveryOrders = GetOutForDeliveryOrdersUseCase(repository),
             getDeliveredOrders = GetDeliveredOrdersUseCase(repository)
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideHomeRepository(): HomeRepository {
+        return HomeRepositoryImpl()
+    }
+
+    @Provides
+    @Singleton
+    fun provideHomeUseCases(repository: HomeRepository): HomeUseCases {
+        return HomeUseCases(
+            getBanners = GetBannersUseCase(repository),
+            getPopularFood = GetPopularFoodUseCase(repository)
         )
     }
 }
