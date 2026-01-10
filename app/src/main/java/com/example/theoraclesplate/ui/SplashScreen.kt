@@ -7,52 +7,34 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.theoraclesplate.R
-import com.example.theoraclesplate.model.User
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
+import com.example.theoraclesplate.ui.viewmodel.SplashViewModel
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(navController: NavController) {
-    val auth = Firebase.auth
-    val database = Firebase.database.reference
+fun SplashScreen(
+    navController: NavController,
+    viewModel: SplashViewModel = hiltViewModel()
+) {
+    val navigationRoute by viewModel.navigationRoute.collectAsState()
 
     LaunchedEffect(key1 = true) {
         delay(3000) // Increased delay to enjoy the animation
-        val currentUser = auth.currentUser
-        
-        if (currentUser != null) {
-            // User is logged in, check role
-            database.child("users").child(currentUser.uid).get()
-                .addOnSuccessListener { snapshot ->
-                    val user = snapshot.getValue(User::class.java)
-                    val route = when (user?.role) {
-                        "seller" -> "seller_dashboard"
-                        "admin" -> "admin_panel"
-                        "driver" -> "delivery_dashboard"
-                        else -> "home"
-                    }
-                    navController.navigate(route) {
-                        popUpTo("splash") { inclusive = true }
-                    }
-                }
-                .addOnFailureListener {
-                    // Fallback to start if network fails
-                    navController.navigate("start") {
-                        popUpTo("splash") { inclusive = true }
-                    }
-                }
-        } else {
-            // No user logged in
-            navController.navigate("start") {
+        viewModel.checkUserStatus()
+    }
+
+    LaunchedEffect(navigationRoute) {
+        navigationRoute?.let { route ->
+            navController.navigate(route) {
                 popUpTo("splash") { inclusive = true }
             }
         }
@@ -65,7 +47,7 @@ fun SplashScreen(navController: NavController) {
         contentAlignment = Alignment.Center
     ) {
         // Add the animated background
-        AnimatedCircleBackground(modifier = Modifier.fillMaxSize())
+        // AnimatedCircleBackground(modifier = Modifier.fillMaxSize())
 
         // Your logo on top
         Image(

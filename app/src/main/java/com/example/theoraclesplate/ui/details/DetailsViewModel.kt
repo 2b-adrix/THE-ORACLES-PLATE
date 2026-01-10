@@ -11,6 +11,8 @@ import com.example.theoraclesplate.domain.use_case.DetailsUseCases
 import com.example.theoraclesplate.model.CartItem
 import com.example.theoraclesplate.model.FoodItem
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -26,6 +28,9 @@ class DetailsViewModel @Inject constructor(
 
     private val _state = mutableStateOf(DetailsState())
     val state: State<DetailsState> = _state
+
+    private val _eventFlow = MutableSharedFlow<UiEvent>()
+    val eventFlow = _eventFlow.asSharedFlow()
 
     init {
         savedStateHandle.get<String>("name")?.let {
@@ -48,6 +53,7 @@ class DetailsViewModel @Inject constructor(
                             sellerId = event.item.sellerId
                         )
                         cartUseCases.addToCart(userId, cartItem)
+                        _eventFlow.emit(UiEvent.ShowToast("Added to cart"))
                     }
                 }
             }
@@ -58,6 +64,10 @@ class DetailsViewModel @Inject constructor(
         detailsUseCases.getFoodItemDetails(foodItemName).onEach { item ->
             _state.value = state.value.copy(foodItem = item, isLoading = false)
         }.launchIn(viewModelScope)
+    }
+
+    sealed class UiEvent {
+        data class ShowToast(val message: String) : UiEvent()
     }
 }
 

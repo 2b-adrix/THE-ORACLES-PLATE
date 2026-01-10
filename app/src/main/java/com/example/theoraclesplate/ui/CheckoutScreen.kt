@@ -4,19 +4,34 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -55,9 +70,9 @@ fun CheckoutScreen(navController: NavController, viewModel: CheckoutViewModel = 
             .verticalScroll(rememberScrollState())
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-             IconButton(onClick = { navController.popBackStack() }) {
-                 Text("<", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = StartColor)
-             }
+            IconButton(onClick = { navController.popBackStack() }) {
+                Text("<", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = StartColor)
+            }
             Text(
                 text = "Checkout",
                 fontSize = 24.sp,
@@ -66,12 +81,12 @@ fun CheckoutScreen(navController: NavController, viewModel: CheckoutViewModel = 
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         Text("Delivery Address", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.White)
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         val textFieldColors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = StartColor,
             unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
@@ -83,53 +98,65 @@ fun CheckoutScreen(navController: NavController, viewModel: CheckoutViewModel = 
         )
 
         OutlinedTextField(
-            value = state.address, 
+            value = state.address,
             onValueChange = { viewModel.onEvent(CheckoutEvent.AddressChanged(it)) },
             label = { Text("Street Address") },
             modifier = Modifier.fillMaxWidth(),
             colors = textFieldColors
         )
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         Text("Payment Method", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.White)
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Row(modifier = Modifier.fillMaxWidth()) {
             PaymentOption(
-                title = "Cash on Delivery", 
+                title = "Cash on Delivery",
                 selected = state.paymentMethod == "COD",
                 onClick = { viewModel.onEvent(CheckoutEvent.PaymentMethodChanged("COD")) }
             )
         }
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         Text("Order Summary", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.White)
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         state.cartItems.forEach { item ->
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Text("${item.quantity} x ${item.name}", color = Color.White.copy(alpha = 0.7f))
                 Text(item.price, fontWeight = FontWeight.SemiBold, color = Color.White)
             }
         }
-        
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color.White.copy(alpha = 0.2f))
-        
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 8.dp),
+            color = Color.White.copy(alpha = 0.2f)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Text("Total", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.White)
             Text(state.totalAmount, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = StartColor)
         }
-        
+
         Spacer(modifier = Modifier.height(32.dp))
-        
+
         Button(
             onClick = {
                 if (state.address.isNotEmpty()) {
                     viewModel.onEvent(CheckoutEvent.PlaceOrder)
                 } else {
-                    Toast.makeText(context, "Please fill in all delivery details", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Please fill in all delivery details", Toast.LENGTH_SHORT)
+                        .show()
                 }
             },
             enabled = !state.isLoading,
@@ -145,7 +172,7 @@ fun CheckoutScreen(navController: NavController, viewModel: CheckoutViewModel = 
                 Text("Place Order", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
         }
-        
+
         Spacer(modifier = Modifier.height(32.dp))
     }
 }

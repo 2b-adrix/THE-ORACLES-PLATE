@@ -16,12 +16,12 @@ plugins {
 
 android {
     namespace = "com.example.theoraclesplate"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.theoraclesplate"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 3
         versionName = "1.1"
 
@@ -44,8 +44,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
+    kotlin {
+        jvmToolchain(11)
+    }
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlinx" && requested.name == "kotlinx-metadata-jvm") {
+            useVersion("0.9.0")
+        }
     }
 }
 
@@ -98,6 +106,7 @@ dependencies {
     kapt(libs.hilt.compiler)
     kapt(libs.androidx.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+    kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.9.0")
 
     // Google Maps
     implementation("com.google.maps.android:maps-compose:7.0.0")
