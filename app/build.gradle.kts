@@ -35,6 +35,9 @@ android {
         viewBinding = true
         compose = true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -45,6 +48,7 @@ android {
         }
     }
     compileOptions {
+<<<<<<< Updated upstream
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -54,6 +58,15 @@ android {
 }
 
 
+=======
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+>>>>>>> Stashed changes
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -76,6 +89,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.material.icons.extended)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -105,7 +119,10 @@ dependencies {
     kapt(libs.hilt.compiler)
 
     implementation(libs.androidx.hilt.navigation.compose)
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 
     // Google Maps
     implementation("com.google.maps.android:maps-compose:7.0.0")
