@@ -106,7 +106,6 @@ dependencies {
     kapt(libs.hilt.compiler)
     kapt(libs.androidx.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
-    kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.9.0")
 
     // Google Maps
     implementation("com.google.maps.android:maps-compose:7.0.0")

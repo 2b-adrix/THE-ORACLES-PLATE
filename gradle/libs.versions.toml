@@ -1,6 +1,7 @@
 [versions]
-agp = "8.13.2"
-kotlin = "2.0.21"
+agp = "8.2.2"
+kotlin = "1.9.22"
+compose-compiler = "1.5.8"
 coreKtx = "1.17.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -21,8 +22,8 @@ googleServices = "4.4.4"
 firebaseBom = "33.7.0"
 coilCompose = "2.7.0"
 playServicesAuth = "21.5.0"
-hilt = "2.51.1"
-hiltExt = "1.2.0"
+hilt = "2.48"
+hiltExt = "1.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -62,6 +63,6 @@ androidx-hilt-navigation-compose = {group = "androidx.hilt", name = "hilt-naviga
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "compose-compiler" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
