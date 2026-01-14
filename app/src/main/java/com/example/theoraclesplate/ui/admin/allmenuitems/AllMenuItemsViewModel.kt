@@ -31,17 +31,17 @@ class AllMenuItemsViewModel @Inject constructor(
         when (event) {
             is AllMenuItemsEvent.AddMenuItem -> {
                 viewModelScope.launch {
-                    menuUseCases.addMenuItem(event.item)
+                    menuUseCases.addMenuItem(event.item.sellerId, event.item)
                 }
             }
             is AllMenuItemsEvent.UpdateMenuItem -> {
                 viewModelScope.launch {
-                    menuUseCases.updateMenuItem(event.key, event.item)
+                    menuUseCases.updateMenuItem(event.item.sellerId, event.key, event.item)
                 }
             }
             is AllMenuItemsEvent.DeleteMenuItem -> {
                 viewModelScope.launch {
-                    menuUseCases.deleteMenuItem(event.menuItemId)
+                    menuUseCases.deleteMenuItem(event.sellerId, event.menuItemId)
                 }
             }
         }
@@ -64,5 +64,5 @@ data class AllMenuItemsState(
 sealed class AllMenuItemsEvent {
     data class AddMenuItem(val item: FoodItem) : AllMenuItemsEvent()
     data class UpdateMenuItem(val key: String, val item: FoodItem) : AllMenuItemsEvent()
-    data class DeleteMenuItem(val menuItemId: String) : AllMenuItemsEvent()
+    data class DeleteMenuItem(val sellerId: String, val menuItemId: String) : AllMenuItemsEvent()
 }

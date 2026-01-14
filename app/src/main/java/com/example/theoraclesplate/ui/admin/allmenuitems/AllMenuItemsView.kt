@@ -134,7 +134,7 @@ fun AllMenuItemsView(viewModel: AllMenuItemsViewModel = hiltViewModel()) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit", tint = StartColor)
                         }
                         IconButton(onClick = {
-                             viewModel.onEvent(AllMenuItemsEvent.DeleteMenuItem(key))
+                             viewModel.onEvent(AllMenuItemsEvent.DeleteMenuItem(item.sellerId, key))
                         }) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
                         }
