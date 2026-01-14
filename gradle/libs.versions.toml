@@ -1,7 +1,13 @@
 [versions]
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 agp = "8.13.2"
 kotlin = "2.1.0"
+=======
+agp = "8.9.1"
+kotlin = "1.9.22"
+compose-compiler = "1.5.10"
+>>>>>>> Stashed changes
 =======
 agp = "8.9.1"
 kotlin = "1.9.22"
@@ -30,7 +36,11 @@ playServicesAuth = "21.5.0"
 hilt = "2.57.2"
 hiltExt = "1.2.0"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 compose-compiler = "1.5.8"
+=======
+materialIconsExtended = "1.6.7"
+>>>>>>> Stashed changes
 =======
 materialIconsExtended = "1.6.7"
 >>>>>>> Stashed changes
@@ -76,7 +86,10 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
