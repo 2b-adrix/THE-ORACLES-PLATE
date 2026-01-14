@@ -14,6 +14,10 @@ plugins {
     kotlin("kapt")
 }
 
+kapt {
+    correctErrorTypes = true
+}
+
 android {
     namespace = "com.example.theoraclesplate"
     compileSdk = 36
@@ -41,21 +45,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlin {
-        jvmToolchain(11)
+        jvmToolchain(17)
     }
 }
 
-configurations.all {
-    resolutionStrategy.eachDependency {
-        if (requested.group == "org.jetbrains.kotlinx" && requested.name == "kotlinx-metadata-jvm") {
-            useVersion("0.9.0")
-        }
-    }
-}
+
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -75,6 +73,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
     debugImplementation(libs.androidx.ui.tooling)
@@ -104,9 +103,9 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
-    kapt(libs.androidx.hilt.compiler)
+
     implementation(libs.androidx.hilt.navigation.compose)
-    kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.9.0")
+
 
     // Google Maps
     implementation("com.google.maps.android:maps-compose:7.0.0")
