@@ -43,7 +43,7 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1A1A2E)), // Set dark base background
+            .background(Color(0xFF1A1A2E)),
         contentAlignment = Alignment.Center
     ) {
         // Add the animated background

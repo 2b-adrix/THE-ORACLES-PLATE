@@ -1,14 +1,16 @@
+
 import org.gradle.kotlin.dsl.androidTestImplementation
 import org.gradle.kotlin.dsl.implementation
 import org.gradle.kotlin.dsl.testImplementation
 import java.io.FileInputStream
 import java.security.KeyStore
 import java.security.MessageDigest
+import java.io.File
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.compose) // Uncommented this line
     alias(libs.plugins.google.services)
     alias(libs.plugins.hilt)
     kotlin("kapt")
@@ -36,7 +38,8 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
+        // Explicitly set the Kotlin compiler extension version compatible with Kotlin 2.0
+        kotlinCompilerExtensionVersion = "1.6.0"
     }
     buildTypes {
         release {
@@ -48,42 +51,22 @@ android {
         }
     }
     compileOptions {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlin {
         jvmToolchain(17)
+
     }
 }
-
-
-=======
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-=======
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
->>>>>>> Stashed changes
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
->>>>>>> Stashed changes
-
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.cardview)
-    implementation(libs.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     
     // Compose
@@ -95,7 +78,8 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.material.icons.extended)
+    // Removed duplicate dependency
+    // implementation(libs.androidx.material.icons.extended)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -124,16 +108,8 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
-    implementation(libs.androidx.hilt.navigation.compose)
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-
-    // Google Maps
+    implementation(libs.androidx.hilt.navigation.compose) 
+// Google Maps
     implementation("com.google.maps.android:maps-compose:7.0.0")
 
 }
