@@ -52,7 +52,7 @@ class CheckoutViewModel @Inject constructor(
                             val orderItems = state.value.cartItems.map { cartItem ->
                                 OrderItem(
                                     name = cartItem.name,
-                                    price = cartItem.price.toString(),
+                                    price = cartItem.price,
                                     image = cartItem.image,
                                     quantity = cartItem.quantity,
                                     sellerId = cartItem.sellerId
@@ -70,7 +70,7 @@ class CheckoutViewModel @Inject constructor(
                                 userId = user.uid,
                                 userName = user.displayName ?: "",
                                 items = orderItems,
-                                totalAmount = state.value.totalAmount.toString(),
+                                totalAmount = state.value.totalAmount,
                                 address = state.value.address,
                                 paymentMethod = state.value.paymentMethod,
                                 timestamp = System.currentTimeMillis()

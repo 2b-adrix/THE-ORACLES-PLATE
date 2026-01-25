@@ -68,7 +68,7 @@ fun HomeScreen(
                     .clip(RoundedCornerShape(16.dp))
             ) { page ->
                 Image(
-                    painter = painterResource(id = state.banners[page]),
+                    painter = painterResource(id = R.drawable.food1),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
