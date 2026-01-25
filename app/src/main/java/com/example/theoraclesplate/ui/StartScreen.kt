@@ -3,6 +3,7 @@ package com.example.theoraclesplate.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -67,10 +68,36 @@ fun StartScreen(navController: NavController) {
                 shape = MaterialTheme.shapes.medium,
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
             ) {
-                Text(text = "Get Started", fontSize = 18.sp, color = Color.White)
+                Text(text = "Continue as a Buyer", fontSize = 18.sp, color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedButton(
+                onClick = { navController.navigate("seller_login") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                border = BorderStroke(1.dp, StartColor),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text(text = "Seller Login/Signup", fontSize = 18.sp, color = StartColor)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedButton(
+                onClick = { navController.navigate("delivery_login") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                border = BorderStroke(1.dp, StartColor),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text(text = "Delivery Login", fontSize = 18.sp, color = StartColor)
+            }
+
+            Spacer(modifier = Modifier.weight(0.5f))
 
             TextButton(onClick = { navController.navigate("admin_login") }) {
                 Text(text = "Admin Login", color = Color.White.copy(alpha = 0.7f))

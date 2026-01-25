@@ -52,7 +52,7 @@ class CheckoutViewModel @Inject constructor(
                             val orderItems = state.value.cartItems.map { cartItem ->
                                 OrderItem(
                                     name = cartItem.name,
-                                    price = cartItem.price,
+                                    price = cartItem.price.toString(),
                                     image = cartItem.image,
                                     quantity = cartItem.quantity,
                                     sellerId = cartItem.sellerId
@@ -70,7 +70,7 @@ class CheckoutViewModel @Inject constructor(
                                 userId = user.uid,
                                 userName = user.displayName ?: "",
                                 items = orderItems,
-                                totalAmount = state.value.totalAmount,
+                                totalAmount = state.value.totalAmount.toString(),
                                 address = state.value.address,
                                 paymentMethod = state.value.paymentMethod,
                                 timestamp = System.currentTimeMillis()
@@ -97,10 +97,10 @@ class CheckoutViewModel @Inject constructor(
     private fun getCartItems() {
         authUseCases.getCurrentUser()?.uid?.let { userId ->
             cartUseCases.getCartItems(userId).onEach { items ->
-                val total = items.sumOf { (it.price.replace("$", "").toDoubleOrNull() ?: 0.0) * it.quantity }
+                val total = items.sumOf { it.price * it.quantity }
                 _state.value = state.value.copy(
                     cartItems = items,
-                    totalAmount = "$${String.format("%.2f", total)}",
+                    totalAmount = total,
                     isLoading = false
                 )
             }.launchIn(viewModelScope)
@@ -115,7 +115,7 @@ class CheckoutViewModel @Inject constructor(
 
 data class CheckoutState(
     val cartItems: List<com.example.theoraclesplate.model.CartItem> = emptyList(),
-    val totalAmount: String = "$0.00",
+    val totalAmount: Double = 0.0,
     val address: String = "",
     val paymentMethod: String = "COD",
     val isLoading: Boolean = true

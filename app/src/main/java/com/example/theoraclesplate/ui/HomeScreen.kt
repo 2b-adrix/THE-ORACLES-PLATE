@@ -129,7 +129,7 @@ fun PopularFoodItem(food: FoodItem, onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                model = food.image.ifEmpty { R.drawable.food1 },
+                model = food.imageUrl.ifEmpty { R.drawable.food1 },
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -149,7 +149,7 @@ fun PopularFoodItem(food: FoodItem, onClick: () -> Unit) {
                     color = Color.White
                 )
                 Text(
-                    text = food.price,
+                    text = "$${food.price}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White.copy(alpha = 0.8f)

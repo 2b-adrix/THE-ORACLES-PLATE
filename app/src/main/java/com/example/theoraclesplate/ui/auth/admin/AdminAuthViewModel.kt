@@ -1,4 +1,4 @@
-package com.example.theoraclesplate.ui.auth.signup
+package com.example.theoraclesplate.ui.auth.admin
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -14,35 +14,32 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SignUpViewModel @Inject constructor(
+class AdminAuthViewModel @Inject constructor(
     private val authUseCases: AuthUseCases
 ) : ViewModel() {
 
-    private val _state = mutableStateOf(SignUpState())
-    val state: State<SignUpState> = _state
+    private val _state = mutableStateOf(AdminAuthState())
+    val state: State<AdminAuthState> = _state
 
     private val _eventFlow = MutableSharedFlow<UiEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
-    fun onEvent(event: SignUpEvent) {
+    fun onEvent(event: AdminAuthEvent) {
         when (event) {
-            is SignUpEvent.EnteredEmail -> {
+            is AdminAuthEvent.EnteredEmail -> {
                 _state.value = state.value.copy(email = event.value)
             }
-            is SignUpEvent.EnteredPassword -> {
+            is AdminAuthEvent.EnteredPassword -> {
                 _state.value = state.value.copy(password = event.value)
             }
-            is SignUpEvent.EnteredName -> {
-                _state.value = state.value.copy(name = event.value)
-            }
-            is SignUpEvent.SignUp -> {
+            is AdminAuthEvent.Login -> {
                 viewModelScope.launch {
                     _state.value = state.value.copy(isLoading = true)
-                    authUseCases.signupUser(state.value.email, state.value.password)
+                    authUseCases.loginUser(state.value.email, state.value.password)
                         .onEach { result ->
                             _state.value = state.value.copy(isLoading = false)
                             result.onSuccess {
-                                _eventFlow.emit(UiEvent.SignUpSuccess)
+                                _eventFlow.emit(UiEvent.AuthSuccess)
                             }.onFailure {
                                 _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Unknown error"))
                             }
@@ -54,20 +51,18 @@ class SignUpViewModel @Inject constructor(
 
     sealed class UiEvent {
         data class ShowSnackbar(val message: String) : UiEvent()
-        object SignUpSuccess : UiEvent()
+        object AuthSuccess : UiEvent()
     }
 }
 
-data class SignUpState(
-    val name: String = "",
+data class AdminAuthState(
     val email: String = "",
     val password: String = "",
     val isLoading: Boolean = false
 )
 
-sealed class SignUpEvent {
-    data class EnteredName(val value: String) : SignUpEvent()
-    data class EnteredEmail(val value: String) : SignUpEvent()
-    data class EnteredPassword(val value: String) : SignUpEvent()
-    object SignUp : SignUpEvent()
+sealed class AdminAuthEvent {
+    data class EnteredEmail(val value: String) : AdminAuthEvent()
+    data class EnteredPassword(val value: String) : AdminAuthEvent()
+    object Login : AdminAuthEvent()
 }

@@ -86,7 +86,7 @@ fun DetailsScreen(
                 )
 
                 AsyncImage(
-                    model = foodItem.image.ifEmpty { "https://picsum.photos/200/300" }, // Fallback image
+                    model = foodItem.imageUrl.ifEmpty { "https://picsum.photos/200/300" }, // Fallback image
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

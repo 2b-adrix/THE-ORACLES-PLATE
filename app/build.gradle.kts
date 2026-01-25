@@ -109,8 +109,12 @@ dependencies {
     kapt(libs.hilt.compiler)
 
     implementation(libs.androidx.hilt.navigation.compose) 
-// Google Maps
-    implementation("com.google.maps.android:maps-compose:7.0.0")
+// Google Maps (Removed)
+//    implementation("com.google.maps.android:maps-compose:7.0.0")
+
+// OpenStreetMap
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+    implementation("androidx.preference:preference-ktx:1.2.1")
 
 }
 

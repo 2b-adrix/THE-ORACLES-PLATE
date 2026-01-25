@@ -78,8 +78,8 @@ fun SearchScreen(rootNavController: NavController, viewModel: SearchViewModel = 
             LazyColumn {
                 items(state.filteredItems) { food ->
                      PopularFoodItem(food) {
-                         val encodedImage = Uri.encode(food.image)
-                         rootNavController.navigate("details/${food.name}/${food.price.replace("$","")}/?image=${encodedImage}")
+                         val encodedImage = Uri.encode(food.imageUrl)
+                         rootNavController.navigate("details/${food.name}/${food.price}/?image=${encodedImage}")
                      }
                 }
             }

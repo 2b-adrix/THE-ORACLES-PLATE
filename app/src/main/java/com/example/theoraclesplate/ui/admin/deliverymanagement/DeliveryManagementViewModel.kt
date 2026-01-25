@@ -7,10 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.theoraclesplate.domain.use_case.AdminUseCases
 import com.example.theoraclesplate.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,36 +19,21 @@ class DeliveryManagementViewModel @Inject constructor(
     private val _state = mutableStateOf(DeliveryManagementState())
     val state: State<DeliveryManagementState> = _state
 
-    private var getDeliveryUsersJob: Job? = null
-
     init {
         getDeliveryUsers()
     }
 
-    fun onEvent(event: DeliveryManagementEvent) {
-        when (event) {
-            is DeliveryManagementEvent.DeleteUser -> {
-                viewModelScope.launch {
-                    adminUseCases.deleteUser(event.userId)
-                }
-            }
-        }
-    }
-
     private fun getDeliveryUsers() {
-        getDeliveryUsersJob?.cancel()
-        getDeliveryUsersJob = adminUseCases.getDeliveryUsers()
-            .onEach { users ->
-                _state.value = state.value.copy(deliveryUsers = users)
-            }
-            .launchIn(viewModelScope)
+        adminUseCases.getDeliveryUsers().onEach { result ->
+            _state.value = state.value.copy(
+                isLoading = false,
+                deliveryUsers = result.getOrNull() ?: emptyList()
+            )
+        }.launchIn(viewModelScope)
     }
 }
 
 data class DeliveryManagementState(
+    val isLoading: Boolean = true,
     val deliveryUsers: List<Pair<String, User>> = emptyList()
 )
-
-sealed class DeliveryManagementEvent {
-    data class DeleteUser(val userId: String) : DeliveryManagementEvent()
-}

@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 class GetAllOrdersUseCase(private val repository: AdminRepository) {
 
-    operator fun invoke(): Flow<List<Pair<String, Order>>> {
+    operator fun invoke(): Flow<Result<List<Order>>> {
         return repository.getAllOrders()
     }
 }

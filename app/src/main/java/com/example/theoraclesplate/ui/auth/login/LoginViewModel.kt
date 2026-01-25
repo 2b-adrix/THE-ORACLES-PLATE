@@ -32,6 +32,9 @@ class LoginViewModel @Inject constructor(
             is LoginEvent.EnteredPassword -> {
                 _state.value = state.value.copy(password = event.value)
             }
+            is LoginEvent.EnteredName -> { // From SignUpViewModel
+                _state.value = state.value.copy(name = event.value)
+            }
             is LoginEvent.Login -> {
                 viewModelScope.launch {
                     _state.value = state.value.copy(isLoading = true)
@@ -72,16 +75,32 @@ class LoginViewModel @Inject constructor(
                         }.launchIn(this)
                 }
             }
+            is LoginEvent.Signup -> { // From SignUpViewModel
+                viewModelScope.launch {
+                    _state.value = state.value.copy(isLoading = true)
+                    authUseCases.signupUser(state.value.email, state.value.password, state.value.name, "buyer")
+                        .onEach { result ->
+                             _state.value = state.value.copy(isLoading = false)
+                            result.onSuccess {
+                                _eventFlow.emit(UiEvent.SignupSuccess)
+                            }.onFailure {
+                                _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Unknown error"))
+                            }
+                        }.launchIn(this)
+                }
+            }
         }
     }
 
     sealed class UiEvent {
         data class ShowSnackbar(val message: String) : UiEvent()
         data class LoginSuccess(val role: String) : UiEvent()
+        object SignupSuccess : UiEvent()
     }
 }
 
 data class LoginState(
+    val name: String = "", // From SignUpState
     val email: String = "",
     val password: String = "",
     val isLoading: Boolean = false
@@ -90,6 +109,8 @@ data class LoginState(
 sealed class LoginEvent {
     data class EnteredEmail(val value: String) : LoginEvent()
     data class EnteredPassword(val value: String) : LoginEvent()
+    data class EnteredName(val value: String) : LoginEvent() // From SignUpEvent
     object Login : LoginEvent()
+    object Signup : LoginEvent()
     data class LoginWithGoogle(val idToken: String) : LoginEvent()
 } 

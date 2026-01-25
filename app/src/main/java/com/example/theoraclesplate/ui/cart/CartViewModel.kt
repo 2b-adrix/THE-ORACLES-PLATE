@@ -45,7 +45,7 @@ class CartViewModel @Inject constructor(
                             id = event.item.name, // Use food name as ID for simplicity
                             name = event.item.name,
                             price = event.item.price,
-                            image = event.item.image,
+                            image = event.item.imageUrl,
                             quantity = 1,
                             sellerId = event.item.sellerId
                         )

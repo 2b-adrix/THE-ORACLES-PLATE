@@ -42,9 +42,7 @@ object AppModule {
     fun provideMenuUseCases(repository: MenuRepository): MenuUseCases {
         return MenuUseCases(
             getMenuItems = GetMenuItemsUseCase(repository),
-            getMyMenuItems = GetMyMenuItemsUseCase(repository),
             addMenuItem = AddMenuItemUseCase(repository),
-            updateMenuItem = UpdateMenuItemUseCase(repository),
             deleteMenuItem = DeleteMenuItemUseCase(repository)
         )
     }
@@ -72,16 +70,17 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAdminUseCases(repository: AdminRepository): AdminUseCases {
+    fun provideAdminUseCases(adminRepository: AdminRepository): AdminUseCases {
         return AdminUseCases(
-            getPendingSellers = GetPendingSellersUseCase(repository),
-            approveSeller = ApproveSellerUseCase(repository),
-            getAllUsers = GetAllUsersUseCase(repository),
-            deleteUser = DeleteUserUseCase(repository),
-            getAllOrders = GetAllOrdersUseCase(repository),
-            deleteOrder = DeleteOrderUseCase(repository),
-            getDeliveryUsers = GetDeliveryUsersUseCase(repository),
-            getAnalyticsData = GetAnalyticsDataUseCase(repository)
+            getPendingSellers = GetPendingSellersUseCase(adminRepository),
+            approveSeller = ApproveSellerUseCase(adminRepository),
+            getAllUsers = GetAllUsersUseCase(adminRepository),
+            deleteUser = DeleteUserUseCase(adminRepository),
+            getAllOrders = GetAllOrdersUseCase(adminRepository),
+            deleteOrder = DeleteOrderUseCase(adminRepository),
+            getDeliveryUsers = GetDeliveryUsersUseCase(adminRepository),
+            getAnalyticsData = GetAnalyticsDataUseCase(adminRepository),
+            getAllMenuItems = GetAllMenuItemsUseCase(adminRepository)
         )
     }
 

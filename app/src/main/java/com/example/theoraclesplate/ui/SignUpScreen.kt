@@ -17,27 +17,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.theoraclesplate.ui.auth.signup.SignUpEvent
-import com.example.theoraclesplate.ui.auth.signup.SignUpViewModel
+import com.example.theoraclesplate.ui.auth.login.LoginEvent
+import com.example.theoraclesplate.ui.auth.login.LoginViewModel
 import com.example.theoraclesplate.ui.theme.StartColor
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = hiltViewModel()) {
+fun SignUpScreen(navController: NavController, viewModel: LoginViewModel = hiltViewModel()) {
     val state = viewModel.state.value
     val context = LocalContext.current
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is SignUpViewModel.UiEvent.ShowSnackbar -> {
+                is LoginViewModel.UiEvent.ShowSnackbar -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
-                is SignUpViewModel.UiEvent.SignUpSuccess -> {
+                is LoginViewModel.UiEvent.SignupSuccess -> {
                     navController.navigate("login") {
                         popUpTo("signup") { inclusive = true }
                     }
                 }
+                else -> {}
             }
         }
     }
@@ -76,7 +77,7 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = hilt
 
             OutlinedTextField(
                 value = state.name,
-                onValueChange = { viewModel.onEvent(SignUpEvent.EnteredName(it)) },
+                onValueChange = { viewModel.onEvent(LoginEvent.EnteredName(it)) },
                 label = { Text("Full Name") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -88,7 +89,7 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = hilt
 
             OutlinedTextField(
                 value = state.email,
-                onValueChange = { viewModel.onEvent(SignUpEvent.EnteredEmail(it)) },
+                onValueChange = { viewModel.onEvent(LoginEvent.EnteredEmail(it)) },
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -100,7 +101,7 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = hilt
 
             OutlinedTextField(
                 value = state.password,
-                onValueChange = { viewModel.onEvent(SignUpEvent.EnteredPassword(it)) },
+                onValueChange = { viewModel.onEvent(LoginEvent.EnteredPassword(it)) },
                 label = { Text("Password") },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -114,7 +115,7 @@ fun SignUpScreen(navController: NavController, viewModel: SignUpViewModel = hilt
 
             Button(
                 onClick = {
-                    viewModel.onEvent(SignUpEvent.SignUp)
+                    viewModel.onEvent(LoginEvent.Signup)
                 },
                 enabled = !state.isLoading,
                 modifier = Modifier

@@ -7,10 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.theoraclesplate.domain.use_case.AdminUseCases
 import com.example.theoraclesplate.model.Order
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,36 +19,21 @@ class AllOrdersViewModel @Inject constructor(
     private val _state = mutableStateOf(AllOrdersState())
     val state: State<AllOrdersState> = _state
 
-    private var getAllOrdersJob: Job? = null
-
     init {
         getAllOrders()
     }
 
-    fun onEvent(event: AllOrdersEvent) {
-        when (event) {
-            is AllOrdersEvent.DeleteOrder -> {
-                viewModelScope.launch {
-                    adminUseCases.deleteOrder(event.orderId)
-                }
-            }
-        }
-    }
-
     private fun getAllOrders() {
-        getAllOrdersJob?.cancel()
-        getAllOrdersJob = adminUseCases.getAllOrders()
-            .onEach { orders ->
-                _state.value = state.value.copy(orders = orders)
-            }
-            .launchIn(viewModelScope)
+        adminUseCases.getAllOrders().onEach { result ->
+            _state.value = state.value.copy(
+                isLoading = false,
+                orders = result.getOrNull() ?: emptyList()
+            )
+        }.launchIn(viewModelScope)
     }
 }
 
 data class AllOrdersState(
-    val orders: List<Pair<String, Order>> = emptyList()
+    val isLoading: Boolean = true,
+    val orders: List<Order> = emptyList()
 )
-
-sealed class AllOrdersEvent {
-    data class DeleteOrder(val orderId: String) : AllOrdersEvent()
-}

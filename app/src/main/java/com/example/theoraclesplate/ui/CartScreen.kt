@@ -1,6 +1,5 @@
 package com.example.theoraclesplate.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -114,7 +113,7 @@ fun CartItemRow(item: CartItem, onIncrease: () -> Unit, onDecrease: () -> Unit, 
                 modifier = Modifier.weight(1f).padding(horizontal = 16.dp)
             ) {
                 Text(item.name, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                Text(item.price, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White.copy(alpha = 0.8f))
+                Text("$${item.price}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = Color.White.copy(alpha = 0.8f))
                 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

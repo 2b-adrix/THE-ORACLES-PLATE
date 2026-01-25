@@ -48,7 +48,7 @@ class DetailsViewModel @Inject constructor(
                             id = event.item.name, // Using name as ID
                             name = event.item.name,
                             price = event.item.price,
-                            image = event.item.image,
+                            image = event.item.imageUrl,
                             quantity = 1,
                             sellerId = event.item.sellerId
                         )

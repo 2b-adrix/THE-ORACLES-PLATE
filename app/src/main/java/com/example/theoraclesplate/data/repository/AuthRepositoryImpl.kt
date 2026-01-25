@@ -30,9 +30,11 @@ class AuthRepositoryImpl : AuthRepository {
         }
     }
 
-    override suspend fun signup(email: String, pass: String): Flow<Result<AuthResult>> = flow {
+    override suspend fun signup(email: String, pass: String, name: String, role: String): Flow<Result<AuthResult>> = flow {
         try {
             val result = auth.createUserWithEmailAndPassword(email, pass).await()
+            val user = User(name = name, email = email, role = role) // Create user with specified role
+            result.user?.uid?.let { createUser(user, it) } // Store user in database
             emit(Result.success(result))
         } catch (e: Exception) {
             emit(Result.failure(e))

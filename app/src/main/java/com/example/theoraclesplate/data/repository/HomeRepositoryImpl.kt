@@ -1,42 +1,37 @@
 package com.example.theoraclesplate.data.repository
 
-import com.example.theoraclesplate.R
 import com.example.theoraclesplate.domain.repository.HomeRepository
 import com.example.theoraclesplate.model.FoodItem
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.tasks.await
 
 class HomeRepositoryImpl : HomeRepository {
 
     private val database = Firebase.database.reference
 
-    override fun getBanners(): Flow<List<Int>> = callbackFlow {
-        val banners = listOf(R.drawable.banner1, R.drawable.banner2)
-        trySend(banners)
-        awaitClose { }
+    override fun getBanners(): Flow<List<String>> = flow {
+        // TODO: Implement
+        emit(emptyList())
     }
 
-    override fun getPopularFood(): Flow<List<FoodItem>> = callbackFlow {
-        val menuRef = database.child("menu")
-        val listener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val foodItems = snapshot.children.mapNotNull { 
-                    it.getValue(FoodItem::class.java)
+    override fun getPopularFood(): Flow<List<FoodItem>> = flow {
+        try {
+            val snapshot = database.child("menu_items").limitToFirst(10).get().await()
+            val foodItems = mutableListOf<FoodItem>()
+            for (sellerSnapshot in snapshot.children) {
+                for (menuItemSnapshot in sellerSnapshot.children) {
+                    val foodItem = menuItemSnapshot.getValue(FoodItem::class.java)
+                    if (foodItem != null) {
+                        foodItems.add(foodItem)
+                    }
                 }
-                trySend(foodItems)
             }
-
-            override fun onCancelled(error: DatabaseError) {
-                close(error.toException())
-            }
+            emit(foodItems)
+        } catch (e: Exception) {
+            emit(emptyList())
         }
-        menuRef.addValueEventListener(listener)
-        awaitClose { menuRef.removeEventListener(listener) }
     }
 }

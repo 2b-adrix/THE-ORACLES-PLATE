@@ -54,6 +54,10 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = hiltVi
                         popUpTo("start") { inclusive = true }
                     }
                 }
+                is LoginViewModel.UiEvent.SignupSuccess -> { // Added this case
+                    // For now, just show a toast. We can navigate to the login screen if needed.
+                    Toast.makeText(context, "Signup successful!", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

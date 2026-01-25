@@ -131,7 +131,7 @@ fun CheckoutScreen(navController: NavController, viewModel: CheckoutViewModel = 
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text("${item.quantity} x ${item.name}", color = Color.White.copy(alpha = 0.7f))
-                Text(item.price, fontWeight = FontWeight.SemiBold, color = Color.White)
+                Text("$${String.format("%.2f", item.price)}", fontWeight = FontWeight.SemiBold, color = Color.White)
             }
         }
 
@@ -145,7 +145,7 @@ fun CheckoutScreen(navController: NavController, viewModel: CheckoutViewModel = 
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text("Total", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.White)
-            Text(state.totalAmount, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = StartColor)
+            Text("$${String.format("%.2f", state.totalAmount)}", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = StartColor)
         }
 
         Spacer(modifier = Modifier.height(32.dp))

@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 class GetDeliveryUsersUseCase(private val repository: AdminRepository) {
 
-    operator fun invoke(): Flow<List<Pair<String, User>>> {
+    operator fun invoke(): Flow<Result<List<Pair<String, User>>>> {
         return repository.getDeliveryUsers()
     }
 }

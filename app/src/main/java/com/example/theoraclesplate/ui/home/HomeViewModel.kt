@@ -48,6 +48,6 @@ class HomeViewModel @Inject constructor(
 }
 
 data class HomeState(
-    val banners: List<Int> = emptyList(),
+    val banners: List<String> = emptyList(),
     val popularFood: List<FoodItem> = emptyList()
 )

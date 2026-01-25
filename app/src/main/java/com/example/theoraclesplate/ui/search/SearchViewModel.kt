@@ -4,7 +4,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.theoraclesplate.domain.use_case.MenuUseCases
+import com.example.theoraclesplate.domain.use_case.AdminUseCases
 import com.example.theoraclesplate.model.FoodItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val menuUseCases: MenuUseCases
+    private val adminUseCases: AdminUseCases
 ) : ViewModel() {
 
     private val _state = mutableStateOf(SearchState())
@@ -23,7 +23,7 @@ class SearchViewModel @Inject constructor(
     private var getMenuItemsJob: Job? = null
 
     init {
-        getMenuItems()
+        getAllMenuItems()
     }
 
     fun onEvent(event: SearchEvent) {
@@ -35,13 +35,12 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    private fun getMenuItems() {
+    private fun getAllMenuItems() {
         getMenuItemsJob?.cancel()
-        getMenuItemsJob = menuUseCases.getMenuItems()
-            .onEach { menuItemsWithKeys ->
-                val menuItems = menuItemsWithKeys.map { it.second }
+        getMenuItemsJob = adminUseCases.getAllMenuItems()
+            .onEach { result ->
                 _state.value = state.value.copy(
-                    menuItems = menuItems,
+                    menuItems = result.getOrNull() ?: emptyList(),
                     isLoading = false
                 )
                 filterItems()

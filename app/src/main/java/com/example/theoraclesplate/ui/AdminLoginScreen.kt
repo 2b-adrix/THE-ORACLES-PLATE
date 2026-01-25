@@ -15,23 +15,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.theoraclesplate.ui.auth.adminlogin.AdminLoginEvent
-import com.example.theoraclesplate.ui.auth.adminlogin.AdminLoginViewModel
+import com.example.theoraclesplate.ui.auth.admin.AdminAuthEvent
+import com.example.theoraclesplate.ui.auth.admin.AdminAuthViewModel
 import com.example.theoraclesplate.ui.theme.StartColor
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
-fun AdminLoginScreen(navController: NavController, viewModel: AdminLoginViewModel = hiltViewModel()) {
+fun AdminLoginScreen(navController: NavController, viewModel: AdminAuthViewModel = hiltViewModel()) {
     val state = viewModel.state.value
     val context = LocalContext.current
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is AdminLoginViewModel.UiEvent.ShowSnackbar -> {
+                is AdminAuthViewModel.UiEvent.ShowSnackbar -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
-                is AdminLoginViewModel.UiEvent.LoginSuccess -> {
+                is AdminAuthViewModel.UiEvent.AuthSuccess -> {
                     navController.navigate("admin_dashboard") {
                         popUpTo("start") { inclusive = true }
                     }
@@ -56,7 +56,7 @@ fun AdminLoginScreen(navController: NavController, viewModel: AdminLoginViewMode
 
             OutlinedTextField(
                 value = state.email,
-                onValueChange = { viewModel.onEvent(AdminLoginEvent.EnteredEmail(it)) },
+                onValueChange = { viewModel.onEvent(AdminAuthEvent.EnteredEmail(it)) },
                 label = { Text("Email") },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = StartColor,
@@ -72,7 +72,7 @@ fun AdminLoginScreen(navController: NavController, viewModel: AdminLoginViewMode
 
             OutlinedTextField(
                 value = state.password,
-                onValueChange = { viewModel.onEvent(AdminLoginEvent.EnteredPassword(it)) },
+                onValueChange = { viewModel.onEvent(AdminAuthEvent.EnteredPassword(it)) },
                 label = { Text("Password") },
                 visualTransformation = PasswordVisualTransformation(),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -89,7 +89,7 @@ fun AdminLoginScreen(navController: NavController, viewModel: AdminLoginViewMode
 
             Button(
                 onClick = {
-                    viewModel.onEvent(AdminLoginEvent.Login)
+                    viewModel.onEvent(AdminAuthEvent.Login)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = StartColor),
                 modifier = Modifier.fillMaxWidth()

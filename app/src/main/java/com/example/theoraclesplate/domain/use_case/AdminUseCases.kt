@@ -8,5 +8,6 @@ data class AdminUseCases(
     val getAllOrders: GetAllOrdersUseCase,
     val deleteOrder: DeleteOrderUseCase,
     val getDeliveryUsers: GetDeliveryUsersUseCase,
-    val getAnalyticsData: GetAnalyticsDataUseCase
+    val getAnalyticsData: GetAnalyticsDataUseCase,
+    val getAllMenuItems: GetAllMenuItemsUseCase
 )
