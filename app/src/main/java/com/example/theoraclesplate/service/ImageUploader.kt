@@ -5,6 +5,7 @@ import android.net.Uri
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
+import com.example.theoraclesplate.BuildConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
@@ -17,7 +18,7 @@ interface ImageUploader {
 class CloudinaryImageUploader(private val context: Context) : ImageUploader {
 
     init {
-        MediaManager.init(context)
+        MediaManager.init(context, mapOf("cloudinary_url" to BuildConfig.CLOUDINARY_URL))
     }
 
     override suspend fun uploadImage(uri: Uri): Result<String> = withContext(Dispatchers.IO) {

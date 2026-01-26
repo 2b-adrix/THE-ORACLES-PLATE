@@ -7,20 +7,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.theoraclesplate.domain.use_case.AuthUseCases
 import com.example.theoraclesplate.domain.use_case.CartUseCases
-import com.example.theoraclesplate.domain.use_case.DetailsUseCases
 import com.example.theoraclesplate.model.CartItem
 import com.example.theoraclesplate.model.FoodItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 
 @HiltViewModel
 class DetailsViewModel @Inject constructor(
-    private val detailsUseCases: DetailsUseCases,
     private val cartUseCases: CartUseCases,
     private val authUseCases: AuthUseCases,
     savedStateHandle: SavedStateHandle
@@ -33,8 +31,23 @@ class DetailsViewModel @Inject constructor(
     val eventFlow = _eventFlow.asSharedFlow()
 
     init {
-        savedStateHandle.get<String>("name")?.let {
-            getFoodItemDetails(it)
+        val name = savedStateHandle.get<String>("name")?.let {
+            URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
+        }
+        val price = savedStateHandle.get<Float>("price")
+        val image = savedStateHandle.get<String>("image")?.let {
+            URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
+        }
+
+        if (name != null && price != null) {
+            _state.value = state.value.copy(
+                foodItem = FoodItem(
+                    name = name,
+                    price = price.toDouble(),
+                    imageUrl = image ?: ""
+                ),
+                isLoading = false
+            )
         }
     }
 
@@ -58,12 +71,6 @@ class DetailsViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    private fun getFoodItemDetails(foodItemName: String) {
-        detailsUseCases.getFoodItemDetails(foodItemName).onEach { item ->
-            _state.value = state.value.copy(foodItem = item, isLoading = false)
-        }.launchIn(viewModelScope)
     }
 
     sealed class UiEvent {

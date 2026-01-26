@@ -10,4 +10,6 @@ interface MenuRepository {
     suspend fun addMenuItem(sellerId: String, menuItem: FoodItem): Flow<Result<Unit>>
 
     suspend fun deleteMenuItem(sellerId: String, menuItemId: String): Flow<Result<Unit>>
+
+    suspend fun updateMenuItem(sellerId: String, menuItemId: String, foodItem: FoodItem): Flow<Result<Unit>>
 }

@@ -47,4 +47,13 @@ class MenuRepositoryImpl : MenuRepository {
             emit(Result.failure(e))
         }
     }
+
+    override suspend fun updateMenuItem(sellerId: String, menuItemId: String, foodItem: FoodItem): Flow<Result<Unit>> = flow {
+        try {
+            database.child("menu_items").child(sellerId).child(menuItemId).setValue(foodItem).await()
+            emit(Result.success(Unit))
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
 }

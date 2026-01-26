@@ -26,6 +26,8 @@ import androidx.navigation.NavController
 import com.example.theoraclesplate.ui.search.SearchEvent
 import com.example.theoraclesplate.ui.search.SearchViewModel
 import com.example.theoraclesplate.ui.theme.StartColor
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun SearchScreen(rootNavController: NavController, viewModel: SearchViewModel = hiltViewModel()) {
@@ -78,8 +80,9 @@ fun SearchScreen(rootNavController: NavController, viewModel: SearchViewModel = 
             LazyColumn {
                 items(state.filteredItems) { food ->
                      PopularFoodItem(food) {
-                         val encodedImage = Uri.encode(food.imageUrl)
-                         rootNavController.navigate("details/${food.name}/${food.price}/?image=${encodedImage}")
+                         val encodedName = URLEncoder.encode(food.name, StandardCharsets.UTF_8.toString())
+                         val encodedImage = URLEncoder.encode(food.imageUrl, StandardCharsets.UTF_8.toString())
+                         rootNavController.navigate("details/$encodedName/${food.price}/?image=$encodedImage")
                      }
                 }
             }

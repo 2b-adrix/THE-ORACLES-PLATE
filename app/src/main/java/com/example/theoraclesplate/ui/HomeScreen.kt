@@ -30,6 +30,8 @@ import com.example.theoraclesplate.model.FoodItem
 import com.example.theoraclesplate.ui.home.HomeViewModel
 import com.example.theoraclesplate.ui.theme.StartColor
 import kotlinx.coroutines.delay
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -44,7 +46,7 @@ fun HomeScreen(
     LaunchedEffect(pagerState) {
         while (true) {
             delay(3000)
-            if (!pagerState.isScrollInProgress) {
+            if (pagerState.pageCount > 0 && !pagerState.isScrollInProgress) {
                 val nextPage = (pagerState.currentPage + 1) % pagerState.pageCount
                 pagerState.animateScrollToPage(nextPage)
             }
@@ -105,7 +107,9 @@ fun HomeScreen(
 
         items(state.popularFood) { food ->
             PopularFoodItem(food) {
-                rootNavController.navigate("details/${food.name}")
+                val encodedName = URLEncoder.encode(food.name, StandardCharsets.UTF_8.toString())
+                val encodedImage = URLEncoder.encode(food.imageUrl, StandardCharsets.UTF_8.toString())
+                rootNavController.navigate("details/$encodedName/${food.price}/?image=$encodedImage")
             }
         }
     }

@@ -12,6 +12,7 @@ import com.example.theoraclesplate.ui.admin.allusers.AllUsersScreen
 import com.example.theoraclesplate.ui.admin.analytics.AnalyticsScreen
 import com.example.theoraclesplate.ui.admin.deliverymanagement.DeliveryManagementScreen
 import com.example.theoraclesplate.ui.admin.pendingsellers.PendingSellersScreen
+import com.example.theoraclesplate.ui.seller.menu.EditMenuItemScreen
 import com.example.theoraclesplate.ui.theme.THEORACLESPLATETheme
 
 @Composable
@@ -48,10 +49,22 @@ fun MainApp() {
             composable("delivery_management") { DeliveryManagementScreen(navController) }
 
             composable(
-                route = "details/{name}",
-                arguments = listOf(navArgument("name") { type = NavType.StringType })
+                route = "details/{name}/{price}/?image={image}",
+                arguments = listOf(
+                    navArgument("name") { type = NavType.StringType },
+                    navArgument("price") { type = NavType.FloatType },
+                    navArgument("image") { type = NavType.StringType; nullable = true }
+                )
             ) { 
                 DetailsScreen(onBack = { navController.popBackStack() })
+            }
+            
+            composable(
+                route = "edit_menu_item/{menuItemId}",
+                arguments = listOf(navArgument("menuItemId") { type = NavType.StringType })
+            ) {
+                val menuItemId = it.arguments?.getString("menuItemId") ?: ""
+                EditMenuItemScreen(navController = navController, menuItemId = menuItemId)
             }
         }
     }

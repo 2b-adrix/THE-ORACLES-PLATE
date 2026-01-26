@@ -65,7 +65,7 @@ class SellerMenuViewModel @Inject constructor(
                         _eventFlow.emit(UiEvent.ShowSnackbar("User not logged in"))
                         return@launch
                     }
-                    
+
                     _state.value = state.value.copy(isLoading = true)
 
                     val imageUrl = event.imageUri?.let { imageUploader.uploadImage(it).getOrNull() } ?: ""
@@ -106,6 +106,24 @@ class SellerMenuViewModel @Inject constructor(
                     }.launchIn(this)
                 }
             }
+
+            is SellerMenuEvent.EditMenuItem -> {
+                viewModelScope.launch {
+                    val sellerId = authUseCases.getCurrentUser()?.uid
+                    if (sellerId == null) {
+                        _eventFlow.emit(UiEvent.ShowSnackbar("User not logged in"))
+                        return@launch
+                    }
+                    menuUseCases.updateMenuItem(sellerId, event.menuItemId, event.foodItem).onEach { result ->
+                        result.onSuccess {
+                            _eventFlow.emit(UiEvent.ShowSnackbar("Menu item updated!"))
+                            getMenuItemsForCurrentUser()
+                        }.onFailure {
+                            _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Error updating item"))
+                        }
+                    }.launchIn(this)
+                }
+            }
         }
     }
 
@@ -128,5 +146,6 @@ sealed class SellerMenuEvent {
     data class EnteredDescription(val value: String) : SellerMenuEvent()
     data class EnteredPrice(val value: String) : SellerMenuEvent()
     data class AddMenuItem(val imageUri: Uri?) : SellerMenuEvent()
+    data class EditMenuItem(val menuItemId: String, val foodItem: FoodItem) : SellerMenuEvent()
     data class DeleteMenuItem(val menuItemId: String) : SellerMenuEvent()
 }

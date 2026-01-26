@@ -53,7 +53,8 @@ object AppModule {
         return MenuUseCases(
             getMenuItems = GetMenuItemsUseCase(repository),
             addMenuItem = AddMenuItemUseCase(repository),
-            deleteMenuItem = DeleteMenuItemUseCase(repository)
+            deleteMenuItem = DeleteMenuItemUseCase(repository),
+            updateMenuItem = UpdateMenuItemUseCase(repository)
         )
     }
 
@@ -122,11 +123,12 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDeliveryUseCases(repository: DeliveryRepository): DeliveryUseCases {
+    fun provideDeliveryUseCases(deliveryRepository: DeliveryRepository, orderRepository: OrderRepository): DeliveryUseCases {
         return DeliveryUseCases(
-            getReadyForPickupOrders = GetReadyForPickupOrdersUseCase(repository),
-            getOutForDeliveryOrders = GetOutForDeliveryOrdersUseCase(repository),
-            getDeliveredOrders = GetDeliveredOrdersUseCase(repository)
+            getReadyForPickupOrders = GetReadyForPickupOrdersUseCase(deliveryRepository),
+            getOutForDeliveryOrders = GetOutForDeliveryOrdersUseCase(deliveryRepository),
+            getDeliveredOrders = GetDeliveredOrdersUseCase(deliveryRepository),
+            updateOrderStatus = UpdateOrderStatusUseCase(orderRepository)
         )
     }
 

@@ -6,6 +6,7 @@ import java.io.FileInputStream
 import java.security.KeyStore
 import java.security.MessageDigest
 import java.io.File
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -24,6 +25,12 @@ android {
     namespace = "com.example.theoraclesplate"
     compileSdk = 36
 
+    val localProperties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localProperties.load(localPropertiesFile.inputStream())
+    }
+
     defaultConfig {
         applicationId = "com.example.theoraclesplate"
         minSdk = 24
@@ -32,8 +39,11 @@ android {
         versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        val cloudinaryUrl = localProperties.getProperty("cloudinary_url", "")
+        buildConfigField("String", "CLOUDINARY_URL", "\"$cloudinaryUrl\"")
     }
     buildFeatures {
+        buildConfig = true
         viewBinding = true
         compose = true
     }
