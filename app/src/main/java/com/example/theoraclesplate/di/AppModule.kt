@@ -1,5 +1,6 @@
 package com.example.theoraclesplate.di
 
+import android.content.Context
 import com.example.theoraclesplate.data.repository.AdminRepositoryImpl
 import com.example.theoraclesplate.data.repository.AuthRepositoryImpl
 import com.example.theoraclesplate.data.repository.CartRepositoryImpl
@@ -21,15 +22,24 @@ import com.example.theoraclesplate.domain.repository.HomeRepository
 import com.example.theoraclesplate.domain.repository.MenuRepository
 import com.example.theoraclesplate.domain.repository.OrderRepository
 import com.example.theoraclesplate.domain.use_case.*
+import com.example.theoraclesplate.service.CloudinaryImageUploader
+import com.example.theoraclesplate.service.ImageUploader
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    @Provides
+    @Singleton
+    fun provideImageUploader(@ApplicationContext context: Context): ImageUploader {
+        return CloudinaryImageUploader(context)
+    }
 
     @Provides
     @Singleton
@@ -70,17 +80,17 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAdminUseCases(adminRepository: AdminRepository): AdminUseCases {
+    fun provideAdminUseCases(repository: AdminRepository): AdminUseCases {
         return AdminUseCases(
-            getPendingSellers = GetPendingSellersUseCase(adminRepository),
-            approveSeller = ApproveSellerUseCase(adminRepository),
-            getAllUsers = GetAllUsersUseCase(adminRepository),
-            deleteUser = DeleteUserUseCase(adminRepository),
-            getAllOrders = GetAllOrdersUseCase(adminRepository),
-            deleteOrder = DeleteOrderUseCase(adminRepository),
-            getDeliveryUsers = GetDeliveryUsersUseCase(adminRepository),
-            getAnalyticsData = GetAnalyticsDataUseCase(adminRepository),
-            getAllMenuItems = GetAllMenuItemsUseCase(adminRepository)
+            getPendingSellers = GetPendingSellersUseCase(repository),
+            approveSeller = ApproveSellerUseCase(repository),
+            getAllUsers = GetAllUsersUseCase(repository),
+            deleteUser = DeleteUserUseCase(repository),
+            getAllOrders = GetAllOrdersUseCase(repository),
+            deleteOrder = DeleteOrderUseCase(repository),
+            getDeliveryUsers = GetDeliveryUsersUseCase(repository),
+            getAnalyticsData = GetAnalyticsDataUseCase(repository),
+            getAllMenuItems = GetAllMenuItemsUseCase(repository)
         )
     }
 

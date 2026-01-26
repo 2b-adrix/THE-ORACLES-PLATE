@@ -1,5 +1,6 @@
 package com.example.theoraclesplate.ui.seller.menu
 
+import android.net.Uri
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -7,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.theoraclesplate.domain.use_case.AuthUseCases
 import com.example.theoraclesplate.domain.use_case.MenuUseCases
 import com.example.theoraclesplate.model.FoodItem
+import com.example.theoraclesplate.service.ImageUploader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -18,7 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SellerMenuViewModel @Inject constructor(
     private val menuUseCases: MenuUseCases,
-    private val authUseCases: AuthUseCases
+    private val authUseCases: AuthUseCases,
+    private val imageUploader: ImageUploader
 ) : ViewModel() {
 
     private val _state = mutableStateOf(SellerMenuState())
@@ -62,13 +65,20 @@ class SellerMenuViewModel @Inject constructor(
                         _eventFlow.emit(UiEvent.ShowSnackbar("User not logged in"))
                         return@launch
                     }
+                    
+                    _state.value = state.value.copy(isLoading = true)
+
+                    val imageUrl = event.imageUri?.let { imageUploader.uploadImage(it).getOrNull() } ?: ""
+
                     val menuItem = FoodItem(
                         name = state.value.name,
                         description = state.value.description,
                         price = state.value.price.toDoubleOrNull() ?: 0.0,
-                        sellerId = sellerId
+                        sellerId = sellerId,
+                        imageUrl = imageUrl
                     )
                     menuUseCases.addMenuItem(sellerId, menuItem).onEach { result ->
+                        _state.value = state.value.copy(isLoading = false)
                         result.onSuccess {
                             _eventFlow.emit(UiEvent.ShowSnackbar("Menu item added!"))
                             _eventFlow.emit(UiEvent.NavigateUp)
@@ -117,6 +127,6 @@ sealed class SellerMenuEvent {
     data class EnteredName(val value: String) : SellerMenuEvent()
     data class EnteredDescription(val value: String) : SellerMenuEvent()
     data class EnteredPrice(val value: String) : SellerMenuEvent()
-    object AddMenuItem : SellerMenuEvent()
+    data class AddMenuItem(val imageUri: Uri?) : SellerMenuEvent()
     data class DeleteMenuItem(val menuItemId: String) : SellerMenuEvent()
 }

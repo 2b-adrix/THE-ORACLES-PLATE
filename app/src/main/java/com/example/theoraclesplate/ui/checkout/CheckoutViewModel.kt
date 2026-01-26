@@ -76,11 +76,8 @@ class CheckoutViewModel @Inject constructor(
                                 timestamp = System.currentTimeMillis()
                             )
                             checkoutUseCases.createOrder(order)
-                            // Assuming you have a `clearCart` use case that takes a userId.
-                            // You may need to create this if it doesn't exist.
                             cartUseCases.clearCart(user.uid)
                             _eventFlow.emit(UiEvent.OrderPlaced)
-                            // isLoading is set back to false in getCartItems as the list is updated
                         } else {
                             _eventFlow.emit(UiEvent.ShowError("User not logged in."))
                             _state.value = state.value.copy(isLoading = false)
