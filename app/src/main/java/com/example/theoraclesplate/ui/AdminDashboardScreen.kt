@@ -1,5 +1,6 @@
 package com.example.theoraclesplate.ui
 
+import android.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -47,7 +48,7 @@ fun AdminDashboardScreen(navController: NavController) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Admin Dashboard") })
+            TopAppBar(title = { Text("Admin Dashboard", color=androidx.compose.ui.graphics.Color.White) })
         }
     ) {
         LazyVerticalGrid(

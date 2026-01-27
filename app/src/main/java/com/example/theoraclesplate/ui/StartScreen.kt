@@ -37,7 +37,7 @@ fun StartScreen(navController: NavController) {
             Spacer(modifier = Modifier.weight(1f))
             
             Image(
-                painter = painterResource(id = R.drawable.logo),
+                painter = painterResource(id = R.drawable.logo2),
                 contentDescription = "Logo",
                 modifier = Modifier.height(150.dp)
             )

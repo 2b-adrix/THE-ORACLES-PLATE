@@ -6,74 +6,73 @@
     android:viewportWidth="512"
     android:viewportHeight="512">
 
-    <!-- 1. Background: Radial Gradient for Mystical Depth -->
+    <!-- Background -->
     <path android:pathData="M256,256m-256,0a256,256 0 1,1 512,0a256,256 0 1,1 -512,0">
         <aapt:attr name="android:fillColor">
             <gradient
+                android:type="radial"
                 android:centerX="256"
-                android:centerY="256"
-                android:gradientRadius="256"
-                android:type="radial">
-                <item android:offset="0.0" android:color="#FFD32F2F"/>
-                <item android:offset="1.0" android:color="#FF8B0000"/>
+                android:centerY="220"
+                android:gradientRadius="320">
+                <item android:offset="0" android:color="#FFD32F2F"/>
+                <item android:offset="1" android:color="#FF4A0000"/>
             </gradient>
         </aapt:attr>
     </path>
 
-    <!-- 2. The Golden Plate (Base) -->
+    <!-- Golden Plate -->
     <path
-        android:fillColor="#FFC107"
-        android:pathData="M106,370 L406,370 C406,370 426,390 406,410 L106,410 C86,390 106,370 106,370 Z"/>
-    
-    <!-- 3. The Oracle Dome (Cloche) -->
-    <!-- Main Dome Shape -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M126,370 C126,220 180,120 256,120 C332,120 386,220 386,370 L126,370 Z"/>
-        
-    <!-- Right Shadow for 3D effect -->
-    <path
-        android:fillColor="#EEEEEE"
-        android:pathData="M256,120 C332,120 386,220 386,370 L256,370 L256,120 Z"/>
+        android:fillColor="#FFD4AF37"
+        android:pathData="M92,388 H420 C438,388 446,408 420,430 H92 C66,408 74,388 92,388 Z"/>
 
-    <!-- 4. The All-Seeing Eye Handle (Top of Dome) -->
+    <!-- Glass Dome -->
     <path
-        android:fillColor="#FFC107"
-        android:pathData="M256,120 C275,120 285,105 285,90 C285,75 270,60 256,60 C242,60 227,75 227,90 C227,105 237,120 256,120 Z"/>
-    <!-- Iris/Pupil of the handle -->
-    <path
-        android:fillColor="#CD0F0F"
-        android:pathData="M256,90 m-12,0 a12,12 0 1,1 24,0 a12,12 0 1,1 -24,0"/>
+        android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.88"
+        android:pathData="M136,388 C136,230 196,130 256,130 C316,130 376,230 376,388 Z"/>
 
-    <!-- 5. The "Oracle" Symbol on the Dome (Eye + Cutlery) -->
-    <group>
-        <!-- Eye Outline -->
-        <path
-            android:fillColor="#FFC107"
-            android:pathData="M256,200 C206,200 170,240 170,240 C170,240 206,280 256,280 C306,280 342,240 342,240 C342,240 306,200 256,200 Z M256,270 C226,270 200,240 200,240 C200,240 226,210 256,210 C286,210 312,240 312,240 C312,240 286,270 256,270 Z"/>
-        
-        <!-- Pupil forming a Spoon/Fork hybrid -->
-        <path
-            android:fillColor="#CD0F0F"
-            android:pathData="M256,220 C245,220 236,229 236,240 L240,240 L240,260 L252,260 L252,240 L256,240 L260,240 L260,260 L272,260 L272,240 C272,229 263,220 256,220 Z"/>
-    </group>
+    <!-- Dome Shadow -->
+    <path
+        android:fillColor="#FFEEEEEE"
+        android:pathData="M256,130 C316,130 376,230 376,388 H256 Z"/>
 
-    <!-- 6. Mystical Rays / Sparkles -->
-    <!-- Top Sparkle -->
+    <!-- Top Eye Base -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M256,20 L261,40 L280,45 L261,50 L256,70 L251,50 L232,45 L251,40 Z"/>
-    
-    <!-- Left Sparkle -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.7"
-        android:pathData="M100,100 L105,120 L125,125 L105,130 L100,150 L95,130 L75,125 L95,120 Z"/>
-    
-    <!-- Right Sparkle -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:fillAlpha="0.7"
-        android:pathData="M412,100 L417,120 L437,125 L417,130 L412,150 L407,130 L387,125 L407,120 Z"/>
+        android:fillColor="#FFD4AF37"
+        android:pathData="M256,130 C278,130 292,108 292,88 C292,68 270,52 256,52 C242,52 220,68 220,88 C220,108 234,130 256,130 Z"/>
 
+    <!-- Top Eye Pupil -->
+    <path
+        android:fillColor="#FF8B0000"
+        android:pathData="M256,92 m-10,0 a10,10 0 1,1 20,0 a10,10 0 1,1 -20,0"/>
+
+    <!-- Main Eye -->
+    <path
+        android:fillColor="#FFD4AF37"
+        android:pathData="
+        M256,220
+        C196,220 164,256 164,256
+        C164,256 196,292 256,292
+        C316,292 348,256 348,256
+        C348,256 316,220 256,220 Z"/>
+
+    <!-- Inner Eye -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="
+        M256,232
+        C220,232 200,256 200,256
+        C200,256 220,280 256,280
+        C292,280 312,256 312,256
+        C312,256 292,232 256,232 Z"/>
+
+    <!-- Fork -->
+    <path
+        android:fillColor="#FF8B0000"
+        android:pathData="M242,244 V276 H250 V244 Z"/>
+
+    <!-- Spoon -->
+    <path
+        android:fillColor="#FF8B0000"
+        android:pathData="M262,244 C256,244 254,252 254,256 V276 H270 V256 C270,252 268,244 262,244 Z"/>
 </vector>

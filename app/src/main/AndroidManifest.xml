@@ -12,18 +12,15 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@drawable/logo"
+        android:icon="@drawable/logo2"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/logo"
+        android:roundIcon="@drawable/logo2"
         android:supportsRtl="true"
         android:theme="@style/Theme.THEORACLESPLATE"
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="31">
 
-        <!-- Removed Google Maps API Key as we are switching to OpenStreetMap -->
-        <!-- <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_API_KEY" /> -->
+
 
         <activity
             android:name=".MainActivity"
