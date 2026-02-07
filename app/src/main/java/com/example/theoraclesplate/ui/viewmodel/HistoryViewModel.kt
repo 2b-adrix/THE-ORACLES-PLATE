@@ -2,97 +2,70 @@ package com.example.theoraclesplate.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.theoraclesplate.domain.use_case.AuthUseCases
+import com.example.theoraclesplate.domain.use_case.HistoryUseCases
 import com.example.theoraclesplate.model.Order
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
+import com.example.theoraclesplate.model.OrderItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
-class HistoryViewModel @Inject constructor() : ViewModel() {
-
-    private val auth = Firebase.auth
-    private val database = Firebase.database.reference
+class HistoryViewModel @Inject constructor(
+    private val historyUseCases: HistoryUseCases,
+    private val authUseCases: AuthUseCases
+) : ViewModel() {
 
     private val _historyState = MutableStateFlow<HistoryState>(HistoryState.Loading)
-    val historyState = _historyState.asStateFlow()
+    val historyState: StateFlow<HistoryState> = _historyState
 
     fun fetchOrderHistory() {
-        viewModelScope.launch {
-            val currentUser = auth.currentUser
-            if (currentUser != null) {
-                val historyRef = database.child("users").child(currentUser.uid).child("order_history")
-                historyRef.addValueEventListener(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        val historyItems = snapshot.children.mapNotNull {
-                            val order = it.getValue(Order::class.java)
-                            order?.let { o -> toHistoryItem(o, it.key) }
-                        }.sortedByDescending { it.timestamp }
-                        _historyState.value = HistoryState.Success(historyItems)
-                    }
-
-                    override fun onCancelled(error: DatabaseError) {
-                        _historyState.value = HistoryState.Error(error.message)
-                    }
-                })
-            } else {
-                _historyState.value = HistoryState.Error("User not logged in")
+        val userId = authUseCases.getCurrentUser()?.uid ?: return
+        historyUseCases.getOrderHistory(userId).onEach { result ->
+            result.onSuccess {
+                _historyState.value = HistoryState.Success(it.map { order -> order.toHistoryItem() })
+            }.onFailure {
+                _historyState.value = HistoryState.Error(it.message ?: "An unexpected error occurred")
             }
-        }
+        }.launchIn(viewModelScope)
     }
 
     fun cancelOrder(orderId: String) {
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-            database.child("orders").child(orderId).child("status").setValue("Cancelled")
-            database.child("users").child(currentUser.uid).child("order_history").child(orderId).child("status").setValue("Cancelled")
+        viewModelScope.launch {
+            try {
+                historyUseCases.cancelOrder(orderId)
+                fetchOrderHistory()
+            } catch (e: Exception) {
+                _historyState.value = HistoryState.Error(e.message ?: "An unexpected error occurred")
+            }
         }
-    }
-
-    private fun toHistoryItem(order: Order, orderId: String?): HistoryItem {
-        val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
-        val date = dateFormat.format(Date(order.timestamp))
-        val displayName = if (order.items.size > 1) {
-            "${order.items.first().name} + ${order.items.size - 1} more"
-        } else {
-            order.items.firstOrNull()?.name ?: "Food Item"
-        }
-        val image = order.items.firstOrNull()?.image ?: ""
-
-        return HistoryItem(
-            orderId = orderId ?: "",
-            name = displayName,
-            price = "$${order.totalAmount}",
-            date = date,
-            image = image,
-            status = order.status,
-            timestamp = order.timestamp
-        )
     }
 }
-
-data class HistoryItem(
-    val orderId: String,
-    val name: String,
-    val price: String,
-    val date: String,
-    val image: String,
-    val status: String,
-    val timestamp: Long
-)
 
 sealed class HistoryState {
     object Loading : HistoryState()
     data class Success(val items: List<HistoryItem>) : HistoryState()
     data class Error(val message: String) : HistoryState()
+}
+
+data class HistoryItem(
+    val orderId: String,
+    val items: List<OrderItem>,
+    val price: String,
+    val date: String,
+    val status: String
+)
+
+fun Order.toHistoryItem(): HistoryItem {
+    return HistoryItem(
+        orderId = orderId,
+        items = items,
+        price = "$${totalAmount}",
+        date = java.text.SimpleDateFormat("MMM dd, yyyy").format(java.util.Date(timestamp)),
+        status = status
+    )
 }

@@ -211,9 +211,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideHistoryUseCases(repository: HistoryRepository): HistoryUseCases {
+    fun provideHistoryUseCases(repository: HistoryRepository, orderRepository: OrderRepository): HistoryUseCases {
         return HistoryUseCases(
-            getOrderHistory = GetOrderHistoryUseCase(repository)
+            getOrderHistory = GetOrderHistoryUseCase(repository),
+            cancelOrder = CancelOrderUseCase(orderRepository)
         )
     }
 
