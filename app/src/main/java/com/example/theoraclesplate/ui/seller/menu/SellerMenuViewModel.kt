@@ -68,25 +68,24 @@ class SellerMenuViewModel @Inject constructor(
 
                     _state.value = state.value.copy(isLoading = true)
 
-                    val imageUrl = event.imageUri?.let { imageUploader.uploadImage(it).getOrNull() } ?: ""
-
-                    val menuItem = FoodItem(
-                        name = state.value.name,
-                        description = state.value.description,
-                        price = state.value.price.toDoubleOrNull() ?: 0.0,
-                        sellerId = sellerId,
-                        imageUrl = imageUrl
-                    )
-                    menuUseCases.addMenuItem(sellerId, menuItem).onEach { result ->
+                    try {
+                        val imageUrl = event.imageUri?.let { imageUploader.uploadImage(it).getOrNull() } ?: ""
+                        val menuItem = FoodItem(
+                            name = state.value.name,
+                            description = state.value.description,
+                            price = state.value.price.toDoubleOrNull() ?: 0.0,
+                            sellerId = sellerId,
+                            imageUrl = imageUrl
+                        )
+                        menuUseCases.addMenuItem(sellerId, menuItem)
                         _state.value = state.value.copy(isLoading = false)
-                        result.onSuccess {
-                            _eventFlow.emit(UiEvent.ShowSnackbar("Menu item added!"))
-                            _eventFlow.emit(UiEvent.NavigateUp)
-                            getMenuItemsForCurrentUser()
-                        }.onFailure {
-                            _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Error adding item"))
-                        }
-                    }.launchIn(this)
+                        _eventFlow.emit(UiEvent.ShowSnackbar("Menu item added!"))
+                        _eventFlow.emit(UiEvent.NavigateUp)
+                        getMenuItemsForCurrentUser()
+                    } catch (e: Exception) {
+                        _state.value = state.value.copy(isLoading = false)
+                        _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Error adding item"))
+                    }
                 }
             }
             is SellerMenuEvent.DeleteMenuItem -> {
@@ -96,14 +95,13 @@ class SellerMenuViewModel @Inject constructor(
                         _eventFlow.emit(UiEvent.ShowSnackbar("User not logged in"))
                         return@launch
                     }
-                    menuUseCases.deleteMenuItem(sellerId, event.menuItemId).onEach { result ->
-                        result.onSuccess {
-                            _eventFlow.emit(UiEvent.ShowSnackbar("Menu item deleted!"))
-                            getMenuItemsForCurrentUser()
-                        }.onFailure {
-                            _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Error deleting item"))
-                        }
-                    }.launchIn(this)
+                    try {
+                        menuUseCases.deleteMenuItem(sellerId, event.menuItemId)
+                        _eventFlow.emit(UiEvent.ShowSnackbar("Menu item deleted!"))
+                        getMenuItemsForCurrentUser()
+                    } catch (e: Exception) {
+                        _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Error deleting item"))
+                    }
                 }
             }
 
@@ -114,14 +112,13 @@ class SellerMenuViewModel @Inject constructor(
                         _eventFlow.emit(UiEvent.ShowSnackbar("User not logged in"))
                         return@launch
                     }
-                    menuUseCases.updateMenuItem(sellerId, event.menuItemId, event.foodItem).onEach { result ->
-                        result.onSuccess {
-                            _eventFlow.emit(UiEvent.ShowSnackbar("Menu item updated!"))
-                            getMenuItemsForCurrentUser()
-                        }.onFailure {
-                            _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Error updating item"))
-                        }
-                    }.launchIn(this)
+                    try {
+                        menuUseCases.updateMenuItem(sellerId, event.menuItemId, event.foodItem)
+                        _eventFlow.emit(UiEvent.ShowSnackbar("Menu item updated!"))
+                        getMenuItemsForCurrentUser()
+                    } catch (e: Exception) {
+                        _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Error updating item"))
+                    }
                 }
             }
         }

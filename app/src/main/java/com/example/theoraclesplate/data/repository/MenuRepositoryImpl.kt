@@ -30,30 +30,15 @@ class MenuRepositoryImpl : MenuRepository {
         }
     }
 
-    override suspend fun addMenuItem(sellerId: String, menuItem: FoodItem): Flow<Result<Unit>> = flow {
-        try {
-            database.child("menu_items").child(sellerId).push().setValue(menuItem).await()
-            emit(Result.success(Unit))
-        } catch (e: Exception) {
-            emit(Result.failure(e))
-        }
+    override suspend fun addMenuItem(sellerId: String, menuItem: FoodItem) {
+        database.child("menu_items").child(sellerId).push().setValue(menuItem).await()
     }
 
-    override suspend fun deleteMenuItem(sellerId: String, menuItemId: String): Flow<Result<Unit>> = flow {
-        try {
-            database.child("menu_items").child(sellerId).child(menuItemId).removeValue().await()
-            emit(Result.success(Unit))
-        } catch (e: Exception) {
-            emit(Result.failure(e))
-        }
+    override suspend fun deleteMenuItem(sellerId: String, menuItemId: String) {
+        database.child("menu_items").child(sellerId).child(menuItemId).removeValue().await()
     }
 
-    override suspend fun updateMenuItem(sellerId: String, menuItemId: String, foodItem: FoodItem): Flow<Result<Unit>> = flow {
-        try {
-            database.child("menu_items").child(sellerId).child(menuItemId).setValue(foodItem).await()
-            emit(Result.success(Unit))
-        } catch (e: Exception) {
-            emit(Result.failure(e))
-        }
+    override suspend fun updateMenuItem(sellerId: String, menuItemId: String, foodItem: FoodItem) {
+        database.child("menu_items").child(sellerId).child(menuItemId).setValue(foodItem).await()
     }
 }

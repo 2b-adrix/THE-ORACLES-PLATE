@@ -59,7 +59,7 @@ object AppModule {
         return MenuUseCases(
             getMenuItems = GetMenuItemsUseCase(repository),
             addMenuItem = AddMenuItemUseCase(repository),
-            deleteMenuItem = com.example.theoraclesplate.domain.use_case.menu.DeleteMenuItemUseCase(repository),
+            deleteMenuItem = com.example.theoraclesplate.domain.use_case.DeleteMenuItemUseCase(repository),
             updateMenuItem = UpdateMenuItemUseCase(repository)
         )
     }

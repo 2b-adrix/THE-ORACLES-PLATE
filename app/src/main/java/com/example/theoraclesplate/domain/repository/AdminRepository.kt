@@ -26,6 +26,6 @@ interface AdminRepository {
     suspend fun deleteOrder(orderId: String)
 
     suspend fun deleteUser(userId: String)
-    
+
     suspend fun deleteMenuItem(sellerId: String, menuItemId: String)
 }

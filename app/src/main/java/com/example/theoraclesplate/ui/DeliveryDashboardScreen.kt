@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,6 +29,7 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,6 +48,8 @@ import androidx.navigation.NavController
 import com.example.theoraclesplate.model.Order
 import com.example.theoraclesplate.ui.delivery.DeliveryDashboardEvent
 import com.example.theoraclesplate.ui.delivery.DeliveryDashboardViewModel
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.collectLatest
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -77,7 +81,23 @@ fun DeliveryDashboardScreen(
         }
     }
 
-    Scaffold {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Delivery Dashboard") },
+                actions = {
+                    IconButton(onClick = {
+                        Firebase.auth.signOut()
+                        navController.navigate("start") {
+                            popUpTo("delivery_dashboard") { inclusive = true }
+                        }
+                    }) {
+                        Icon(Icons.Default.ExitToApp, contentDescription = "Logout")
+                    }
+                }
+            )
+        }
+    ) {
         Box(modifier = Modifier.fillMaxSize().padding(it)) {
             AndroidView(
                 modifier = Modifier.fillMaxSize(),

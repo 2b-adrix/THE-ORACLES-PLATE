@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -49,6 +50,8 @@ import com.example.theoraclesplate.model.FoodItem
 import com.example.theoraclesplate.ui.seller.menu.SellerMenuEvent
 import com.example.theoraclesplate.ui.seller.menu.SellerMenuViewModel
 import com.example.theoraclesplate.ui.theme.StartColor
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,7 +60,21 @@ fun SellerDashboardScreen(navController: NavController, viewModel: SellerMenuVie
     val state = viewModel.state.value
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Seller Dashboard") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Seller Dashboard") },
+                actions = {
+                    IconButton(onClick = {
+                        Firebase.auth.signOut()
+                        navController.navigate("start") {
+                            popUpTo("seller_dashboard") { inclusive = true }
+                        }
+                    }) {
+                        Icon(Icons.Default.ExitToApp, contentDescription = "Logout")
+                    }
+                }
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = { navController.navigate("add_menu_item") }, containerColor = StartColor) {
                 Icon(Icons.Default.Add, contentDescription = "Add Menu Item", tint = Color.Black)

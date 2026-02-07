@@ -1,6 +1,5 @@
 package com.example.theoraclesplate.ui
 
-import android.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Approval
 import androidx.compose.material.icons.filled.DeliveryDining
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.ShoppingBasket
@@ -23,6 +23,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -33,6 +34,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +51,19 @@ fun AdminDashboardScreen(navController: NavController) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Admin Dashboard", color=androidx.compose.ui.graphics.Color.White) })
+            TopAppBar(
+                title = { Text("Admin Dashboard") },
+                actions = {
+                    IconButton(onClick = {
+                        Firebase.auth.signOut()
+                        navController.navigate("start") {
+                            popUpTo("admin_dashboard") { inclusive = true }
+                        }
+                    }) {
+                        Icon(Icons.Default.ExitToApp, contentDescription = "Logout")
+                    }
+                }
+            )
         }
     ) {
         LazyVerticalGrid(
