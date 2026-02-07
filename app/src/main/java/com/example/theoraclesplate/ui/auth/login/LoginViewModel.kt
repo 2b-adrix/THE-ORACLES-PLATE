@@ -8,8 +8,6 @@ import com.example.theoraclesplate.domain.use_case.AuthUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,55 +36,52 @@ class LoginViewModel @Inject constructor(
             is LoginEvent.Login -> {
                 viewModelScope.launch {
                     _state.value = state.value.copy(isLoading = true)
-                    authUseCases.loginUser(state.value.email, state.value.password)
-                        .onEach { result ->
-                            _state.value = state.value.copy(isLoading = false)
-                            result.onSuccess {
-                                val userId = authUseCases.getCurrentUser()?.uid
-                                if (userId != null) {
-                                    val role = authUseCases.getUserRole(userId) ?: "buyer"
-                                    _eventFlow.emit(UiEvent.LoginSuccess(role))
-                                } else {
-                                    _eventFlow.emit(UiEvent.ShowSnackbar("Could not get user ID"))
-                                }
-                            }.onFailure {
-                                _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Unknown error"))
-                            }
-                        }.launchIn(this)
+                    try {
+                        authUseCases.loginUser(state.value.email, state.value.password)
+                        val userId = authUseCases.getCurrentUser()?.uid
+                        if (userId != null) {
+                            val role = authUseCases.getUserRole(userId) ?: "buyer"
+                            _eventFlow.emit(UiEvent.LoginSuccess(role))
+                        } else {
+                            _eventFlow.emit(UiEvent.ShowSnackbar("Could not get user ID"))
+                        }
+                    } catch (e: Exception) {
+                        _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Unknown error"))
+                    } finally {
+                        _state.value = state.value.copy(isLoading = false)
+                    }
                 }
             }
             is LoginEvent.LoginWithGoogle -> {
                 viewModelScope.launch {
                     _state.value = state.value.copy(isLoading = true)
-                    authUseCases.loginWithGoogle(event.idToken)
-                        .onEach { result ->
-                            _state.value = state.value.copy(isLoading = false)
-                            result.onSuccess {
-                                val userId = authUseCases.getCurrentUser()?.uid
-                                if (userId != null) {
-                                    val role = authUseCases.getUserRole(userId) ?: "buyer"
-                                    _eventFlow.emit(UiEvent.LoginSuccess(role))
-                                } else {
-                                    _eventFlow.emit(UiEvent.ShowSnackbar("Could not get user ID"))
-                                }
-                            }.onFailure {
-                                _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Unknown error"))
-                            }
-                        }.launchIn(this)
+                    try {
+                        authUseCases.loginWithGoogle(event.idToken)
+                        val userId = authUseCases.getCurrentUser()?.uid
+                        if (userId != null) {
+                            val role = authUseCases.getUserRole(userId) ?: "buyer"
+                            _eventFlow.emit(UiEvent.LoginSuccess(role))
+                        } else {
+                            _eventFlow.emit(UiEvent.ShowSnackbar("Could not get user ID"))
+                        }
+                    } catch (e: Exception) {
+                        _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Unknown error"))
+                    } finally {
+                        _state.value = state.value.copy(isLoading = false)
+                    }
                 }
             }
             is LoginEvent.Signup -> { // From SignUpViewModel
                 viewModelScope.launch {
                     _state.value = state.value.copy(isLoading = true)
-                    authUseCases.signupUser(state.value.email, state.value.password, state.value.name, "buyer")
-                        .onEach { result ->
-                             _state.value = state.value.copy(isLoading = false)
-                            result.onSuccess {
-                                _eventFlow.emit(UiEvent.SignupSuccess)
-                            }.onFailure {
-                                _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Unknown error"))
-                            }
-                        }.launchIn(this)
+                    try {
+                        authUseCases.signupUser(state.value.email, state.value.password, state.value.name, "buyer")
+                        _eventFlow.emit(UiEvent.SignupSuccess)
+                    } catch (e: Exception) {
+                        _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Unknown error"))
+                    } finally {
+                        _state.value = state.value.copy(isLoading = false)
+                    }
                 }
             }
         }

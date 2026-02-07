@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import org.osmdroid.util.GeoPoint
 import javax.inject.Inject
 
 @HiltViewModel
@@ -58,7 +59,8 @@ class DeliveryDashboardViewModel @Inject constructor(
         getReadyForPickupOrdersJob?.cancel()
         getReadyForPickupOrdersJob = deliveryUseCases.getReadyForPickupOrders()
             .onEach { orders ->
-                _state.value = state.value.copy(readyForPickupOrders = orders)
+                val locations = orders.mapNotNull { deliveryUseCases.getCoordinatesFromAddress(it.address) }
+                _state.value = state.value.copy(readyForPickupOrders = orders, orderLocations = locations)
             }
             .launchIn(viewModelScope)
     }
@@ -67,7 +69,8 @@ class DeliveryDashboardViewModel @Inject constructor(
         getOutForDeliveryOrdersJob?.cancel()
         getOutForDeliveryOrdersJob = deliveryUseCases.getOutForDeliveryOrders()
             .onEach { orders ->
-                _state.value = state.value.copy(outForDeliveryOrders = orders)
+                val locations = orders.mapNotNull { deliveryUseCases.getCoordinatesFromAddress(it.address) }
+                _state.value = state.value.copy(outForDeliveryOrders = orders, orderLocations = locations)
             }
             .launchIn(viewModelScope)
     }
@@ -90,6 +93,7 @@ data class DeliveryDashboardState(
     val readyForPickupOrders: List<Order> = emptyList(),
     val outForDeliveryOrders: List<Order> = emptyList(),
     val deliveredOrders: List<Order> = emptyList(),
+    val orderLocations: List<GeoPoint> = emptyList(),
     val isLoading: Boolean = false
 )
 

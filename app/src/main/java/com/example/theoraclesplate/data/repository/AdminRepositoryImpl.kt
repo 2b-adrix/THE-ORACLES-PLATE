@@ -32,53 +32,88 @@ class AdminRepositoryImpl : AdminRepository {
         }
     }
 
-    override suspend fun approveSeller(userId: String): Flow<Result<Unit>> = flow {
-        try {
-            database.child("users").child(userId).child("role").setValue("seller").await()
-            emit(Result.success(Unit))
-        } catch (e: Exception) {
-            emit(Result.failure(e))
-        }
+    override suspend fun approveSeller(userId: String) {
+        database.child("users").child(userId).child("role").setValue("seller").await()
     }
 
-    override suspend fun declineSeller(userId: String): Flow<Result<Unit>> = flow {
-        try {
-            database.child("users").child(userId).removeValue().await()
-            emit(Result.success(Unit))
-        } catch (e: Exception) {
-            emit(Result.failure(e))
-        }
+    override suspend fun declineSeller(userId: String) {
+        database.child("users").child(userId).removeValue().await()
     }
 
     override fun getAllUsers(): Flow<Result<List<Pair<String, User>>>> = flow {
-        // TODO: Implement
-        emit(Result.success(emptyList()))
+        try {
+            val snapshot = database.child("users").get().await()
+            val users = snapshot.children.mapNotNull { 
+                val user = it.getValue(User::class.java)
+                val key = it.key
+                if (user != null && key != null) {
+                    key to user
+                } else {
+                    null
+                }
+            }
+            emit(Result.success(users))
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
     }
 
     override fun getAllOrders(): Flow<Result<List<Order>>> = flow {
-        // TODO: Implement
-        emit(Result.success(emptyList()))
+        try {
+            val snapshot = database.child("orders").get().await()
+            val orders = snapshot.children.mapNotNull { it.getValue(Order::class.java) }
+            emit(Result.success(orders))
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
     }
 
     override fun getAnalyticsData(): Flow<Result<Map<String, Any>>> = flow {
-        // TODO: Implement
-        emit(Result.success(emptyMap()))
+        try {
+            val usersSnapshot = database.child("users").get().await()
+            val ordersSnapshot = database.child("orders").get().await()
+            val totalUsers = usersSnapshot.childrenCount
+            val totalOrders = ordersSnapshot.childrenCount
+            val totalRevenue = ordersSnapshot.children.sumOf { it.child("totalAmount").getValue(Double::class.java) ?: 0.0 }
+            val data = mapOf(
+                "totalUsers" to totalUsers,
+                "totalOrders" to totalOrders,
+                "totalRevenue" to totalRevenue
+            )
+            emit(Result.success(data))
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
     }
 
     override fun getDeliveryUsers(): Flow<Result<List<Pair<String, User>>>> = flow {
-        // TODO: Implement
-        emit(Result.success(emptyList()))
+        try {
+            val snapshot = database.child("users").orderByChild("role").equalTo("delivery").get().await()
+            val users = snapshot.children.mapNotNull { 
+                val user = it.getValue(User::class.java)
+                val key = it.key
+                if (user != null && key != null) {
+                    key to user
+                } else {
+                    null
+                }
+            }
+            emit(Result.success(users))
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
     }
 
-    override fun getAllMenuItems(): Flow<Result<List<FoodItem>>> = flow {
+    override fun getAllMenuItems(): Flow<Result<List<Pair<String, FoodItem>>>> = flow {
         try {
             val snapshot = database.child("menu_items").get().await()
-            val menuItems = mutableListOf<FoodItem>()
+            val menuItems = mutableListOf<Pair<String, FoodItem>>()
             for (sellerSnapshot in snapshot.children) {
                 for (menuItemSnapshot in sellerSnapshot.children) {
                     val menuItem = menuItemSnapshot.getValue(FoodItem::class.java)
-                    if (menuItem != null) {
-                        menuItems.add(menuItem)
+                    val key = menuItemSnapshot.key
+                    if (menuItem != null && key != null) {
+                        menuItems.add(key to menuItem)
                     }
                 }
             }
@@ -88,13 +123,15 @@ class AdminRepositoryImpl : AdminRepository {
         }
     }
 
-    override suspend fun deleteOrder(orderId: String): Flow<Result<Unit>> = flow {
-        // TODO: Implement
-        emit(Result.success(Unit))
+    override suspend fun deleteOrder(orderId: String) {
+        database.child("orders").child(orderId).removeValue().await()
     }
 
-    override suspend fun deleteUser(userId: String): Flow<Result<Unit>> = flow {
-        // TODO: Implement
-        emit(Result.success(Unit))
+    override suspend fun deleteUser(userId: String) {
+        database.child("users").child(userId).removeValue().await()
+    }
+
+    override suspend fun deleteMenuItem(sellerId: String, menuItemId: String) {
+        database.child("menu_items").child(sellerId).child(menuItemId).removeValue().await()
     }
 }

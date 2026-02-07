@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 class GetAllMenuItemsUseCase(private val repository: AdminRepository) {
 
-    operator fun invoke(): Flow<Result<List<FoodItem>>> {
+    operator fun invoke(): Flow<Result<List<Pair<String, FoodItem>>>> {
         return repository.getAllMenuItems()
     }
 }

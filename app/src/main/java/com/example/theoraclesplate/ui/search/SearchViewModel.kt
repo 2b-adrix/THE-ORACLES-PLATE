@@ -39,8 +39,9 @@ class SearchViewModel @Inject constructor(
         getMenuItemsJob?.cancel()
         getMenuItemsJob = adminUseCases.getAllMenuItems()
             .onEach { result ->
+                val items = result.getOrNull()?.map { it.second } ?: emptyList()
                 _state.value = state.value.copy(
-                    menuItems = result.getOrNull() ?: emptyList(),
+                    menuItems = items,
                     isLoading = false
                 )
                 filterItems()

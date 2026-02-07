@@ -1,6 +1,7 @@
 package com.example.theoraclesplate.ui
 
-import android.net.Uri
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,14 +9,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -26,6 +35,7 @@ import androidx.navigation.NavController
 import com.example.theoraclesplate.ui.search.SearchEvent
 import com.example.theoraclesplate.ui.search.SearchViewModel
 import com.example.theoraclesplate.ui.theme.StartColor
+import kotlinx.coroutines.delay
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -73,13 +83,22 @@ fun SearchScreen(rootNavController: NavController, viewModel: SearchViewModel = 
         )
 
         if (state.isLoading) {
-             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = StartColor)
+            }
+        } else if (state.filteredItems.isEmpty()) {
+            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text("No results found", color = Color.White.copy(alpha = 0.7f), fontSize = 18.sp)
             }
         } else {
             LazyColumn {
-                items(state.filteredItems) { food ->
-                     PopularFoodItem(food) {
+                itemsIndexed(state.filteredItems) { index, food ->
+                    val alpha = remember { Animatable(0f) }
+                    LaunchedEffect(key1 = food) {
+                        delay(index * 100L)
+                        alpha.animateTo(1f, animationSpec = tween(500))
+                    }
+                     PopularFoodItem(food, modifier = Modifier.alpha(alpha.value)) {
                          val encodedName = URLEncoder.encode(food.name, StandardCharsets.UTF_8.toString())
                          val encodedImage = URLEncoder.encode(food.imageUrl, StandardCharsets.UTF_8.toString())
                          rootNavController.navigate("details/$encodedName/${food.price}/?image=$encodedImage")

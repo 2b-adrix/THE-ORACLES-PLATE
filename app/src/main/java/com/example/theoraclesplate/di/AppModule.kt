@@ -7,21 +7,26 @@ import com.example.theoraclesplate.data.repository.CartRepositoryImpl
 import com.example.theoraclesplate.data.repository.CheckoutRepositoryImpl
 import com.example.theoraclesplate.data.repository.DeliveryRepositoryImpl
 import com.example.theoraclesplate.data.repository.DetailsRepositoryImpl
+import com.example.theoraclesplate.data.repository.GeocodingRepositoryImpl
 import com.example.theoraclesplate.data.repository.HistoryRepositoryImpl
 import com.example.theoraclesplate.data.repository.HomeRepositoryImpl
 import com.example.theoraclesplate.data.repository.MenuRepositoryImpl
 import com.example.theoraclesplate.data.repository.OrderRepositoryImpl
+import com.example.theoraclesplate.data.repository.SearchRepositoryImpl
 import com.example.theoraclesplate.domain.repository.AdminRepository
 import com.example.theoraclesplate.domain.repository.AuthRepository
 import com.example.theoraclesplate.domain.repository.CartRepository
 import com.example.theoraclesplate.domain.repository.CheckoutRepository
 import com.example.theoraclesplate.domain.repository.DeliveryRepository
 import com.example.theoraclesplate.domain.repository.DetailsRepository
+import com.example.theoraclesplate.domain.repository.GeocodingRepository
 import com.example.theoraclesplate.domain.repository.HistoryRepository
 import com.example.theoraclesplate.domain.repository.HomeRepository
 import com.example.theoraclesplate.domain.repository.MenuRepository
 import com.example.theoraclesplate.domain.repository.OrderRepository
+import com.example.theoraclesplate.domain.repository.SearchRepository
 import com.example.theoraclesplate.domain.use_case.*
+import com.example.theoraclesplate.domain.use_case.admin.DeleteMenuItemUseCase
 import com.example.theoraclesplate.service.CloudinaryImageUploader
 import com.example.theoraclesplate.service.ImageUploader
 import dagger.Module
@@ -29,6 +34,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import java.util.Properties
 import javax.inject.Singleton
 
 @Module
@@ -53,7 +59,7 @@ object AppModule {
         return MenuUseCases(
             getMenuItems = GetMenuItemsUseCase(repository),
             addMenuItem = AddMenuItemUseCase(repository),
-            deleteMenuItem = DeleteMenuItemUseCase(repository),
+            deleteMenuItem = com.example.theoraclesplate.domain.use_case.menu.DeleteMenuItemUseCase(repository),
             updateMenuItem = UpdateMenuItemUseCase(repository)
         )
     }
@@ -85,13 +91,15 @@ object AppModule {
         return AdminUseCases(
             getPendingSellers = GetPendingSellersUseCase(repository),
             approveSeller = ApproveSellerUseCase(repository),
+            declineSeller = DeclineSellerUseCase(repository),
             getAllUsers = GetAllUsersUseCase(repository),
             deleteUser = DeleteUserUseCase(repository),
             getAllOrders = GetAllOrdersUseCase(repository),
             deleteOrder = DeleteOrderUseCase(repository),
             getDeliveryUsers = GetDeliveryUsersUseCase(repository),
             getAnalyticsData = GetAnalyticsDataUseCase(repository),
-            getAllMenuItems = GetAllMenuItemsUseCase(repository)
+            getAllMenuItems = GetAllMenuItemsUseCase(repository),
+            deleteMenuItem = DeleteMenuItemUseCase(repository)
         )
     }
 
@@ -123,12 +131,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDeliveryUseCases(deliveryRepository: DeliveryRepository, orderRepository: OrderRepository): DeliveryUseCases {
+    fun provideDeliveryUseCases(deliveryRepository: DeliveryRepository, orderRepository: OrderRepository, geocodingRepository: GeocodingRepository): DeliveryUseCases {
         return DeliveryUseCases(
             getReadyForPickupOrders = GetReadyForPickupOrdersUseCase(deliveryRepository),
             getOutForDeliveryOrders = GetOutForDeliveryOrdersUseCase(deliveryRepository),
             getDeliveredOrders = GetDeliveredOrdersUseCase(deliveryRepository),
-            updateOrderStatus = UpdateOrderStatusUseCase(orderRepository)
+            updateOrderStatus = UpdateOrderStatusUseCase(orderRepository),
+            getCoordinatesFromAddress = GetCoordinatesFromAddressUseCase(geocodingRepository)
         )
     }
 
@@ -205,6 +214,26 @@ object AppModule {
     fun provideHistoryUseCases(repository: HistoryRepository): HistoryUseCases {
         return HistoryUseCases(
             getOrderHistory = GetOrderHistoryUseCase(repository)
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideGeocodingRepository(@ApplicationContext context: Context): GeocodingRepository {
+        return GeocodingRepositoryImpl(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSearchRepository(): SearchRepository {
+        return SearchRepositoryImpl()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSearchUseCases(repository: SearchRepository): SearchUseCases {
+        return SearchUseCases(
+            searchMenuItems = SearchMenuItemsUseCase(repository)
         )
     }
 }

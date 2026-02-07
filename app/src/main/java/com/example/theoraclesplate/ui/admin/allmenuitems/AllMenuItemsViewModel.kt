@@ -9,6 +9,7 @@ import com.example.theoraclesplate.model.FoodItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,6 +24,17 @@ class AllMenuItemsViewModel @Inject constructor(
         getAllMenuItems()
     }
 
+    fun onEvent(event: AllMenuItemsEvent) {
+        when (event) {
+            is AllMenuItemsEvent.DeleteMenuItem -> {
+                viewModelScope.launch {
+                    adminUseCases.deleteMenuItem(event.sellerId, event.menuItemId)
+                    getAllMenuItems()
+                }
+            }
+        }
+    }
+
     private fun getAllMenuItems() {
         adminUseCases.getAllMenuItems().onEach { result ->
             _state.value = state.value.copy(
@@ -35,5 +47,9 @@ class AllMenuItemsViewModel @Inject constructor(
 
 data class AllMenuItemsState(
     val isLoading: Boolean = true,
-    val menuItems: List<FoodItem> = emptyList()
+    val menuItems: List<Pair<String, FoodItem>> = emptyList()
 )
+
+sealed class AllMenuItemsEvent {
+    data class DeleteMenuItem(val sellerId: String, val menuItemId: String) : AllMenuItemsEvent()
+}

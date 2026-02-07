@@ -23,16 +23,16 @@ class AnalyticsViewModel @Inject constructor(
     }
 
     private fun getAnalyticsData() {
-        adminUseCases.getAnalyticsData().onEach { result ->
+        adminUseCases.getAnalyticsData().onEach { data ->
             _state.value = state.value.copy(
-                isLoading = false,
-                analyticsData = result.getOrNull() ?: emptyMap()
+                analyticsData = data.getOrNull() ?: emptyMap(), 
+                isLoading = false
             )
         }.launchIn(viewModelScope)
     }
 }
 
 data class AnalyticsState(
-    val isLoading: Boolean = true,
-    val analyticsData: Map<String, Any> = emptyMap()
+    val analyticsData: Map<String, Any> = emptyMap(),
+    val isLoading: Boolean = true
 )

@@ -11,7 +11,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose) // Uncommented this line
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
     alias(libs.plugins.hilt)
     kotlin("kapt")
@@ -88,8 +88,6 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
-    // Removed duplicate dependency
-    // implementation(libs.androidx.material.icons.extended)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -118,9 +116,7 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
 
-    implementation(libs.androidx.hilt.navigation.compose) 
-// Google Maps (Removed)
-//    implementation("com.google.maps.android:maps-compose:7.0.0")
+    implementation(libs.androidx.hilt.navigation.compose)
 
 // OpenStreetMap
     implementation("org.osmdroid:osmdroid-android:6.1.18")

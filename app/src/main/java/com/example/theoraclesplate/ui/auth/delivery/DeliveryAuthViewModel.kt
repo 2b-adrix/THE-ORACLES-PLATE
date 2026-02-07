@@ -8,8 +8,6 @@ import com.example.theoraclesplate.domain.use_case.AuthUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,29 +36,27 @@ class DeliveryAuthViewModel @Inject constructor(
             is DeliveryAuthEvent.Login -> {
                 viewModelScope.launch {
                     _state.value = state.value.copy(isLoading = true)
-                    authUseCases.loginUser(state.value.email, state.value.password)
-                        .onEach { result ->
-                            _state.value = state.value.copy(isLoading = false)
-                            result.onSuccess {
-                                _eventFlow.emit(UiEvent.AuthSuccess)
-                            }.onFailure {
-                                _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Unknown error"))
-                            }
-                        }.launchIn(this)
+                    try {
+                        authUseCases.loginUser(state.value.email, state.value.password)
+                        _state.value = state.value.copy(isLoading = false)
+                        _eventFlow.emit(UiEvent.AuthSuccess)
+                    } catch (e: Exception) {
+                        _state.value = state.value.copy(isLoading = false)
+                        _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Unknown error"))
+                    }
                 }
             }
             is DeliveryAuthEvent.Signup -> {
                 viewModelScope.launch {
                     _state.value = state.value.copy(isLoading = true)
-                    authUseCases.signupUser(state.value.email, state.value.password, state.value.name, "delivery")
-                        .onEach { result ->
-                            _state.value = state.value.copy(isLoading = false)
-                            result.onSuccess {
-                                _eventFlow.emit(UiEvent.AuthSuccess)
-                            }.onFailure {
-                                _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Unknown error"))
-                            }
-                        }.launchIn(this)
+                    try {
+                        authUseCases.signupUser(state.value.email, state.value.password, state.value.name, "delivery")
+                        _state.value = state.value.copy(isLoading = false)
+                        _eventFlow.emit(UiEvent.AuthSuccess)
+                    } catch (e: Exception) {
+                        _state.value = state.value.copy(isLoading = false)
+                        _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Unknown error"))
+                    }
                 }
             }
         }

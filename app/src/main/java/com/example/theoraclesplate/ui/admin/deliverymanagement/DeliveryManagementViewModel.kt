@@ -9,6 +9,7 @@ import com.example.theoraclesplate.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,17 +24,32 @@ class DeliveryManagementViewModel @Inject constructor(
         getDeliveryUsers()
     }
 
+    fun onEvent(event: DeliveryManagementEvent) {
+        when (event) {
+            is DeliveryManagementEvent.DeleteUser -> {
+                viewModelScope.launch {
+                    adminUseCases.deleteUser(event.userId)
+                    getDeliveryUsers()
+                }
+            }
+        }
+    }
+
     private fun getDeliveryUsers() {
         adminUseCases.getDeliveryUsers().onEach { result ->
             _state.value = state.value.copy(
-                isLoading = false,
-                deliveryUsers = result.getOrNull() ?: emptyList()
+                users = result.getOrNull() ?: emptyList(),
+                isLoading = false
             )
         }.launchIn(viewModelScope)
     }
 }
 
 data class DeliveryManagementState(
-    val isLoading: Boolean = true,
-    val deliveryUsers: List<Pair<String, User>> = emptyList()
+    val users: List<Pair<String, User>> = emptyList(),
+    val isLoading: Boolean = true
 )
+
+sealed class DeliveryManagementEvent {
+    data class DeleteUser(val userId: String) : DeliveryManagementEvent()
+}

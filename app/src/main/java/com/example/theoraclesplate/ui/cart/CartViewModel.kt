@@ -73,8 +73,10 @@ class CartViewModel @Inject constructor(
         getCartItemsJob?.cancel()
         getCartItemsJob = cartUseCases.getCartItems(userId)
             .onEach { items ->
+                val totalPrice = items.sumOf { it.price * it.quantity }
                 _state.value = state.value.copy(
                     cartItems = items,
+                    totalPrice = totalPrice,
                     isLoading = false
                 )
             }
@@ -84,6 +86,7 @@ class CartViewModel @Inject constructor(
 
 data class CartState(
     val cartItems: List<CartItem> = emptyList(),
+    val totalPrice: Double = 0.0,
     val isLoading: Boolean = true
 )
 
