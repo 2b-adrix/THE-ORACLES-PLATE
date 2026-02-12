@@ -26,10 +26,10 @@ class HistoryViewModel @Inject constructor(
     fun fetchOrderHistory() {
         val userId = authUseCases.getCurrentUser()?.uid ?: return
         historyUseCases.getOrderHistory(userId).onEach { result ->
-            result.onSuccess {
-                _historyState.value = HistoryState.Success(it.map { order -> order.toHistoryItem() })
-            }.onFailure {
-                _historyState.value = HistoryState.Error(it.message ?: "An unexpected error occurred")
+            if (result.isSuccess) {
+                _historyState.value = HistoryState.Success(result.getOrNull()?.map { it.toHistoryItem() } ?: emptyList())
+            } else {
+                _historyState.value = HistoryState.Error(result.isEmpty()?.message ?: "An unexpected error occurred")
             }
         }.launchIn(viewModelScope)
     }
