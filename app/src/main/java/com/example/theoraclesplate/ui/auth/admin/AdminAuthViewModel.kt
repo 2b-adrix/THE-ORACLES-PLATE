@@ -8,8 +8,6 @@ import com.example.theoraclesplate.domain.use_case.AuthUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,15 +33,20 @@ class AdminAuthViewModel @Inject constructor(
             is AdminAuthEvent.Login -> {
                 viewModelScope.launch {
                     _state.value = state.value.copy(isLoading = true)
-                    authUseCases.loginUser(state.value.email, state.value.password)
-                        .onEach { result ->
-                            _state.value = state.value.copy(isLoading = false)
-                            result.onSuccess {
-                                _eventFlow.emit(UiEvent.AuthSuccess)
-                            }.onFailure {
-                                _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Unknown error"))
-                            }
-                        }.launchIn(this)
+                    try {
+                        authUseCases.loginUser(state.value.email, state.value.password)
+                        _state.value = state.value.copy(isLoading = false)
+                        _eventFlow.emit(UiEvent.AuthSuccess)
+                    } catch (e: Exception) {
+                        _state.value = state.value.copy(isLoading = false)
+                        _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Unknown error"))
+                    }
+                }
+            }
+            is AdminAuthEvent.Logout -> {
+                viewModelScope.launch {
+                    authUseCases.logoutUser()
+                    _eventFlow.emit(UiEvent.LogoutSuccess)
                 }
             }
         }
@@ -52,6 +55,7 @@ class AdminAuthViewModel @Inject constructor(
     sealed class UiEvent {
         data class ShowSnackbar(val message: String) : UiEvent()
         object AuthSuccess : UiEvent()
+        object LogoutSuccess : UiEvent()
     }
 }
 
@@ -65,4 +69,5 @@ sealed class AdminAuthEvent {
     data class EnteredEmail(val value: String) : AdminAuthEvent()
     data class EnteredPassword(val value: String) : AdminAuthEvent()
     object Login : AdminAuthEvent()
+    object Logout : AdminAuthEvent()
 }
