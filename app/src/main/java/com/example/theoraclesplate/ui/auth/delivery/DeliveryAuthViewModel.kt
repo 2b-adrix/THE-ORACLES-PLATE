@@ -59,12 +59,19 @@ class DeliveryAuthViewModel @Inject constructor(
                     }
                 }
             }
+            is DeliveryAuthEvent.Logout -> {
+                viewModelScope.launch {
+                    authUseCases.logoutUser()
+                    _eventFlow.emit(UiEvent.LogoutSuccess)
+                }
+            }
         }
     }
 
     sealed class UiEvent {
         data class ShowSnackbar(val message: String) : UiEvent()
         object AuthSuccess : UiEvent()
+        object LogoutSuccess : UiEvent()
     }
 }
 
@@ -81,4 +88,5 @@ sealed class DeliveryAuthEvent {
     data class EnteredPassword(val value: String) : DeliveryAuthEvent()
     object Login : DeliveryAuthEvent()
     object Signup : DeliveryAuthEvent()
+    object Logout : DeliveryAuthEvent()
 }

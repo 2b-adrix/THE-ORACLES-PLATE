@@ -10,11 +10,11 @@ import kotlinx.coroutines.tasks.await
 
 class MenuRepositoryImpl : MenuRepository {
 
-    private val database = Firebase.database.reference
+    private val database = Firebase.database.reference.child("menu_items")
 
     override fun getMenuItems(sellerId: String): Flow<Result<List<Pair<String, FoodItem>>>> = flow {
         try {
-            val snapshot = database.child("menu_items").child(sellerId).get().await()
+            val snapshot = database.child(sellerId).get().await()
             val menuItems = snapshot.children.mapNotNull { 
                 val menuItem = it.getValue(FoodItem::class.java)
                 val key = it.key
@@ -30,15 +30,27 @@ class MenuRepositoryImpl : MenuRepository {
         }
     }
 
+    override fun getAllMenuItems(): Flow<Result<List<FoodItem>>> = flow {
+        try {
+            val snapshot = database.get().await()
+            val menuItems = snapshot.children.flatMap { sellerSnapshot ->
+                sellerSnapshot.children.mapNotNull { it.getValue(FoodItem::class.java) }
+            }
+            emit(Result.success(menuItems))
+        } catch (e: Exception) {
+            emit(Result.failure(e))
+        }
+    }
+
     override suspend fun addMenuItem(sellerId: String, menuItem: FoodItem) {
-        database.child("menu_items").child(sellerId).push().setValue(menuItem).await()
+        database.child(sellerId).push().setValue(menuItem).await()
     }
 
     override suspend fun deleteMenuItem(sellerId: String, menuItemId: String) {
-        database.child("menu_items").child(sellerId).child(menuItemId).removeValue().await()
+        database.child(sellerId).child(menuItemId).removeValue().await()
     }
 
     override suspend fun updateMenuItem(sellerId: String, menuItemId: String, foodItem: FoodItem) {
-        database.child("menu_items").child(sellerId).child(menuItemId).setValue(foodItem).await()
+        database.child(sellerId).child(menuItemId).setValue(foodItem).await()
     }
 }

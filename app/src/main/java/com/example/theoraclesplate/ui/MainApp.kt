@@ -22,12 +22,14 @@ fun MainApp() {
         NavHost(navController = navController, startDestination = "start") {
             composable("splash") { SplashScreen(navController) }
             composable("start") { StartScreen(navController) }
-            composable("login") { LoginScreen(navController) }
+            composable("login_screen") { LoginScreen(navController) }
             composable("signup") { SignUpScreen(navController) }
             composable("seller_login") { SellerLoginScreen(navController) }
             composable("seller_signup") { SellerSignupScreen(navController) }
+            composable("seller_profile") { SellerProfileScreen(navController) }
             composable("delivery_login") { DeliveryLoginScreen(navController) }
             composable("delivery_signup") { DeliverySignupScreen(navController) }
+            composable("delivery_profile") { DeliveryProfileScreen(navController) }
             composable("home") { MainScreen(navController) }
             composable("history") { HistoryScreen(navController) }
             composable("edit_profile") { EditProfileScreen(navController) }

@@ -38,15 +38,14 @@ class SellerAuthViewModel @Inject constructor(
             is SellerAuthEvent.Login -> {
                 viewModelScope.launch {
                     _state.value = state.value.copy(isLoading = true)
-                    authUseCases.loginUser(state.value.email, state.value.password)
-                        .onEach { result ->
-                            _state.value = state.value.copy(isLoading = false)
-                            result.onSuccess {
-                                _eventFlow.emit(UiEvent.AuthSuccess)
-                            }.onFailure {
-                                _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Unknown error"))
-                            }
-                        }.launchIn(this)
+                    try {
+                        authUseCases.loginUser(state.value.email, state.value.password)
+                        _state.value = state.value.copy(isLoading = false)
+                        _eventFlow.emit(UiEvent.AuthSuccess)
+                    } catch (e: Exception) {
+                        _state.value = state.value.copy(isLoading = false)
+                        _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Unknown error"))
+                    }
                 }
             }
             is SellerAuthEvent.Signup -> {
@@ -63,12 +62,19 @@ class SellerAuthViewModel @Inject constructor(
                         }.launchIn(this)
                 }
             }
+            is SellerAuthEvent.Logout -> {
+                viewModelScope.launch {
+                    authUseCases.logoutUser()
+                    _eventFlow.emit(UiEvent.LogoutSuccess)
+                }
+            }
         }
     }
 
     sealed class UiEvent {
         data class ShowSnackbar(val message: String) : UiEvent()
         object AuthSuccess : UiEvent()
+        object LogoutSuccess : UiEvent()
     }
 }
 
@@ -85,4 +91,5 @@ sealed class SellerAuthEvent {
     data class EnteredPassword(val value: String) : SellerAuthEvent()
     object Login : SellerAuthEvent()
     object Signup : SellerAuthEvent()
+    object Logout : SellerAuthEvent()
 }

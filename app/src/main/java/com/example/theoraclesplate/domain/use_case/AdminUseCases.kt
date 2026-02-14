@@ -1,7 +1,5 @@
 package com.example.theoraclesplate.domain.use_case
 
-import com.example.theoraclesplate.domain.use_case.admin.DeleteMenuItemUseCase
-
 data class AdminUseCases(
     val getPendingSellers: GetPendingSellersUseCase,
     val approveSeller: ApproveSellerUseCase,

@@ -37,8 +37,8 @@ class LoginViewModel @Inject constructor(
                 viewModelScope.launch {
                     _state.value = state.value.copy(isLoading = true)
                     try {
-                        authUseCases.loginUser(state.value.email, state.value.password)
-                        val userId = authUseCases.getCurrentUser()?.uid
+                        val authResult = authUseCases.loginUser(state.value.email, state.value.password)
+                        val userId = authResult.user?.uid
                         if (userId != null) {
                             val role = authUseCases.getUserRole(userId) ?: "buyer"
                             _eventFlow.emit(UiEvent.LoginSuccess(role))

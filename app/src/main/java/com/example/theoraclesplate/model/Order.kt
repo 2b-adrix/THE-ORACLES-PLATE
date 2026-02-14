@@ -9,5 +9,6 @@ data class Order(
     val address: String = "",
     val paymentMethod: String = "COD", // COD, Credit Card
     val status: String = "Pending", // Pending, Preparing, Ready, Out for Delivery, Delivered
-    val timestamp: Long = 0
+    val timestamp: Long = 0,
+    val deliveryPersonId: String? = null
 )

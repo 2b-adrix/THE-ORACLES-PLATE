@@ -7,6 +7,8 @@ interface MenuRepository {
 
     fun getMenuItems(sellerId: String): Flow<Result<List<Pair<String, FoodItem>>>>
 
+    fun getAllMenuItems(): Flow<Result<List<FoodItem>>>
+
     suspend fun addMenuItem(sellerId: String, menuItem: FoodItem)
 
     suspend fun deleteMenuItem(sellerId: String, menuItemId: String)

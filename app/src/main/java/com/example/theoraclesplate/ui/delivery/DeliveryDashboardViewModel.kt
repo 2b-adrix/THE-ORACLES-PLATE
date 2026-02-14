@@ -55,6 +55,15 @@ class DeliveryDashboardViewModel @Inject constructor(
         }
     }
 
+    fun getCoordinatesForOrder(order: Order, onResult: (GeoPoint) -> Unit) {
+        viewModelScope.launch {
+            val geoPoint = deliveryUseCases.getCoordinatesFromAddress(order.address)
+            if (geoPoint != null) {
+                onResult(geoPoint)
+            }
+        }
+    }
+
     private fun getReadyForPickupOrders() {
         getReadyForPickupOrdersJob?.cancel()
         getReadyForPickupOrdersJob = deliveryUseCases.getReadyForPickupOrders()

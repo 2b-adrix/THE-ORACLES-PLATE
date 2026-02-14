@@ -60,6 +60,11 @@ fun SellerSignupScreen(navController: NavController, viewModel: SellerAuthViewMo
                 is SellerAuthViewModel.UiEvent.ShowSnackbar -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
                 }
+                is SellerAuthViewModel.UiEvent.LogoutSuccess -> {
+                    navController.navigate("login") {
+                        popUpTo("start") { inclusive = true }
+                    }
+                }
             }
         }
     }

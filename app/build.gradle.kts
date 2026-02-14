@@ -40,7 +40,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         val cloudinaryUrl = localProperties.getProperty("cloudinary_url", "")
-        buildConfigField("String", "CLOUDINARY_URL", "\"$cloudinaryUrl\"")
+        resValue("string", "cloudinary_url", "\"\"$cloudinaryUrl\"\"")
     }
     buildFeatures {
         buildConfig = true
@@ -102,9 +102,12 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
+    implementation(libs.firebase.firestore)
 
     // Google Sign-In
     implementation(libs.play.services.auth)
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
 
     // Coil
     implementation(libs.coil.compose)
@@ -115,6 +118,7 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
+    kapt(libs.androidx.hilt.compiler)
 
     implementation(libs.androidx.hilt.navigation.compose)
 
@@ -138,10 +142,10 @@ tasks.register("printSHA1") {
                 File(project.rootDir, "debug_sha1.txt").writeText("SHA1: $hex")
                 println("SHA1 Written to debug_sha1.txt")
             } else {
-                File(project.rootDir, "debug_sha1.txt").writeText("Error: Debug keystore not found at ${keystoreFile.absolutePath}")
+                File(project.rootDir, "debug_sha1.txt").writeText("Error: Debug keystore not found at ${'$'}{keystoreFile.absolutePath}")
             }
         } catch (e: Exception) {
-            File(project.rootDir, "debug_sha1.txt").writeText("Error: ${e.message}")
+            File(project.rootDir, "debug_sha1.txt").writeText("Error: ${'$'}{e.message}")
         }
     }
 }

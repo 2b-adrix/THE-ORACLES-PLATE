@@ -2,6 +2,7 @@ package com.example.theoraclesplate.ui.viewmodel
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cloudinary.android.MediaManager
@@ -29,17 +30,6 @@ class EditProfileViewModel @Inject constructor(
 
     private val _updateState = MutableStateFlow<UpdateState>(UpdateState.Idle)
     val updateState = _updateState.asStateFlow()
-
-    init {
-        try {
-            MediaManager.get()
-        } catch (e: Exception) {
-            val config = HashMap<String, String>()
-            config["cloud_name"] = "dhlw6320"
-            config["secure"] = "true"
-            MediaManager.init(context, config)
-        }
-    }
 
     fun saveProfile(name: String, selectedImageUri: Uri?) {
         viewModelScope.launch {
@@ -69,8 +59,9 @@ class EditProfileViewModel @Inject constructor(
                     override fun onStart(requestId: String) {}
                     override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {}
                     override fun onSuccess(requestId: String, resultData: Map<*, *>) {
-                        val secureUrl = resultData["secure_url"] as? String
-                        continuation.resume(secureUrl?.let { Uri.parse(it) })
+                        Log.d("EditProfileViewModel", "Cloudinary success data: $resultData")
+                        val url = (resultData["secure_url"] ?: resultData["url"]) as? String
+                        continuation.resume(url?.let { Uri.parse(it) })
                     }
 
                     override fun onError(requestId: String, error: ErrorInfo) {

@@ -9,7 +9,7 @@ interface AuthRepository {
 
     fun getCurrentUser(): FirebaseUser?
 
-    suspend fun login(email: String, pass: String): Flow<Result<AuthResult>>
+    suspend fun login(email: String, pass: String): AuthResult
 
     suspend fun signup(email: String, pass: String, name: String, role: String): Flow<Result<AuthResult>> // Added role
 

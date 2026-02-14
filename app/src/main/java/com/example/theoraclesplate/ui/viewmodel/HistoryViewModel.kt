@@ -9,6 +9,7 @@ import com.example.theoraclesplate.model.OrderItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -25,13 +26,14 @@ class HistoryViewModel @Inject constructor(
 
     fun fetchOrderHistory() {
         val userId = authUseCases.getCurrentUser()?.uid ?: return
-        historyUseCases.getOrderHistory(userId).onEach { result ->
-            if (result.isSuccess) {
-                _historyState.value = HistoryState.Success(result.getOrNull()?.map { it.toHistoryItem() } ?: emptyList())
-            } else {
-                _historyState.value = HistoryState.Error(result.isEmpty()?.message ?: "An unexpected error occurred")
+        historyUseCases.getOrderHistory(userId)
+            .onEach { orders ->
+                _historyState.value = HistoryState.Success(orders.map { it.toHistoryItem() })
             }
-        }.launchIn(viewModelScope)
+            .catch { e ->
+                _historyState.value = HistoryState.Error(e.message ?: "An unexpected error occurred")
+            }
+            .launchIn(viewModelScope)
     }
 
     fun cancelOrder(orderId: String) {
@@ -65,7 +67,7 @@ fun Order.toHistoryItem(): HistoryItem {
         orderId = orderId,
         items = items,
         price = "$${totalAmount}",
-        date = java.text.SimpleDateFormat("MMM dd, yyyy").format(java.util.Date(timestamp)),
+        date = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault()).format(java.util.Date(timestamp)),
         status = status
     )
 }

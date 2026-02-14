@@ -10,4 +10,6 @@ interface DeliveryRepository {
     fun getOutForDeliveryOrders(): Flow<List<Order>>
 
     fun getDeliveredOrders(): Flow<List<Order>>
+
+    suspend fun acceptOrder(order: Order)
 }

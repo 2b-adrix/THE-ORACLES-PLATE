@@ -21,13 +21,8 @@ class AuthRepositoryImpl : AuthRepository {
         return auth.currentUser
     }
 
-    override suspend fun login(email: String, pass: String): Flow<Result<AuthResult>> = flow {
-        try {
-            val result = auth.signInWithEmailAndPassword(email, pass).await()
-            emit(Result.success(result))
-        } catch (e: Exception) {
-            emit(Result.failure(e))
-        }
+    override suspend fun login(email: String, pass: String): AuthResult {
+        return auth.signInWithEmailAndPassword(email, pass).await()
     }
 
     override suspend fun signup(email: String, pass: String, name: String, role: String): Flow<Result<AuthResult>> = flow {
