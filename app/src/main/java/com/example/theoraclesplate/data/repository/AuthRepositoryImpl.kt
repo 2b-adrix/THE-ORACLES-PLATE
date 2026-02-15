@@ -3,16 +3,18 @@ package com.example.theoraclesplate.data.repository
 import com.example.theoraclesplate.domain.repository.AuthRepository
 import com.example.theoraclesplate.model.User
 import com.google.firebase.auth.AuthResult
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.ktx.database
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 
-class AuthRepositoryImpl : AuthRepository {
+class AuthRepositoryImpl(auth1: FirebaseAuth, firestore: FirebaseFirestore) : AuthRepository {
 
     private val auth = Firebase.auth
     private val database = Firebase.database.reference

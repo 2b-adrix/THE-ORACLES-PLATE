@@ -2,20 +2,22 @@ package com.example.theoraclesplate.data.repository
 
 import com.example.theoraclesplate.domain.repository.MenuRepository
 import com.example.theoraclesplate.model.FoodItem
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 
-class MenuRepositoryImpl : MenuRepository {
+class MenuRepositoryImpl @Inject constructor(
+    private val database: FirebaseDatabase
+) : MenuRepository {
 
-    private val database = Firebase.database.reference.child("menu_items")
+    private val dbRef = database.reference.child("menu_items")
 
     override fun getMenuItems(sellerId: String): Flow<Result<List<Pair<String, FoodItem>>>> = flow {
         try {
-            val snapshot = database.child(sellerId).get().await()
-            val menuItems = snapshot.children.mapNotNull { 
+            val snapshot = dbRef.child(sellerId).get().await()
+            val menuItems = snapshot.children.mapNotNull {
                 val menuItem = it.getValue(FoodItem::class.java)
                 val key = it.key
                 if (menuItem != null && key != null) {
@@ -32,7 +34,7 @@ class MenuRepositoryImpl : MenuRepository {
 
     override fun getAllMenuItems(): Flow<Result<List<FoodItem>>> = flow {
         try {
-            val snapshot = database.get().await()
+            val snapshot = dbRef.get().await()
             val menuItems = snapshot.children.flatMap { sellerSnapshot ->
                 sellerSnapshot.children.mapNotNull { it.getValue(FoodItem::class.java) }
             }
@@ -43,14 +45,14 @@ class MenuRepositoryImpl : MenuRepository {
     }
 
     override suspend fun addMenuItem(sellerId: String, menuItem: FoodItem) {
-        database.child(sellerId).push().setValue(menuItem).await()
+        dbRef.child(sellerId).push().setValue(menuItem).await()
     }
 
     override suspend fun deleteMenuItem(sellerId: String, menuItemId: String) {
-        database.child(sellerId).child(menuItemId).removeValue().await()
+        dbRef.child(sellerId).child(menuItemId).removeValue().await()
     }
 
     override suspend fun updateMenuItem(sellerId: String, menuItemId: String, foodItem: FoodItem) {
-        database.child(sellerId).child(menuItemId).setValue(foodItem).await()
+        dbRef.child(sellerId).child(menuItemId).setValue(foodItem).await()
     }
 }
