@@ -29,7 +29,6 @@ class AllUsersViewModel @Inject constructor(
             is AllUsersEvent.DeleteUser -> {
                 viewModelScope.launch {
                     adminUseCases.deleteUser(event.userId)
-                    getAllUsers()
                 }
             }
         }
@@ -37,17 +36,31 @@ class AllUsersViewModel @Inject constructor(
 
     private fun getAllUsers() {
         adminUseCases.getAllUsers().onEach { result ->
-            _state.value = state.value.copy(
-                users = result.getOrNull() ?: emptyList(), 
-                isLoading = false
-            )
+            _state.value = when {
+                result.isSuccess -> {
+                    state.value.copy(
+                        users = result.getOrNull() ?: emptyList(),
+                        isLoading = false
+                    )
+                }
+                result.isFailure -> {
+                    state.value.copy(
+                        error = result.exceptionOrNull()?.message,
+                        isLoading = false
+                    )
+                }
+                else -> {
+                    state.value.copy(isLoading = true)
+                }
+            }
         }.launchIn(viewModelScope)
     }
 }
 
 data class AllUsersState(
-    val users: List<Pair<String, User>> = emptyList(),
-    val isLoading: Boolean = true
+    val users: List<User> = emptyList(),
+    val isLoading: Boolean = true,
+    val error: String? = null
 )
 
 sealed class AllUsersEvent {
