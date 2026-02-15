@@ -118,8 +118,24 @@ class AdminRepositoryImpl @Inject constructor(
         awaitClose { database.reference.removeEventListener(listener) }
     }
 
-    override fun getDeliveryUsers(): Flow<Result<List<User>>> {
-        TODO("Not yet implemented")
+    override fun getDeliveryUsers(): Flow<Result<List<User>>> = callbackFlow {
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val users = snapshot.children.mapNotNull { 
+                    val user = it.getValue(User::class.java)
+                    user?.uid = it.key ?: ""
+                    user
+                }
+                    .filter { it.role == "delivery" }
+                trySend(Result.success(users))
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                trySend(Result.failure(error.toException()))
+            }
+        }
+        usersRef.addValueEventListener(listener)
+        awaitClose { usersRef.removeEventListener(listener) }
     }
 
     override fun getAllMenuItems(): Flow<Result<List<FoodItem>>> = callbackFlow {

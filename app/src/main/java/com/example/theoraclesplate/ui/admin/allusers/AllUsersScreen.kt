@@ -2,9 +2,11 @@ package com.example.theoraclesplate.ui.admin.allusers
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,11 +38,13 @@ fun AllUsersScreen(viewModel: AllUsersViewModel = hiltViewModel()) {
         } else {
             LazyColumn {
                 items(state.users) { user ->
-                    UserCard(
-                        user = user,
-                        onApprove = { /* Not used here */ },
-                        onDecline = { viewModel.onEvent(AllUsersEvent.DeleteUser(user.uid)) }
-                    )
+                    UserCard(user = user) {
+                        Row {
+                            Button(onClick = { viewModel.onEvent(AllUsersEvent.DeleteUser(user.uid)) }) {
+                                Text(text = "Delete")
+                            }
+                        }
+                    }
                 }
             }
         }
