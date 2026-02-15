@@ -56,8 +56,10 @@ import coil.compose.AsyncImage
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.model.Order
 import com.example.theoraclesplate.ui.theme.StartColor
+import com.example.theoraclesplate.ui.viewmodel.HistoryEvent
 import com.example.theoraclesplate.ui.viewmodel.HistoryViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -71,6 +73,16 @@ fun HistoryScreen(
     val historyState by viewModel.state.collectAsState()
     var showCancelDialog by remember { mutableStateOf<String?>(null) }
 
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlow.collectLatest {
+            when(it) {
+                is HistoryViewModel.UiEvent.NavigateToCart -> {
+                    navController.navigate("cart_screen")
+                }
+            }
+        }
+    }
+
     if (showCancelDialog != null) {
         AlertDialog(
             onDismissRequest = { showCancelDialog = null },
@@ -79,7 +91,7 @@ fun HistoryScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        // viewModel.cancelOrder(showCancelDialog!!)
+                        viewModel.onEvent(HistoryEvent.CancelOrder(showCancelDialog!!))
                         showCancelDialog = null
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF4444))
@@ -149,7 +161,7 @@ fun HistoryScreen(
                         HistoryItemRow(
                             order,
                             modifier = Modifier.alpha(alpha.value),
-                            onReorder = { /*TODO*/ },
+                            onReorder = { viewModel.onEvent(HistoryEvent.Reorder(order)) },
                             onCancel = { showCancelDialog = order.orderId }
                         )
                     }

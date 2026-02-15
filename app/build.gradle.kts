@@ -1,13 +1,4 @@
 
-import org.gradle.kotlin.dsl.androidTestImplementation
-import org.gradle.kotlin.dsl.implementation
-import org.gradle.kotlin.dsl.testImplementation
-import java.io.FileInputStream
-import java.security.KeyStore
-import java.security.MessageDigest
-import java.io.File
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -25,12 +16,6 @@ android {
     namespace = "com.example.theoraclesplate"
     compileSdk = 36
 
-    val localProperties = Properties()
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        localProperties.load(localPropertiesFile.inputStream())
-    }
-
     defaultConfig {
         applicationId = "com.example.theoraclesplate"
         minSdk = 24
@@ -39,12 +24,9 @@ android {
         versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        val cloudinaryUrl = localProperties.getProperty("cloudinary_url", "")
-        resValue("string", "cloudinary_url", "\"\"$cloudinaryUrl\"\"")
     }
     buildFeatures {
         buildConfig = true
-        viewBinding = true
         compose = true
     }
     composeOptions {
@@ -53,7 +35,7 @@ android {
     }
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -71,14 +53,6 @@ android {
 }
 dependencies {
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.navigation.fragment.ktx)
-    implementation(libs.androidx.recyclerview)
-    implementation(libs.androidx.cardview)
-    implementation(libs.androidx.navigation.ui.ktx)
-    implementation(libs.androidx.databinding.viewbinding)
     
     // Compose
     implementation(platform(libs.androidx.compose.bom))
@@ -127,26 +101,4 @@ dependencies {
     implementation("org.osmdroid:osmdroid-android:6.1.18")
     implementation("androidx.preference:preference-ktx:1.2.1")
 
-}
-
-tasks.register("printSHA1") {
-    doLast {
-        try {
-            val keystoreFile = File(System.getProperty("user.home"), ".android/debug.keystore")
-            if (keystoreFile.exists()) {
-                val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
-                keystore.load(FileInputStream(keystoreFile), "android".toCharArray())
-                val cert = keystore.getCertificate("androiddebugkey")
-                val digest = MessageDigest.getInstance("SHA-1")
-                val hash = digest.digest(cert.encoded)
-                val hex = hash.joinToString(":") { "%02X".format(it) }
-                File(project.rootDir, "debug_sha1.txt").writeText("SHA1: $hex")
-                println("SHA1 Written to debug_sha1.txt")
-            } else {
-                File(project.rootDir, "debug_sha1.txt").writeText("Error: Debug keystore not found at ${'$'}{keystoreFile.absolutePath}")
-            }
-        } catch (e: Exception) {
-            File(project.rootDir, "debug_sha1.txt").writeText("Error: ${'$'}{e.message}")
-        }
-    }
 }
