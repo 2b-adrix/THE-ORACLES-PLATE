@@ -5,13 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.theoraclesplate.domain.use_case.AuthUseCases
 import com.example.theoraclesplate.domain.use_case.HistoryUseCases
 import com.example.theoraclesplate.model.Order
-import com.example.theoraclesplate.model.OrderItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,53 +18,25 @@ class HistoryViewModel @Inject constructor(
     private val authUseCases: AuthUseCases
 ) : ViewModel() {
 
-    private val _historyState = MutableStateFlow<HistoryState>(HistoryState.Loading)
-    val historyState: StateFlow<HistoryState> = _historyState
+    private val _state = MutableStateFlow(HistoryState())
+    val state = _state.asStateFlow()
 
-    fun fetchOrderHistory() {
-        val userId = authUseCases.getCurrentUser()?.uid ?: return
-        historyUseCases.getOrderHistory(userId)
-            .onEach { orders ->
-                _historyState.value = HistoryState.Success(orders.map { it.toHistoryItem() })
-            }
-            .catch { e ->
-                _historyState.value = HistoryState.Error(e.message ?: "An unexpected error occurred")
-            }
-            .launchIn(viewModelScope)
+    init {
+        getOrderHistory()
     }
 
-    fun cancelOrder(orderId: String) {
+    private fun getOrderHistory() {
         viewModelScope.launch {
-            try {
-                historyUseCases.cancelOrder(orderId)
-                fetchOrderHistory()
-            } catch (e: Exception) {
-                _historyState.value = HistoryState.Error(e.message ?: "An unexpected error occurred")
+            val userId = authUseCases.getCurrentUser()?.uid ?: return@launch
+            historyUseCases.getOrderHistory(userId).collectLatest { orders ->
+                _state.value = _state.value.copy(orders = orders)
             }
         }
     }
 }
 
-sealed class HistoryState {
-    object Loading : HistoryState()
-    data class Success(val items: List<HistoryItem>) : HistoryState()
-    data class Error(val message: String) : HistoryState()
-}
-
-data class HistoryItem(
-    val orderId: String,
-    val items: List<OrderItem>,
-    val price: String,
-    val date: String,
-    val status: String
+data class HistoryState(
+    val orders: List<Order> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null
 )
-
-fun Order.toHistoryItem(): HistoryItem {
-    return HistoryItem(
-        orderId = orderId,
-        items = items,
-        price = "$${totalAmount}",
-        date = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.getDefault()).format(java.util.Date(timestamp)),
-        status = status
-    )
-}
