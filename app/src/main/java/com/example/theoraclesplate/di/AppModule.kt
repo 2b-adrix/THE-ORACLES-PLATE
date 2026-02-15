@@ -114,6 +114,11 @@ object AppModule {
         return HomeRepositoryImpl(menuRepository, database)
     }
 
+    @Provides
+    @Singleton
+    fun provideSearchRepository(database: FirebaseDatabase): SearchRepository {
+        return SearchRepositoryImpl(database)
+    }
 
     @Provides
     @Singleton
@@ -179,14 +184,16 @@ object AppModule {
     fun provideDeliveryUseCases(
         deliveryRepository: DeliveryRepository,
         orderRepository: OrderRepository,
-        geocodingRepository: GeocodingRepository
+        geocodingRepository: GeocodingRepository,
+        authUseCases: AuthUseCases
     ): DeliveryUseCases {
         return DeliveryUseCases(
             getReadyForPickupOrders = GetReadyForPickupOrdersUseCase(deliveryRepository),
             getOutForDeliveryOrders = GetOutForDeliveryOrdersUseCase(deliveryRepository),
             getDeliveredOrders = GetDeliveredOrdersUseCase(deliveryRepository),
             updateOrderStatus = UpdateOrderStatusUseCase(orderRepository),
-            getCoordinatesFromAddress = GetCoordinatesFromAddressUseCase(geocodingRepository)
+            getCoordinatesFromAddress = GetCoordinatesFromAddressUseCase(geocodingRepository),
+            acceptOrder = AcceptOrderUseCase(deliveryRepository, authUseCases)
         )
     }
 
@@ -220,6 +227,14 @@ object AppModule {
             deleteMenuItem = DeleteMenuItemUseCase(menuRepository),
             updateMenuItem = UpdateMenuItemUseCase(menuRepository),
             getMenuItem = GetMenuItemUseCase(menuRepository)
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideSearchUseCases(searchRepository: SearchRepository): SearchUseCases {
+        return SearchUseCases(
+            searchMenuItems = SearchMenuItemsUseCase(searchRepository)
         )
     }
 }
