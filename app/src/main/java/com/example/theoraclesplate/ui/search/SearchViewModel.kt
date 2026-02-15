@@ -1,73 +1,58 @@
 package com.example.theoraclesplate.ui.search
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.theoraclesplate.domain.use_case.AdminUseCases
+import com.example.theoraclesplate.domain.repository.SearchRepository
 import com.example.theoraclesplate.model.FoodItem
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val adminUseCases: AdminUseCases
+    private val searchRepository: SearchRepository
 ) : ViewModel() {
 
-    private val _state = mutableStateOf(SearchState())
-    val state: State<SearchState> = _state
+    private val _state = MutableStateFlow(SearchState())
+    val state = _state.asStateFlow()
 
-    private var getMenuItemsJob: Job? = null
-
-    init {
-        getAllMenuItems()
+    fun onSearchQueryChange(query: String) {
+        _state.value = state.value.copy(searchQuery = query)
+        searchMenuItems(query)
     }
 
-    fun onEvent(event: SearchEvent) {
-        when (event) {
-            is SearchEvent.QueryChanged -> {
-                _state.value = state.value.copy(query = event.query)
-                filterItems()
-            }
-        }
-    }
-
-    private fun getAllMenuItems() {
-        getMenuItemsJob?.cancel()
-        getMenuItemsJob = adminUseCases.getAllMenuItems()
+    private fun searchMenuItems(query: String) {
+        searchRepository.searchMenuItems(query)
             .onEach { result ->
-                val items = result.getOrNull()?.map { it.second } ?: emptyList()
-                _state.value = state.value.copy(
-                    menuItems = items,
-                    isLoading = false
-                )
-                filterItems()
+                _state.value = when {
+                    result.isSuccess -> {
+                        state.value.copy(
+                            searchResults = result.getOrNull() ?: emptyList(),
+                            isLoading = false
+                        )
+                    }
+                    result.isFailure -> {
+                        state.value.copy(
+                            error = result.exceptionOrNull()?.message,
+                            isLoading = false
+                        )
+                    }
+                    else -> {
+                        state.value.copy(isLoading = true)
+                    }
+                }
             }
             .launchIn(viewModelScope)
-    }
-
-    private fun filterItems() {
-        val filtered = if (state.value.query.isBlank()) {
-            state.value.menuItems
-        } else {
-            state.value.menuItems.filter {
-                it.name.contains(state.value.query, ignoreCase = true)
-            }
-        }
-        _state.value = state.value.copy(filteredItems = filtered)
     }
 }
 
 data class SearchState(
-    val menuItems: List<FoodItem> = emptyList(),
-    val filteredItems: List<FoodItem> = emptyList(),
-    val query: String = "",
-    val isLoading: Boolean = true
+    val searchQuery: String = "",
+    val searchResults: List<FoodItem> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null
 )
-
-sealed class SearchEvent {
-    data class QueryChanged(val query: String) : SearchEvent()
-}
