@@ -1,6 +1,5 @@
 package com.example.theoraclesplate.ui
 
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -48,7 +47,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,11 +54,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.theoraclesplate.R
+import com.example.theoraclesplate.model.Order
 import com.example.theoraclesplate.ui.theme.StartColor
-import com.example.theoraclesplate.ui.viewmodel.HistoryItem
-import com.example.theoraclesplate.ui.viewmodel.HistoryState
 import com.example.theoraclesplate.ui.viewmodel.HistoryViewModel
 import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,13 +68,8 @@ fun HistoryScreen(
     navController: NavController,
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
-    val historyState by viewModel.historyState.collectAsState()
-    val context = LocalContext.current
+    val historyState by viewModel.state.collectAsState()
     var showCancelDialog by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(Unit) {
-        viewModel.fetchOrderHistory()
-    }
 
     if (showCancelDialog != null) {
         AlertDialog(
@@ -84,7 +79,7 @@ fun HistoryScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.cancelOrder(showCancelDialog!!)
+                        // viewModel.cancelOrder(showCancelDialog!!)
                         showCancelDialog = null
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF4444))
@@ -119,49 +114,45 @@ fun HistoryScreen(
                 .padding(it)
                 .background(Color.Transparent)
         ) {
-            when (val state = historyState) {
-                is HistoryState.Loading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = StartColor)
+            if (historyState.isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = StartColor)
+                }
+            } else if (historyState.error != null) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = historyState.error!!, color = Color.Red)
+                }
+            } else if (historyState.orders.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(), 
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                        Icon(
+                            imageVector = Icons.Default.History,
+                            contentDescription = "No History",
+                            tint = Color.White.copy(alpha = 0.7f),
+                            modifier = Modifier.size(100.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("No order history", color = Color.White.copy(alpha = 0.7f), fontSize = 20.sp)
                     }
                 }
-                is HistoryState.Success -> {
-                    if (state.items.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(), 
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.History,
-                                    contentDescription = "No History",
-                                    tint = Color.White.copy(alpha = 0.7f),
-                                    modifier = Modifier.size(100.dp)
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text("No order history", color = Color.White.copy(alpha = 0.7f), fontSize = 20.sp)
-                            }
+            } else {
+                LazyColumn(modifier = Modifier.padding(16.dp)) {
+                    itemsIndexed(historyState.orders) { index, order ->
+                        val alpha = remember { Animatable(0f) }
+                        LaunchedEffect(key1 = order) {
+                            delay(index * 100L)
+                            alpha.animateTo(1f, tween(500))
                         }
-                    } else {
-                        LazyColumn(modifier = Modifier.padding(16.dp)) {
-                            itemsIndexed(state.items) { index, item ->
-                                val alpha = remember { Animatable(0f) }
-                                LaunchedEffect(key1 = item) {
-                                    delay(index * 100L)
-                                    alpha.animateTo(1f, tween(500))
-                                }
-                                HistoryItemRow(
-                                    item,
-                                    modifier = Modifier.alpha(alpha.value),
-                                    onReorder = { /*TODO*/ },
-                                    onCancel = { showCancelDialog = item.orderId }
-                                )
-                            }
-                        }
+                        HistoryItemRow(
+                            order,
+                            modifier = Modifier.alpha(alpha.value),
+                            onReorder = { /*TODO*/ },
+                            onCancel = { showCancelDialog = order.orderId }
+                        )
                     }
-                }
-                is HistoryState.Error -> {
-                    Toast.makeText(context, "History Error: ${state.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -169,8 +160,12 @@ fun HistoryScreen(
 }
 
 @Composable
-fun HistoryItemRow(item: HistoryItem, modifier: Modifier = Modifier, onReorder: () -> Unit, onCancel: () -> Unit) {
+fun HistoryItemRow(order: Order, modifier: Modifier = Modifier, onReorder: () -> Unit, onCancel: () -> Unit) {
     var expanded by remember { mutableStateOf(false) }
+    val formattedDate = remember(order.timestamp) {
+        val sdf = SimpleDateFormat("MM/dd/yyyy hh:mm a", Locale.getDefault())
+        sdf.format(Date(order.timestamp))
+    }
 
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -185,7 +180,7 @@ fun HistoryItemRow(item: HistoryItem, modifier: Modifier = Modifier, onReorder: 
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AsyncImage(
-                    model = if (item.items.isNotEmpty() && item.items.first().image.isNotEmpty()) item.items.first().image else R.drawable.logo,
+                    model = if (order.items.isNotEmpty() && order.items.first().image.isNotEmpty()) order.items.first().image else R.drawable.logo,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -198,21 +193,21 @@ fun HistoryItemRow(item: HistoryItem, modifier: Modifier = Modifier, onReorder: 
                         .weight(1f)
                         .padding(horizontal = 16.dp)
                 ) {
-                    Text(item.items.firstOrNull()?.name ?: "Unknown Item", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                    Text(item.price, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = StartColor)
-                    Text(item.date, fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f))
+                    Text(order.items.firstOrNull()?.name ?: "Unknown Item", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(String.format("$%.2f", order.totalAmount), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = StartColor)
+                    Text(formattedDate, fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f))
                     Text(
-                        "Status: ${item.status}", fontSize = 14.sp, fontWeight = FontWeight.Bold,
-                        color = when (item.status) {
+                        "Status: ${order.status}", fontSize = 14.sp, fontWeight = FontWeight.Bold,
+                        color = when (order.status) {
                             "Pending" -> Color(0xFF33B5E5)
                             "Cancelled" -> Color(0xFFFF4444)
-                            "Completed" -> Color(0xFF00C851)
+                            "Delivered" -> Color(0xFF00C851)
                             else -> Color.White
                         }
                     )
                 }
 
-                if (item.status == "Pending") {
+                if (order.status == "Pending") {
                     Button(
                         onClick = onCancel,
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF4444)),
@@ -221,7 +216,7 @@ fun HistoryItemRow(item: HistoryItem, modifier: Modifier = Modifier, onReorder: 
                     ) {
                         Text("Cancel", fontSize = 14.sp, color = Color.White)
                     }
-                } else if (item.status != "Cancelled") {
+                } else if (order.status != "Cancelled") {
                     Button(
                         onClick = onReorder,
                         colors = ButtonDefaults.buttonColors(containerColor = StartColor),
@@ -234,7 +229,7 @@ fun HistoryItemRow(item: HistoryItem, modifier: Modifier = Modifier, onReorder: 
             }
             AnimatedVisibility(visible = expanded) {
                 Column(modifier = Modifier.padding(top = 16.dp)) {
-                    item.items.forEach {
+                    order.items.forEach {
                         Row(modifier = Modifier.padding(vertical = 4.dp)) {
                             Text("• ${it.name} (x${it.quantity})", color = Color.White.copy(alpha = 0.8f))
                         }
