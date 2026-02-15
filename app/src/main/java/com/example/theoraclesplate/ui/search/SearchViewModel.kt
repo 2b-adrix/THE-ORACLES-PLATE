@@ -20,9 +20,20 @@ class SearchViewModel @Inject constructor(
     private val _state = MutableStateFlow(SearchState())
     val state = _state.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+
+    init {
+        _searchQuery
+            .debounce(500)
+            .onEach { query ->
+                searchMenuItems(query)
+            }
+            .launchIn(viewModelScope)
+    }
+
     fun onSearchQueryChange(query: String) {
+        _searchQuery.value = query
         _state.value = state.value.copy(searchQuery = query)
-        searchMenuItems(query)
     }
 
     private fun searchMenuItems(query: String) {
