@@ -3,35 +3,14 @@ package com.example.theoraclesplate.ui
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.RemoveShoppingCart
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -55,7 +34,7 @@ import kotlinx.coroutines.delay
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(rootNavController: NavController, viewModel: CartViewModel = hiltViewModel()) {
-    val state = viewModel.state.value
+    val state by viewModel.cartState.collectAsState()
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Your Cart") }) },
@@ -120,7 +99,7 @@ fun CartScreen(rootNavController: NavController, viewModel: CartViewModel = hilt
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Total", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                        Text("$${state.totalPrice}", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = StartColor)
+                        Text(String.format("$%.2f", state.totalPrice), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = StartColor)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
@@ -140,7 +119,13 @@ fun CartScreen(rootNavController: NavController, viewModel: CartViewModel = hilt
 }
 
 @Composable
-fun CartItemRow(item: CartItem, modifier: Modifier = Modifier, onIncrease: () -> Unit, onDecrease: () -> Unit, onDelete: () -> Unit) {
+fun CartItemRow(
+    item: CartItem, 
+    modifier: Modifier = Modifier, 
+    onIncrease: () -> Unit, 
+    onDecrease: () -> Unit, 
+    onDelete: () -> Unit
+) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
@@ -151,7 +136,7 @@ fun CartItemRow(item: CartItem, modifier: Modifier = Modifier, onIncrease: () ->
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                model = item.image.ifEmpty { R.drawable.logo },
+                model = item.imageUrl.ifEmpty { R.drawable.logo },
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -164,7 +149,7 @@ fun CartItemRow(item: CartItem, modifier: Modifier = Modifier, onIncrease: () ->
             ) {
                 Text(item.name, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("$${item.price}", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = StartColor)
+                Text(String.format("$%.2f", item.price), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = StartColor)
                 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

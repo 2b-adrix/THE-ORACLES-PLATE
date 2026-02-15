@@ -66,7 +66,7 @@ class SellerMenuViewModel @Inject constructor(
                         return@launch
                     }
 
-                    _state.value = state.value.copy(isLoading = true)
+                    _state.value = state.value.copy(isAddingItem = true)
 
                     try {
                         val imageUrl = event.imageUri?.let { imageUploader.uploadImage(it).getOrNull() } ?: ""
@@ -78,12 +78,11 @@ class SellerMenuViewModel @Inject constructor(
                             imageUrl = imageUrl
                         )
                         menuUseCases.addMenuItem(sellerId, menuItem)
-                        _state.value = state.value.copy(isLoading = false)
+                        _state.value = state.value.copy(isAddingItem = false)
                         _eventFlow.emit(UiEvent.ShowSnackbar("Menu item added!"))
                         _eventFlow.emit(UiEvent.NavigateUp)
-                        getMenuItemsForCurrentUser()
                     } catch (e: Exception) {
-                        _state.value = state.value.copy(isLoading = false)
+                        _state.value = state.value.copy(isAddingItem = false)
                         _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Error adding item"))
                     }
                 }
@@ -96,10 +95,12 @@ class SellerMenuViewModel @Inject constructor(
                         return@launch
                     }
                     try {
+                        _state.value = state.value.copy(isDeletingItem = true)
                         menuUseCases.deleteMenuItem(sellerId, event.menuItemId)
+                        _state.value = state.value.copy(isDeletingItem = false)
                         _eventFlow.emit(UiEvent.ShowSnackbar("Menu item deleted!"))
-                        getMenuItemsForCurrentUser()
                     } catch (e: Exception) {
+                        _state.value = state.value.copy(isDeletingItem = false)
                         _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Error deleting item"))
                     }
                 }
@@ -115,7 +116,6 @@ class SellerMenuViewModel @Inject constructor(
                     try {
                         menuUseCases.updateMenuItem(sellerId, event.menuItemId, event.foodItem)
                         _eventFlow.emit(UiEvent.ShowSnackbar("Menu item updated!"))
-                        getMenuItemsForCurrentUser()
                     } catch (e: Exception) {
                         _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Error updating item"))
                     }
@@ -134,8 +134,10 @@ data class SellerMenuState(
     val name: String = "",
     val description: String = "",
     val price: String = "",
-    val menuItems: List<Pair<String, FoodItem>> = emptyList(),
-    val isLoading: Boolean = false
+    val menuItems: List<FoodItem> = emptyList(),
+    val isLoading: Boolean = false,
+    val isAddingItem: Boolean = false,
+    val isDeletingItem: Boolean = false
 )
 
 sealed class SellerMenuEvent {

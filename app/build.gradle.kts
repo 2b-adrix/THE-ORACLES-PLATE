@@ -78,6 +78,7 @@ dependencies {
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.cardview)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.databinding.viewbinding)
     
     // Compose
     implementation(platform(libs.androidx.compose.bom))

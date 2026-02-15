@@ -51,11 +51,10 @@ fun MainApp() {
             composable("delivery_management") { DeliveryManagementScreen(navController) }
 
             composable(
-                route = "details/{name}/{price}/?image={image}",
+                route = "details/{foodItemId}/{sellerId}",
                 arguments = listOf(
-                    navArgument("name") { type = NavType.StringType },
-                    navArgument("price") { type = NavType.FloatType },
-                    navArgument("image") { type = NavType.StringType; nullable = true }
+                    navArgument("foodItemId") { type = NavType.StringType },
+                    navArgument("sellerId") { type = NavType.StringType },
                 )
             ) { 
                 DetailsScreen(onBack = { navController.popBackStack() })

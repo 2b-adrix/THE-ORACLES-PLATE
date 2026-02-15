@@ -1,7 +1,6 @@
 package com.example.theoraclesplate.ui
 
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -9,37 +8,14 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -57,6 +33,7 @@ import com.example.theoraclesplate.ui.seller.menu.SellerMenuEvent
 import com.example.theoraclesplate.ui.seller.menu.SellerMenuViewModel
 import com.example.theoraclesplate.ui.theme.StartColor
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,6 +41,9 @@ fun AddMenuItemScreen(navController: NavController, viewModel: SellerMenuViewMod
     val state = viewModel.state.value
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
         imageUri = uri
     }
@@ -72,15 +52,17 @@ fun AddMenuItemScreen(navController: NavController, viewModel: SellerMenuViewMod
     LaunchedEffect(key1 = true) {
         alpha.animateTo(1f, animationSpec = tween(500))
     }
-    
+
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
-            when(event) {
+            when (event) {
                 is SellerMenuViewModel.UiEvent.NavigateUp -> {
                     navController.popBackStack()
                 }
                 is SellerMenuViewModel.UiEvent.ShowSnackbar -> {
-                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                    scope.launch {
+                        snackbarHostState.showSnackbar(event.message)
+                    }
                 }
             }
         }
@@ -97,7 +79,8 @@ fun AddMenuItemScreen(navController: NavController, viewModel: SellerMenuViewMod
                 }
             )
         },
-        containerColor = Color.Transparent
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        containerColor = Color(0xFF1A1A2E) // Consistent background color
     ) {
         Column(
             modifier = Modifier
@@ -136,9 +119,9 @@ fun AddMenuItemScreen(navController: NavController, viewModel: SellerMenuViewMod
                 unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
                 focusedLabelColor = Color.White,
                 unfocusedLabelColor = Color.White.copy(alpha = 0.5f),
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                cursorColor = StartColor
+                cursorColor = StartColor,
+                focusedTextColor = Color.White, 
+                unfocusedTextColor = Color.White
             )
 
             OutlinedTextField(
@@ -173,12 +156,12 @@ fun AddMenuItemScreen(navController: NavController, viewModel: SellerMenuViewMod
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                enabled = !state.isLoading,
+                enabled = !state.isAddingItem,
                 colors = ButtonDefaults.buttonColors(containerColor = StartColor),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator(color = Color.Black)
+                if (state.isAddingItem) {
+                    CircularProgressIndicator(color = Color.White)
                 } else {
                     Text("Add Dish", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 }

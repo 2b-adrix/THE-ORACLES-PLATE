@@ -4,6 +4,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.theoraclesplate.domain.use_case.AuthUseCases
 import com.example.theoraclesplate.domain.use_case.DeliveryUseCases
 import com.example.theoraclesplate.model.Order
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,7 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DeliveryDashboardViewModel @Inject constructor(
-    private val deliveryUseCases: DeliveryUseCases
+    private val deliveryUseCases: DeliveryUseCases,
+    private val authUseCases: AuthUseCases
 ) : ViewModel() {
 
     private val _state = mutableStateOf(DeliveryDashboardState())
@@ -46,6 +48,24 @@ class DeliveryDashboardViewModel @Inject constructor(
                         deliveryUseCases.updateOrderStatus(event.orderId, event.newStatus)
                         _state.value = state.value.copy(isLoading = false)
                         _eventFlow.emit(UiEvent.ShowSnackbar("Order status updated!"))
+                    } catch (e: Exception) {
+                        _state.value = state.value.copy(isLoading = false)
+                        _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Unknown error"))
+                    }
+                }
+            }
+            is DeliveryDashboardEvent.AcceptOrder -> {
+                viewModelScope.launch {
+                    _state.value = state.value.copy(isLoading = true)
+                    try {
+                        val userId = authUseCases.getCurrentUser()?.uid
+                        val updatedOrder = event.order.copy(
+                            status = "Out for Delivery",
+                            deliveryPersonId = userId
+                        )
+                        deliveryUseCases.acceptOrder(updatedOrder)
+                        _state.value = state.value.copy(isLoading = false)
+                        _eventFlow.emit(UiEvent.ShowSnackbar("Order accepted!"))
                     } catch (e: Exception) {
                         _state.value = state.value.copy(isLoading = false)
                         _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Unknown error"))
@@ -108,4 +128,5 @@ data class DeliveryDashboardState(
 
 sealed class DeliveryDashboardEvent {
     data class UpdateOrderStatus(val orderId: String, val newStatus: String) : DeliveryDashboardEvent()
+    data class AcceptOrder(val order: Order) : DeliveryDashboardEvent()
 }

@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface HomeRepository {
 
-    fun getBanners(): Flow<List<String>>
+    fun getBanners(): Flow<Result<List<String>>>
 
-    fun getPopularFood(): Flow<List<FoodItem>>
+    fun getPopularFood(): Flow<Result<List<FoodItem>>>
 }

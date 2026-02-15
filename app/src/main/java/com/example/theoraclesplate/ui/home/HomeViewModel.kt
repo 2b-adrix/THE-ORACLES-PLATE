@@ -31,8 +31,12 @@ class HomeViewModel @Inject constructor(
     private fun getBanners() {
         getBannersJob?.cancel()
         getBannersJob = homeUseCases.getBanners()
-            .onEach { banners ->
-                _state.value = state.value.copy(banners = banners)
+            .onEach { result ->
+                _state.value = when {
+                    result.isSuccess -> state.value.copy(banners = result.getOrNull() ?: emptyList(), isLoading = false)
+                    result.isFailure -> state.value.copy(error = result.exceptionOrNull()?.message, isLoading = false)
+                    else -> state.value.copy(isLoading = true)
+                }
             }
             .launchIn(viewModelScope)
     }
@@ -40,8 +44,12 @@ class HomeViewModel @Inject constructor(
     private fun getPopularFood() {
         getPopularFoodJob?.cancel()
         getPopularFoodJob = homeUseCases.getPopularFood()
-            .onEach { food ->
-                _state.value = state.value.copy(popularFood = food)
+            .onEach { result ->
+                _state.value = when {
+                    result.isSuccess -> state.value.copy(popularFood = result.getOrNull() ?: emptyList(), isLoading = false)
+                    result.isFailure -> state.value.copy(error = result.exceptionOrNull()?.message, isLoading = false)
+                    else -> state.value.copy(isLoading = true)
+                }
             }
             .launchIn(viewModelScope)
     }
@@ -49,5 +57,7 @@ class HomeViewModel @Inject constructor(
 
 data class HomeState(
     val banners: List<String> = emptyList(),
-    val popularFood: List<FoodItem> = emptyList()
+    val popularFood: List<FoodItem> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null
 )

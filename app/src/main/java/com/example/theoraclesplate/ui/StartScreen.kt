@@ -22,6 +22,7 @@ import androidx.navigation.NavController
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.ui.theme.StartColor
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun StartScreen(navController: NavController) {
@@ -33,16 +34,26 @@ fun StartScreen(navController: NavController) {
     val alpha5 = remember { Animatable(0f) }
 
     LaunchedEffect(key1 = true) {
-        delay(200)
-        alpha1.animateTo(1f, animationSpec = tween(800))
-        delay(200)
-        alpha2.animateTo(1f, animationSpec = tween(800))
-        delay(200)
-        alpha3.animateTo(1f, animationSpec = tween(800))
-        delay(200)
-        alpha4.animateTo(1f, animationSpec = tween(800))
-        delay(200)
-        alpha5.animateTo(1f, animationSpec = tween(800))
+        launch {
+            delay(200)
+            alpha1.animateTo(1f, animationSpec = tween(800))
+        }
+        launch {
+            delay(400)
+            alpha2.animateTo(1f, animationSpec = tween(800))
+        }
+        launch {
+            delay(600)
+            alpha3.animateTo(1f, animationSpec = tween(800))
+        }
+        launch {
+            delay(800)
+            alpha4.animateTo(1f, animationSpec = tween(800))
+        }
+        launch {
+            delay(1000)
+            alpha5.animateTo(1f, animationSpec = tween(800))
+        }
     }
 
     Box(
@@ -90,7 +101,7 @@ fun StartScreen(navController: NavController) {
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
-                onClick = { navController.navigate("login") },
+                onClick = { navController.navigate("login_screen") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)

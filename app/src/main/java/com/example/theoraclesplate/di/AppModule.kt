@@ -38,8 +38,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(auth: FirebaseAuth, firestore: FirebaseFirestore): AuthRepository {
-        return AuthRepositoryImpl(auth, firestore)
+    fun provideAuthRepository(auth: FirebaseAuth, database: FirebaseDatabase): AuthRepository {
+        return AuthRepositoryImpl(auth, database)
     }
 
     @Provides
@@ -50,8 +50,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideOrderRepository(): OrderRepository {
-        return OrderRepositoryImpl()
+    fun provideOrderRepository(database: FirebaseDatabase): OrderRepository {
+        return OrderRepositoryImpl(database)
     }
 
     @Provides
@@ -62,38 +62,38 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSellerOrdersRepository(): SellerOrdersRepository {
-        return SellerOrdersRepositoryImpl()
+    fun provideSellerOrdersRepository(database: FirebaseDatabase): SellerOrdersRepository {
+        return SellerOrdersRepositoryImpl(database)
     }
 
     @Provides
     @Singleton
-    fun provideReviewRepository(): ReviewRepository {
-        return ReviewRepositoryImpl()
+    fun provideReviewRepository(database: FirebaseDatabase): ReviewRepository {
+        return ReviewRepositoryImpl(database)
     }
 
     @Provides
     @Singleton
-    fun provideAdminRepository(): AdminRepository {
-        return AdminRepositoryImpl()
+    fun provideAdminRepository(database: FirebaseDatabase, firestore: FirebaseFirestore): AdminRepository {
+        return AdminRepositoryImpl(database, firestore)
     }
 
     @Provides
     @Singleton
-    fun provideCartRepository(): CartRepository {
-        return CartRepositoryImpl()
+    fun provideCartRepository(database: FirebaseDatabase): CartRepository {
+        return CartRepositoryImpl(database)
     }
 
     @Provides
     @Singleton
-    fun provideCheckoutRepository(): CheckoutRepository {
-        return CheckoutRepositoryImpl()
+    fun provideCheckoutRepository(database: FirebaseDatabase): CheckoutRepository {
+        return CheckoutRepositoryImpl(database)
     }
 
     @Provides
     @Singleton
-    fun provideDeliveryRepository(): DeliveryRepository {
-        return DeliveryRepositoryImpl()
+    fun provideDeliveryRepository(database: FirebaseDatabase): DeliveryRepository {
+        return DeliveryRepositoryImpl(database)
     }
 
     @Provides
@@ -104,14 +104,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideHistoryRepository(): HistoryRepository {
-        return HistoryRepositoryImpl()
+    fun provideHistoryRepository(database: FirebaseDatabase): HistoryRepository {
+        return HistoryRepositoryImpl(database)
     }
 
     @Provides
     @Singleton
-    fun provideHomeRepository(menuRepository: MenuRepository): HomeRepository {
-        return HomeRepositoryImpl(menuRepository)
+    fun provideHomeRepository(menuRepository: MenuRepository, database: FirebaseDatabase): HomeRepository {
+        return HomeRepositoryImpl(menuRepository, database)
     }
 
 
@@ -149,7 +149,7 @@ object AppModule {
             getDeliveryUsers = GetDeliveryUsersUseCase(adminRepository),
             getAnalyticsData = GetAnalyticsDataUseCase(adminRepository),
             getAllMenuItems = GetAllMenuItemsUseCase(adminRepository),
-            deleteMenuItem = DeleteMenuItemUseCase(adminRepository)
+            deleteMenuItem = com.example.theoraclesplate.domain.use_case.admin.DeleteMenuItemUseCase(adminRepository)
         )
     }
 
@@ -168,9 +168,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideCheckoutUseCases(checkoutRepository: CheckoutRepository): CheckoutUseCases {
+    fun provideCheckoutUseCases(orderRepository: OrderRepository): CheckoutUseCases {
         return CheckoutUseCases(
-            createOrder = CreateOrderUseCase(checkoutRepository)
+            placeOrder = PlaceOrderUseCase(orderRepository)
         )
     }
 
@@ -213,12 +213,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideMenuUseCases(menuRepository: MenuRepository, adminRepository: AdminRepository): MenuUseCases {
+    fun provideMenuUseCases(menuRepository: MenuRepository): MenuUseCases {
         return MenuUseCases(
             getMenuItems = GetMenuItemsUseCase(menuRepository),
             addMenuItem = AddMenuItemUseCase(menuRepository),
-            deleteMenuItem = com.example.theoraclesplate.domain.use_case.DeleteMenuItemUseCase(adminRepository),
-            updateMenuItem = UpdateMenuItemUseCase(menuRepository)
+            deleteMenuItem = DeleteMenuItemUseCase(menuRepository),
+            updateMenuItem = UpdateMenuItemUseCase(menuRepository),
+            getMenuItem = GetMenuItemUseCase(menuRepository)
         )
     }
 }

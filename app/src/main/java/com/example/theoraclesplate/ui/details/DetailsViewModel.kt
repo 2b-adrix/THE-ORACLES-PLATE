@@ -5,23 +5,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.theoraclesplate.domain.use_case.AuthUseCases
-import com.example.theoraclesplate.domain.use_case.CartUseCases
-import com.example.theoraclesplate.model.CartItem
+import com.example.theoraclesplate.domain.use_case.MenuUseCases
 import com.example.theoraclesplate.model.FoodItem
+import com.example.theoraclesplate.ui.cart.CartViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 
 @HiltViewModel
 class DetailsViewModel @Inject constructor(
-    private val cartUseCases: CartUseCases,
-    private val authUseCases: AuthUseCases,
-    savedStateHandle: SavedStateHandle
+    private val menuUseCases: MenuUseCases,
+    private val cartViewModel: CartViewModel,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _state = mutableStateOf(DetailsState())
@@ -31,41 +30,41 @@ class DetailsViewModel @Inject constructor(
     val eventFlow = _eventFlow.asSharedFlow()
 
     init {
-        val name = savedStateHandle.get<String>("name")?.let {
-            URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
-        }
-        val price = savedStateHandle.get<Float>("price")
-        val image = savedStateHandle.get<String>("image")?.let {
-            URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
-        }
-
-        if (name != null && price != null) {
-            _state.value = state.value.copy(
-                foodItem = FoodItem(
-                    name = name,
-                    price = price.toDouble(),
-                    imageUrl = image ?: ""
-                ),
-                isLoading = false
-            )
+        savedStateHandle.get<String>("foodItemId")?.let { foodItemId ->
+            savedStateHandle.get<String>("sellerId")?.let { sellerId ->
+                getMenuItem(foodItemId, sellerId)
+            }
         }
     }
 
+    private fun getMenuItem(foodItemId: String, sellerId: String) {
+        menuUseCases.getMenuItem(foodItemId, sellerId).onEach { result ->
+            _state.value = when {
+                result.isSuccess -> {
+                    state.value.copy(
+                        foodItem = result.getOrNull(),
+                        isLoading = false
+                    )
+                }
+                result.isFailure -> {
+                    state.value.copy(
+                        error = result.exceptionOrNull()?.message,
+                        isLoading = false
+                    )
+                }
+                else -> {
+                    state.value.copy(isLoading = true)
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
+
     fun onEvent(event: DetailsEvent) {
-        when(event) {
+        when (event) {
             is DetailsEvent.AddToCart -> {
                 viewModelScope.launch {
-                    val userId = authUseCases.getCurrentUser()?.uid
-                    if (userId != null) {
-                        val cartItem = CartItem(
-                            id = event.item.name, // Using name as ID
-                            name = event.item.name,
-                            price = event.item.price,
-                            image = event.item.imageUrl,
-                            quantity = 1,
-                            sellerId = event.item.sellerId
-                        )
-                        cartUseCases.addToCart(userId, cartItem)
+                    state.value.foodItem?.let {
+                        cartViewModel.addToCart(it)
                         _eventFlow.emit(UiEvent.ShowToast("Added to cart"))
                     }
                 }
@@ -80,9 +79,10 @@ class DetailsViewModel @Inject constructor(
 
 data class DetailsState(
     val foodItem: FoodItem? = null,
-    val isLoading: Boolean = true
+    val isLoading: Boolean = false,
+    val error: String? = null
 )
 
 sealed class DetailsEvent {
-    data class AddToCart(val item: FoodItem): DetailsEvent()
+    data class AddToCart(val foodItem: FoodItem) : DetailsEvent()
 }

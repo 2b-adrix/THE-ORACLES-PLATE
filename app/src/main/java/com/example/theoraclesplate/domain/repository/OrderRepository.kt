@@ -7,5 +7,7 @@ interface OrderRepository {
 
     fun getOrdersForSeller(sellerId: String): Flow<List<Order>>
 
-    suspend fun updateOrderStatus(orderId: String, newStatus: String)
+    suspend fun updateOrderStatus(orderId: String, newStatus: String): Void?
+
+    suspend fun placeOrder(order: Order): Void?
 }
