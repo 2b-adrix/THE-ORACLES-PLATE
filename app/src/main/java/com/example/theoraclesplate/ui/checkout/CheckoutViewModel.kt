@@ -38,6 +38,7 @@ class CheckoutViewModel @Inject constructor(
                     val cartItems = cartRepository.getCartItems(userId).first()
                     val orderItems = cartItems.map {
                         OrderItem(
+                            id = it.id,
                             name = it.name,
                             price = it.price,
                             image = it.imageUrl,

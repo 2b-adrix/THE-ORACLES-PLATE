@@ -3,7 +3,6 @@ package com.example.theoraclesplate.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.theoraclesplate.domain.repository.CartRepository
-import com.example.theoraclesplate.domain.repository.OrderRepository
 import com.example.theoraclesplate.domain.use_case.AuthUseCases
 import com.example.theoraclesplate.domain.use_case.HistoryUseCases
 import com.example.theoraclesplate.model.CartItem
@@ -21,8 +20,7 @@ import javax.inject.Inject
 class HistoryViewModel @Inject constructor(
     private val historyUseCases: HistoryUseCases,
     private val authUseCases: AuthUseCases,
-    private val cartRepository: CartRepository,
-    private val orderRepository: OrderRepository
+    private val cartRepository: CartRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HistoryState())
@@ -42,7 +40,7 @@ class HistoryViewModel @Inject constructor(
                     val userId = authUseCases.getCurrentUser()?.uid ?: return@launch
                     event.order.items.forEach {
                         val cartItem = CartItem(
-                            id = it.name, // Using name as id, consider a more robust approach
+                            id = it.id,
                             name = it.name,
                             price = it.price,
                             imageUrl = it.image,
@@ -56,7 +54,7 @@ class HistoryViewModel @Inject constructor(
             }
             is HistoryEvent.CancelOrder -> {
                 viewModelScope.launch {
-                    orderRepository.updateOrderStatus(event.orderId, "Cancelled")
+                    historyUseCases.cancelOrder(event.orderId)
                 }
             }
         }
