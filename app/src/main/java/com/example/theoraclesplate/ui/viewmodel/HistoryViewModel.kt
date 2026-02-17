@@ -43,7 +43,7 @@ class HistoryViewModel @Inject constructor(
                             id = it.id,
                             name = it.name,
                             price = it.price,
-                            imageUrl = it.image,
+                            imageUrl = it.imageUrl,
                             quantity = it.quantity,
                             sellerId = it.sellerId
                         )

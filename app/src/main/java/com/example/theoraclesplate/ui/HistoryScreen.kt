@@ -192,7 +192,7 @@ fun HistoryItemRow(order: Order, modifier: Modifier = Modifier, onReorder: () ->
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AsyncImage(
-                    model = if (order.items.isNotEmpty() && order.items.first().image.isNotEmpty()) order.items.first().image else R.drawable.logo,
+                    model = if (order.items.isNotEmpty() && order.items.first().imageUrl.isNotEmpty()) order.items.first().imageUrl else R.drawable.logo,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

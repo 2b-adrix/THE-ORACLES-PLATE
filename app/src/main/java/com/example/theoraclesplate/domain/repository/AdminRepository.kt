@@ -9,9 +9,9 @@ interface AdminRepository {
 
     fun getPendingSellers(): Flow<Result<List<User>>>
 
-    suspend fun approveSeller(userId: String)
+    suspend fun approveSeller(userId: String): Void?
 
-    suspend fun declineSeller(userId: String)
+    suspend fun declineSeller(userId: String): Void?
 
     fun getAllUsers(): Flow<Result<List<User>>>
 

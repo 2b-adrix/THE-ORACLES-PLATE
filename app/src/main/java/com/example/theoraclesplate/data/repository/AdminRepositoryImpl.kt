@@ -46,12 +46,16 @@ class AdminRepositoryImpl @Inject constructor(
         awaitClose { usersRef.removeEventListener(listener) }
     }
 
-    override suspend fun approveSeller(userId: String) = withContext(Dispatchers.IO) {
-        usersRef.child(userId).child("status").setValue("approved").await()
+    override suspend fun approveSeller(userId: String) {
+        withContext(Dispatchers.IO) {
+            usersRef.child(userId).child("status").setValue("approved").await()
+        }
     }
 
-    override suspend fun declineSeller(userId: String) = withContext(Dispatchers.IO) {
-        usersRef.child(userId).removeValue().await()
+    override suspend fun declineSeller(userId: String) {
+        withContext(Dispatchers.IO) {
+            usersRef.child(userId).removeValue().await()
+        }
     }
 
     override fun getAllUsers(): Flow<Result<List<User>>> = callbackFlow {
@@ -159,15 +163,21 @@ class AdminRepositoryImpl @Inject constructor(
         awaitClose { menuItemsRef.removeEventListener(listener) }
     }
 
-    override suspend fun deleteOrder(orderId: String) = withContext(Dispatchers.IO) {
-        ordersRef.child(orderId).removeValue().await()
+    override suspend fun deleteOrder(orderId: String) {
+        withContext(Dispatchers.IO) {
+            ordersRef.child(orderId).removeValue().await()
+        }
     }
 
-    override suspend fun deleteUser(userId: String) = withContext(Dispatchers.IO) {
-        usersRef.child(userId).removeValue().await()
+    override suspend fun deleteUser(userId: String) {
+        withContext(Dispatchers.IO) {
+            usersRef.child(userId).removeValue().await()
+        }
     }
 
-    override suspend fun deleteMenuItem(sellerId: String, menuItemId: String) = withContext(Dispatchers.IO) {
-        menuItemsRef.child(sellerId).child(menuItemId).removeValue().await()
+    override suspend fun deleteMenuItem(sellerId: String, menuItemId: String) {
+        withContext(Dispatchers.IO) {
+            menuItemsRef.child(sellerId).child(menuItemId).removeValue().await()
+        }
     }
 }

@@ -41,7 +41,7 @@ class CheckoutViewModel @Inject constructor(
                             id = it.id,
                             name = it.name,
                             price = it.price,
-                            image = it.imageUrl,
+                            imageUrl = it.imageUrl,
                             quantity = it.quantity,
                             sellerId = it.sellerId
                         )
