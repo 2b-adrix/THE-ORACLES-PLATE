@@ -26,23 +26,20 @@ class DeliveryManagementViewModel @Inject constructor(
     private fun getDeliveryUsers() {
         viewModelScope.launch {
             adminUseCases.getDeliveryUsers().collectLatest { result ->
-                _state.value = when {
-                    result.isSuccess -> {
-                        state.value.copy(
-                            deliveryUsers = result.getOrNull() ?: emptyList(),
+                result.fold(
+                    onSuccess = { users ->
+                        _state.value = state.value.copy(
+                            deliveryUsers = users,
+                            isLoading = false
+                        )
+                    },
+                    onFailure = { error ->
+                        _state.value = state.value.copy(
+                            error = error.message,
                             isLoading = false
                         )
                     }
-                    result.isFailure -> {
-                        state.value.copy(
-                            error = result.exceptionOrNull()?.message,
-                            isLoading = false
-                        )
-                    }
-                    else -> {
-                        state.value.copy(isLoading = true)
-                    }
-                }
+                )
             }
         }
     }

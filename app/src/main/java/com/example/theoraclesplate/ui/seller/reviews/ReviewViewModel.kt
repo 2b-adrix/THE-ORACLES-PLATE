@@ -2,7 +2,7 @@ package com.example.theoraclesplate.ui.seller.reviews
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.theoraclesplate.data.repository.seller.ReviewRepositoryImpl
+import com.example.theoraclesplate.domain.repository.seller.ReviewRepository
 import com.example.theoraclesplate.model.Review
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,9 +13,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ReviewViewModel @Inject constructor() : ViewModel() {
-
-    private val repository = ReviewRepositoryImpl()
+class ReviewViewModel @Inject constructor(
+    private val repository: ReviewRepository
+) : ViewModel() {
 
     private val _reviews = MutableStateFlow<List<Review>>(emptyList())
     val reviews: StateFlow<List<Review>> = _reviews.asStateFlow()

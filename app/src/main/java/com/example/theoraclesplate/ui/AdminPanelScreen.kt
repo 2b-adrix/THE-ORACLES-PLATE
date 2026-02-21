@@ -21,20 +21,19 @@ import com.example.theoraclesplate.model.User
 import com.example.theoraclesplate.ui.theme.StartColor
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.ktx.auth
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
 
 @Composable
 fun AdminPanelScreen(navController: NavController) {
-    val database = Firebase.database
+    val database = FirebaseDatabase.getInstance()
     val users = remember { mutableStateListOf<Pair<String, User>>() }
     var isLoading by remember { mutableStateOf(true) }
     val context = LocalContext.current
-    val auth = Firebase.auth
+    val auth = FirebaseAuth.getInstance()
 
     LaunchedEffect(Unit) {
         val usersRef = database.reference.child("users")
@@ -106,7 +105,7 @@ fun AdminPanelScreen(navController: NavController) {
 }
 @Composable
 fun UserRoleItem(userId: String, user: User) {
-    val database = Firebase.database
+    val database = FirebaseDatabase.getInstance()
     var expanded by remember { mutableStateOf(false) }
     val roles = listOf("buyer", "seller", "admin", "driver")
     

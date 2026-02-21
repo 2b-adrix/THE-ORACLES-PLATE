@@ -18,10 +18,12 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -32,16 +34,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.theoraclesplate.ui.search.SearchEvent
+import com.example.theoraclesplate.ui.cart.CartViewModel
 import com.example.theoraclesplate.ui.search.SearchViewModel
 import com.example.theoraclesplate.ui.theme.StartColor
 import kotlinx.coroutines.delay
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
+import kotlinx.coroutines.launch
 
 @Composable
-fun SearchScreen(rootNavController: NavController, viewModel: SearchViewModel = hiltViewModel()) {
+fun SearchScreen(
+    rootNavController: NavController, 
+    viewModel: SearchViewModel = hiltViewModel(),
+    cartViewModel: CartViewModel = hiltViewModel()
+) {
     val state = viewModel.state.value
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
@@ -58,8 +65,8 @@ fun SearchScreen(rootNavController: NavController, viewModel: SearchViewModel = 
         )
 
         OutlinedTextField(
-            value = state.query,
-            onValueChange = { viewModel.onEvent(SearchEvent.QueryChanged(it)) },
+            value = state.searchQuery,
+            onValueChange = { viewModel.onSearchQueryChange(it) },
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text("Order to eat!", color = Color.White.copy(alpha = 0.5f)) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = StartColor) },
@@ -86,23 +93,31 @@ fun SearchScreen(rootNavController: NavController, viewModel: SearchViewModel = 
              Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = StartColor)
             }
-        } else if (state.filteredItems.isEmpty()) {
+        } else if (state.searchResults.isEmpty()) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Text("No results found", color = Color.White.copy(alpha = 0.7f), fontSize = 18.sp)
             }
         } else {
             LazyColumn {
-                itemsIndexed(state.filteredItems) { index, food ->
+                itemsIndexed(state.searchResults) { index, food ->
                     val alpha = remember { Animatable(0f) }
                     LaunchedEffect(key1 = food) {
                         delay(index * 100L)
                         alpha.animateTo(1f, animationSpec = tween(500))
                     }
-                     PopularFoodItem(food, modifier = Modifier.alpha(alpha.value)) {
-                         val encodedName = URLEncoder.encode(food.name, StandardCharsets.UTF_8.toString())
-                         val encodedImage = URLEncoder.encode(food.imageUrl, StandardCharsets.UTF_8.toString())
-                         rootNavController.navigate("details/$encodedName/${food.price}/?image=$encodedImage")
-                     }
+                     PopularFoodItem(
+                         food = food, 
+                         modifier = Modifier.alpha(alpha.value), 
+                         onCardClick = { 
+                            rootNavController.navigate("details/${food.id}/${food.sellerId}")
+                         },
+                        onAddClick = {
+                            cartViewModel.addToCart(food)
+                            scope.launch {
+                                snackbarHostState.showSnackbar("${food.name} added to cart")
+                            }
+                        }
+                    )
                 }
             }
         }

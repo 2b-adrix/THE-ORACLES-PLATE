@@ -50,14 +50,13 @@ import com.example.theoraclesplate.R
 import com.example.theoraclesplate.ui.theme.StartColor
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(rootNavController: NavController) {
-    val auth = Firebase.auth
+    val auth = FirebaseAuth.getInstance()
     val user = auth.currentUser
     val context = LocalContext.current
 

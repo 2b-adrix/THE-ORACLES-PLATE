@@ -34,11 +34,8 @@ fun AllMenuItemsScreen(viewModel: AllMenuItemsViewModel = hiltViewModel()) {
             }
         } else {
             LazyColumn {
-                items(state.menuItems) { menuItem ->
-                    MenuItemCard(
-                        menuItem = menuItem, 
-                        onDelete = { viewModel.onEvent(AllMenuItemsEvent.DeleteMenuItem(menuItem.sellerId, menuItem.id)) }
-                    )
+                items(state.menuItems) { (sellerId, menuItem) ->
+                    Text(text = menuItem.name)
                 }
             }
         }

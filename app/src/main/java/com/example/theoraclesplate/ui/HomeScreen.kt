@@ -59,15 +59,15 @@ fun HomeScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = Color.Transparent
-    ) {
+    ) { paddingValues ->
         if (state.isLoading) {
-            Box(modifier = Modifier.fillMaxSize().padding(it), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         }
 
         state.error?.let {
-            Box(modifier = Modifier.fillMaxSize().padding(it), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
                 Text(text = it, color = Color.Red)
             }
         }
@@ -76,7 +76,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Transparent)
-                .padding(it),
+                .padding(paddingValues),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
             item {

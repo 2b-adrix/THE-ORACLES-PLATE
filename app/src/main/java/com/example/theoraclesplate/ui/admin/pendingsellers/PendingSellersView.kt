@@ -11,11 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 
 @Composable
-fun PendingSellersView(
-    navController: NavController,
+fun PendingSellersScreen(
     viewModel: PendingSellersViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.value
@@ -28,8 +26,8 @@ fun PendingSellersView(
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(state.sellers) { (userId, user) ->
-                    PendingSellerItem(user.name, onApprove = { viewModel.onEvent(PendingSellersEvent.ApproveSeller(userId)) }, onDecline = { viewModel.onEvent(PendingSellersEvent.DeclineSeller(userId)) })
+                items(state.pendingSellers) { user ->
+                    PendingSellerItem(user.name, onApprove = { viewModel.onEvent(PendingSellersEvent.ApproveSeller(user.uid)) }, onDecline = { viewModel.onEvent(PendingSellersEvent.DeclineSeller(user.uid)) })
                 }
             }
         }

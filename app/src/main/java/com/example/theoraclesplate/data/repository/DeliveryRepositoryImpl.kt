@@ -68,7 +68,9 @@ class DeliveryRepositoryImpl @Inject constructor(
         awaitClose { ordersRef.removeEventListener(listener) }
     }
 
-    override suspend fun acceptOrder(order: Order) = withContext(Dispatchers.IO) {
-        ordersRef.child(order.orderId).setValue(order).await()
+    override suspend fun acceptOrder(order: Order) {
+        withContext(Dispatchers.IO) {
+            ordersRef.child(order.orderId).setValue(order).await()
+        }
     }
 }

@@ -68,8 +68,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideReviewRepository(database: FirebaseDatabase): ReviewRepository {
-        return ReviewRepositoryImpl(database)
+    fun provideReviewRepository(auth: FirebaseAuth, database: FirebaseDatabase): ReviewRepository {
+        return ReviewRepositoryImpl(auth, database)
     }
 
     @Provides
@@ -184,8 +184,7 @@ object AppModule {
     fun provideDeliveryUseCases(
         deliveryRepository: DeliveryRepository,
         orderRepository: OrderRepository,
-        geocodingRepository: GeocodingRepository,
-        authUseCases: AuthUseCases
+        geocodingRepository: GeocodingRepository
     ): DeliveryUseCases {
         return DeliveryUseCases(
             getReadyForPickupOrders = GetReadyForPickupOrdersUseCase(deliveryRepository),
@@ -193,7 +192,7 @@ object AppModule {
             getDeliveredOrders = GetDeliveredOrdersUseCase(deliveryRepository),
             updateOrderStatus = UpdateOrderStatusUseCase(orderRepository),
             getCoordinatesFromAddress = GetCoordinatesFromAddressUseCase(geocodingRepository),
-            acceptOrder = AcceptOrderUseCase(deliveryRepository, authUseCases)
+            acceptOrder = AcceptOrderUseCase(deliveryRepository)
         )
     }
 

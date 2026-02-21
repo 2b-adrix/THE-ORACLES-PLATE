@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,11 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 
 @Composable
-fun AllMenuItemsView(
-    navController: NavController,
+fun AllMenuItemsViewItem(
     viewModel: AllMenuItemsViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.value
@@ -31,8 +30,14 @@ fun AllMenuItemsView(
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(state.menuItems) { (id, menuItem) ->
-                    Text(text = menuItem.name) // Placeholder
+                items(state.menuItems) { (sellerId, menuItem) ->
+                    Card(modifier = Modifier.padding(8.dp)) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(text = "Name: ${menuItem.name}")
+                            Text(text = "Price: ${menuItem.price}")
+                            Text(text = "Seller ID: $sellerId")
+                        }
+                    }
                 }
             }
         }

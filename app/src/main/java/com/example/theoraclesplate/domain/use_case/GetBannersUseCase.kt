@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 class GetBannersUseCase(private val repository: HomeRepository) {
 
-    operator fun invoke(): Flow<List<String>> {
+    operator fun invoke(): Flow<Result<List<String>>> {
         return repository.getBanners()
     }
 }

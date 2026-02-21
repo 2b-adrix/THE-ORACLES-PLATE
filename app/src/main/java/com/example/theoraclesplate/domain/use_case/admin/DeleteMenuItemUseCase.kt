@@ -4,6 +4,6 @@ import com.example.theoraclesplate.domain.repository.AdminRepository
 
 class DeleteMenuItemUseCase(private val repository: AdminRepository) {
     suspend operator fun invoke(sellerId: String, menuItemId: String) {
-        return repository.deleteMenuItem(sellerId, menuItemId)
+        repository.deleteMenuItem(sellerId, menuItemId)
     }
 }

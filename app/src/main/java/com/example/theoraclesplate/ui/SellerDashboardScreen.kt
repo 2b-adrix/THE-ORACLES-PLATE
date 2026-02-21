@@ -73,11 +73,11 @@ import com.example.theoraclesplate.model.Order
 import com.example.theoraclesplate.model.Review
 import com.example.theoraclesplate.ui.seller.menu.SellerMenuEvent
 import com.example.theoraclesplate.ui.seller.menu.SellerMenuViewModel
+import com.example.theoraclesplate.ui.seller.orders.SellerOrdersEvent
 import com.example.theoraclesplate.ui.seller.orders.SellerOrdersViewModel
 import com.example.theoraclesplate.ui.seller.reviews.ReviewViewModel
 import com.example.theoraclesplate.ui.theme.StartColor
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,13 +88,10 @@ fun SellerDashboardScreen(
     ordersViewModel: SellerOrdersViewModel = hiltViewModel(),
     reviewViewModel: ReviewViewModel = hiltViewModel()
 ) {
-    val menuState = menuViewModel.state.value
-    val ordersState by ordersViewModel.orders.collectAsState()
-    val todaysRevenue by ordersViewModel.todaysRevenue.collectAsState()
-    val todaysOrders by ordersViewModel.todaysOrders.collectAsState()
-    val weeklySales by ordersViewModel.weeklySales.collectAsState()
+    val menuState by menuViewModel.state
+    val ordersState by ordersViewModel.state.collectAsState()
     val reviews by reviewViewModel.reviews.collectAsState()
-    val user = Firebase.auth.currentUser
+    val user = FirebaseAuth.getInstance().currentUser
     var selectedTabIndex by remember { mutableStateOf(0) }
 
     val backgroundBrush = Brush.verticalGradient(
@@ -113,7 +110,7 @@ fun SellerDashboardScreen(
                         Icon(Icons.Default.Person, contentDescription = "Profile", tint = Color.White)
                     }
                     IconButton(onClick = {
-                        Firebase.auth.signOut()
+                        FirebaseAuth.getInstance().signOut()
                         navController.navigate("start") {
                             popUpTo("seller_dashboard") { inclusive = true }
                         }
@@ -170,14 +167,14 @@ fun SellerDashboardScreen(
                 ) {
                     DashboardMetricCard(
                         title = "Today's Revenue",
-                        value = "$${String.format("%.2f", todaysRevenue)}",
+                        value = "$${String.format("%.2f", ordersState.orders.filter { it.timestamp > System.currentTimeMillis() - 86400000 }.sumOf { it.totalAmount })}",
                         icon = Icons.Default.MonetizationOn,
                         modifier = Modifier.weight(1f)
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     DashboardMetricCard(
                         title = "Today's Orders",
-                        value = todaysOrders.toString(),
+                        value = ordersState.orders.filter { it.timestamp > System.currentTimeMillis() - 86400000 }.size.toString(),
                         icon = Icons.Default.ShoppingBasket,
                         modifier = Modifier.weight(1f)
                     )
@@ -193,7 +190,7 @@ fun SellerDashboardScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Sales Chart
-                SalesChart(salesData = weeklySales)
+                // SalesChart(salesData = weeklySales)
 
                 Spacer(modifier = Modifier.height(24.dp))
             }
@@ -218,12 +215,12 @@ fun SellerDashboardScreen(
             ) {
                 when (selectedTabIndex) {
                     0 -> {
-                        items(ordersState) { order ->
-                            OrderCard(order = order, onUpdateStatus = ordersViewModel::updateOrderStatus)
+                        items(ordersState.orders) { order ->
+                            OrderCard(order = order, onUpdateStatus = ordersViewModel::onEvent)
                         }
                     }
                     1 -> {
-                        itemsIndexed(menuState.menuItems) { index, (id, item) ->
+                        itemsIndexed(menuState.menuItems) { index, item ->
                             val alpha = remember { Animatable(0f) }
                             LaunchedEffect(key1 = item) {
                                 delay(index * 100L)
@@ -233,10 +230,10 @@ fun SellerDashboardScreen(
                                 item = item,
                                 modifier = Modifier.alpha(alpha.value),
                                 onEditClick = {
-                                    navController.navigate("edit_menu_item/$id")
+                                    navController.navigate("edit_menu_item/${item.id}")
                                 },
                                 onDeleteClick = {
-                                    menuViewModel.onEvent(SellerMenuEvent.DeleteMenuItem(id))
+                                    menuViewModel.onEvent(SellerMenuEvent.DeleteMenuItem(item.id))
                                 }
                             )
                         }
@@ -281,7 +278,7 @@ fun ReviewCard(review: Review) {
 }
 
 @Composable
-fun OrderCard(order: Order, onUpdateStatus: (String, String) -> Unit) {
+fun OrderCard(order: Order, onUpdateStatus: (SellerOrdersEvent) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -299,14 +296,14 @@ fun OrderCard(order: Order, onUpdateStatus: (String, String) -> Unit) {
             Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
                 Button(
-                    onClick = { onUpdateStatus(order.orderId, "Preparing") },
+                    onClick = { onUpdateStatus(SellerOrdersEvent.UpdateOrderStatus(order.orderId, "Preparing")) },
                     enabled = order.status == "Pending",
                     colors = ButtonDefaults.buttonColors(containerColor = StartColor, contentColor = Color.Black)
                 ) {
                     Text("Accept")
                 }
                 Button(
-                    onClick = { onUpdateStatus(order.orderId, "Ready") },
+                    onClick = { onUpdateStatus(SellerOrdersEvent.UpdateOrderStatus(order.orderId, "Ready")) },
                     enabled = order.status == "Preparing",
                     colors = ButtonDefaults.buttonColors(containerColor = StartColor, contentColor = Color.Black)
                 ) {
@@ -402,4 +399,14 @@ fun MenuItemCard(
             }
         }
     }
+}
+
+@Composable
+fun SalesChart(salesData: Map<String, Double>) {
+    // Placeholder for a chart
+}
+
+@Composable
+fun RatingBar(rating: Double) {
+    // Placeholder for a rating bar
 }

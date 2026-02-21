@@ -32,11 +32,14 @@ class HomeViewModel @Inject constructor(
         getBannersJob?.cancel()
         getBannersJob = homeUseCases.getBanners()
             .onEach { result ->
-                _state.value = when {
-                    result.isSuccess -> state.value.copy(banners = result.getOrNull() ?: emptyList(), isLoading = false)
-                    result.isFailure -> state.value.copy(error = result.exceptionOrNull()?.message, isLoading = false)
-                    else -> state.value.copy(isLoading = true)
-                }
+                result.fold(
+                    onSuccess = { banners ->
+                        _state.value = state.value.copy(banners = banners, isLoading = false)
+                    },
+                    onFailure = { error ->
+                        _state.value = state.value.copy(error = error.message, isLoading = false)
+                    }
+                )
             }
             .launchIn(viewModelScope)
     }
@@ -45,11 +48,14 @@ class HomeViewModel @Inject constructor(
         getPopularFoodJob?.cancel()
         getPopularFoodJob = homeUseCases.getPopularFood()
             .onEach { result ->
-                _state.value = when {
-                    result.isSuccess -> state.value.copy(popularFood = result.getOrNull() ?: emptyList(), isLoading = false)
-                    result.isFailure -> state.value.copy(error = result.exceptionOrNull()?.message, isLoading = false)
-                    else -> state.value.copy(isLoading = true)
-                }
+                result.fold(
+                    onSuccess = { popularFood ->
+                        _state.value = state.value.copy(popularFood = popularFood, isLoading = false)
+                    },
+                    onFailure = { error ->
+                        _state.value = state.value.copy(error = error.message, isLoading = false)
+                    }
+                )
             }
             .launchIn(viewModelScope)
     }

@@ -59,7 +59,7 @@ class AllMenuItemsViewModel @Inject constructor(
 }
 
 data class AllMenuItemsState(
-    val menuItems: List<FoodItem> = emptyList(),
+    val menuItems: List<Pair<String, FoodItem>> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null
 )

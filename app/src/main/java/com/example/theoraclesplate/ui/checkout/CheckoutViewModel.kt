@@ -54,7 +54,7 @@ class CheckoutViewModel @Inject constructor(
                         userName = authUseCases.getCurrentUser()?.displayName ?: "",
                         items = orderItems,
                         totalAmount = totalAmount,
-                        address = event.address,
+                        address = _state.value.address,
                         timestamp = System.currentTimeMillis()
                     )
                     _state.value = _state.value.copy(isLoading = true)
@@ -62,27 +62,41 @@ class CheckoutViewModel @Inject constructor(
                         checkoutUseCases.placeOrder(order)
                         cartRepository.clearCart(userId)
                         _state.value = _state.value.copy(isLoading = false, orderPlaced = true)
-                        _eventFlow.emit(UiEvent.ShowSnackbar("Order placed successfully!"))
+                        _eventFlow.emit(UiEvent.OrderPlaced)
                     } catch (e: Exception) {
                         _state.value = _state.value.copy(isLoading = false)
-                        _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Error placing order"))
+                        _eventFlow.emit(UiEvent.ShowError(e.message ?: "Error placing order"))
                     }
                 }
+            }
+            is CheckoutEvent.AddressChanged -> {
+                _state.value = _state.value.copy(address = event.address)
+            }
+            is CheckoutEvent.PaymentMethodChanged -> {
+                _state.value = _state.value.copy(paymentMethod = event.paymentMethod)
             }
         }
     }
 
     sealed class UiEvent {
         data class ShowSnackbar(val message: String) : UiEvent()
+        object OrderPlaced : UiEvent()
+        data class ShowError(val message: String) : UiEvent()
     }
 }
 
 data class CheckoutState(
     val isLoading: Boolean = false,
     val orderPlaced: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val address: String = "",
+    val paymentMethod: String = "COD",
+    val cartItems: List<OrderItem> = emptyList(),
+    val totalAmount: Double = 0.0
 )
 
 sealed class CheckoutEvent {
-    data class PlaceOrder(val address: String) : CheckoutEvent()
+    object PlaceOrder : CheckoutEvent()
+    data class AddressChanged(val address: String) : CheckoutEvent()
+    data class PaymentMethodChanged(val paymentMethod: String) : CheckoutEvent()
 }

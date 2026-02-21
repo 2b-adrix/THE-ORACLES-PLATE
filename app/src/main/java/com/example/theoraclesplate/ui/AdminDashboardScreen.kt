@@ -33,13 +33,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.example.theoraclesplate.ui.auth.admin.AdminAuthEvent
+import com.example.theoraclesplate.ui.auth.admin.AdminAuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdminDashboardScreen(navController: NavController) {
+fun AdminDashboardScreen(navController: NavController, viewModel: AdminAuthViewModel = hiltViewModel()) {
     val dashboardItems = listOf(
         DashboardItem("Pending Sellers", Icons.Default.Approval, "pending_sellers"),
         DashboardItem("All Users", Icons.Default.People, "all_users"),
@@ -55,7 +56,7 @@ fun AdminDashboardScreen(navController: NavController) {
                 title = { Text("Admin Dashboard") },
                 actions = {
                     IconButton(onClick = {
-                        Firebase.auth.signOut()
+                        viewModel.onEvent(AdminAuthEvent.Logout)
                         navController.navigate("start") {
                             popUpTo("admin_dashboard") { inclusive = true }
                         }

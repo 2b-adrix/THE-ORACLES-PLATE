@@ -39,9 +39,19 @@ class SellerMenuViewModel @Inject constructor(
             val sellerId = authUseCases.getCurrentUser()?.uid ?: return@launch
             _state.value = _state.value.copy(isLoading = true)
             menuUseCases.getMenuItems(sellerId).onEach { result ->
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    menuItems = result.getOrNull() ?: emptyList()
+                result.fold(
+                    onSuccess = { menuItems ->
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            menuItems = menuItems
+                        )
+                    },
+                    onFailure = { error ->
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            error = error.message
+                        )
+                    }
                 )
             }.launchIn(viewModelScope)
         }
@@ -137,7 +147,8 @@ data class SellerMenuState(
     val menuItems: List<FoodItem> = emptyList(),
     val isLoading: Boolean = false,
     val isAddingItem: Boolean = false,
-    val isDeletingItem: Boolean = false
+    val isDeletingItem: Boolean = false,
+    val error: String? = null
 )
 
 sealed class SellerMenuEvent {

@@ -8,9 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserProfileChangeRequest
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,10 +22,9 @@ import kotlin.coroutines.resume
 
 @HiltViewModel
 class EditProfileViewModel @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val auth: FirebaseAuth
 ) : ViewModel() {
-
-    private val auth = Firebase.auth
 
     private val _updateState = MutableStateFlow<UpdateState>(UpdateState.Idle)
     val updateState = _updateState.asStateFlow()

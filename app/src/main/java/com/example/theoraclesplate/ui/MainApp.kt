@@ -43,12 +43,12 @@ fun MainApp() {
             composable("admin_dashboard") { AdminDashboardScreen(navController) }
 
             // Admin Dashboard Screens
-            composable("pending_sellers") { PendingSellersScreen(navController) }
-            composable("all_users") { AllUsersScreen(navController) }
-            composable("all_menu_items") { AllMenuItemsScreen(navController) }
-            composable("all_orders") { AllOrdersScreen(navController) }
-            composable("analytics") { AnalyticsScreen(navController) }
-            composable("delivery_management") { DeliveryManagementScreen(navController) }
+            composable("pending_sellers") { PendingSellersScreen() }
+            composable("all_users") { AllUsersScreen() }
+            composable("all_menu_items") { AllMenuItemsScreen() }
+            composable("all_orders") { AllOrdersScreen() }
+            composable("analytics") { AnalyticsScreen() }
+            composable("delivery_management") { DeliveryManagementScreen() }
 
             composable(
                 route = "details/{foodItemId}/{sellerId}",

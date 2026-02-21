@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.theoraclesplate.ui.admin.pendingsellers.UserCard
 
 @Composable
 fun DeliveryManagementScreen(viewModel: DeliveryManagementViewModel = hiltViewModel()) {
@@ -36,7 +35,7 @@ fun DeliveryManagementScreen(viewModel: DeliveryManagementViewModel = hiltViewMo
         } else {
             LazyColumn {
                 items(state.deliveryUsers) { user ->
-                    UserCard(user = user) {}
+                    Text(text = user.name)
                 }
             }
         }

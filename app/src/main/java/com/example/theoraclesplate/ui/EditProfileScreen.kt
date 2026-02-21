@@ -58,8 +58,7 @@ import com.example.theoraclesplate.R
 import com.example.theoraclesplate.ui.theme.StartColor
 import com.example.theoraclesplate.ui.viewmodel.EditProfileViewModel
 import com.example.theoraclesplate.ui.viewmodel.UpdateState
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +66,7 @@ fun EditProfileScreen(
     navController: NavController,
     viewModel: EditProfileViewModel = hiltViewModel()
 ) {
-    val user = Firebase.auth.currentUser
+    val user = FirebaseAuth.getInstance().currentUser
     val context = LocalContext.current
 
     var name by remember { mutableStateOf(user?.displayName ?: "") }

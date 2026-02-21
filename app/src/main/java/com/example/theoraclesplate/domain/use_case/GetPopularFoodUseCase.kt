@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 
 class GetPopularFoodUseCase(private val repository: HomeRepository) {
 
-    operator fun invoke(): Flow<List<FoodItem>> {
+    operator fun invoke(): Flow<Result<List<FoodItem>>> {
         return repository.getPopularFood()
     }
 }

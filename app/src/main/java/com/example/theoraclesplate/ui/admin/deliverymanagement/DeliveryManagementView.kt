@@ -13,8 +13,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 
 @Composable
-fun DeliveryManagementView(
-    navController: NavController,
+fun DeliveryManagementScreen(
     viewModel: DeliveryManagementViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.value
@@ -27,7 +26,7 @@ fun DeliveryManagementView(
             CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(state.users) { (userId, user) ->
+                items(state.deliveryUsers) { user ->
                     Text(text = user.name) // Placeholder
                 }
             }

@@ -3,9 +3,8 @@ package com.example.theoraclesplate.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.theoraclesplate.model.User
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,10 +13,10 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
-class SplashViewModel @Inject constructor() : ViewModel() {
-
-    private val auth = Firebase.auth
-    private val database = Firebase.database.reference
+class SplashViewModel @Inject constructor(
+    private val auth: FirebaseAuth,
+    private val database: FirebaseDatabase
+) : ViewModel() {
 
     private val _navigationRoute = MutableStateFlow<String?>(null)
     val navigationRoute = _navigationRoute.asStateFlow()
@@ -27,7 +26,7 @@ class SplashViewModel @Inject constructor() : ViewModel() {
             val currentUser = auth.currentUser
             if (currentUser != null) {
                 try {
-                    val snapshot = database.child("users").child(currentUser.uid).get().await()
+                    val snapshot = database.reference.child("users").child(currentUser.uid).get().await()
                     val user = snapshot.getValue(User::class.java)
                     _navigationRoute.value = when (user?.role) {
                         "seller" -> "seller_dashboard"

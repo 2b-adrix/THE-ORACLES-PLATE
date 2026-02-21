@@ -142,14 +142,15 @@ class AdminRepositoryImpl @Inject constructor(
         awaitClose { usersRef.removeEventListener(listener) }
     }
 
-    override fun getAllMenuItems(): Flow<Result<List<FoodItem>>> = callbackFlow {
+    override fun getAllMenuItems(): Flow<Result<List<Pair<String, FoodItem>>>> = callbackFlow {
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val menuItems = snapshot.children.flatMap { sellerSnapshot ->
+                    val sellerId = sellerSnapshot.key ?: ""
                     sellerSnapshot.children.mapNotNull { 
                         val menuItem = it.getValue(FoodItem::class.java)
                         menuItem?.id = it.key ?: ""
-                        menuItem
+                        menuItem?.let { item -> sellerId to item }
                     }
                 }
                 trySend(Result.success(menuItems))

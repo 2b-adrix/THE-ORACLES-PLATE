@@ -76,6 +76,9 @@ fun CheckoutScreen(navController: NavController, viewModel: CheckoutViewModel = 
                 is CheckoutViewModel.UiEvent.ShowError -> {
                     Toast.makeText(context, event.message, Toast.LENGTH_LONG).show()
                 }
+                is CheckoutViewModel.UiEvent.ShowSnackbar -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

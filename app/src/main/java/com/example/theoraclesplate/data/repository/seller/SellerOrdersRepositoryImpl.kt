@@ -35,7 +35,9 @@ class SellerOrdersRepositoryImpl @Inject constructor(
         awaitClose { ordersRef.removeEventListener(listener) }
     }
 
-    override suspend fun updateOrderStatus(orderId: String, newStatus: String) = withContext(Dispatchers.IO) {
-        ordersRef.child(orderId).child("status").setValue(newStatus).await()
+    override suspend fun updateOrderStatus(orderId: String, newStatus: String) {
+        withContext(Dispatchers.IO) {
+            ordersRef.child(orderId).child("status").setValue(newStatus).await()
+        }
     }
 }

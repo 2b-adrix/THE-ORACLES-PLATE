@@ -9,9 +9,9 @@ interface AdminRepository {
 
     fun getPendingSellers(): Flow<Result<List<User>>>
 
-    suspend fun approveSeller(userId: String): Void?
+    suspend fun approveSeller(userId: String)
 
-    suspend fun declineSeller(userId: String): Void?
+    suspend fun declineSeller(userId: String)
 
     fun getAllUsers(): Flow<Result<List<User>>>
 
@@ -21,11 +21,11 @@ interface AdminRepository {
 
     fun getDeliveryUsers(): Flow<Result<List<User>>>
 
-    fun getAllMenuItems(): Flow<Result<List<FoodItem>>>
+    fun getAllMenuItems(): Flow<Result<List<Pair<String, FoodItem>>>>
 
-    suspend fun deleteOrder(orderId: String): Void?
+    suspend fun deleteOrder(orderId: String)
 
-    suspend fun deleteUser(userId: String): Void?
+    suspend fun deleteUser(userId: String)
 
-    suspend fun deleteMenuItem(sellerId: String, menuItemId: String): Void?
+    suspend fun deleteMenuItem(sellerId: String, menuItemId: String)
 }

@@ -16,11 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.theoraclesplate.ui.admin.pendingsellers.UserCard
 
 @Composable
 fun AllUsersScreen(viewModel: AllUsersViewModel = hiltViewModel()) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state
 
     Column(modifier = Modifier.fillMaxSize()) {
         if (state.isLoading) {
@@ -38,7 +37,7 @@ fun AllUsersScreen(viewModel: AllUsersViewModel = hiltViewModel()) {
         } else {
             LazyColumn {
                 items(state.users) { user ->
-                    UserCard(user = user) {
+                    AllUsersView(user = user) {
                         Row {
                             Button(onClick = { viewModel.onEvent(AllUsersEvent.DeleteUser(user.uid)) }) {
                                 Text(text = "Delete")

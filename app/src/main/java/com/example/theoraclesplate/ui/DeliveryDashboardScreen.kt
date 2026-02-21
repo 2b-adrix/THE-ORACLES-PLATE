@@ -70,8 +70,7 @@ import com.example.theoraclesplate.ui.delivery.DeliveryDashboardEvent
 import com.example.theoraclesplate.ui.delivery.DeliveryDashboardViewModel
 import com.example.theoraclesplate.ui.theme.StartColor
 import com.google.android.gms.location.LocationServices
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.collectLatest
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -93,7 +92,7 @@ fun DeliveryDashboardScreen(
     val tabs = listOf("Ready for Pickup", "Out for Delivery", "Delivered")
     var selectedOrder by remember { mutableStateOf<Order?>(null) }
     val mapView = remember { mutableStateOf<MapView?>(null) }
-    var isSheetVisible by remember { mutableStateOf(false) }
+    var isSheetVisible by remember { mutableStateOf(true) }
     val locationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
     val locationPermissionRequest = rememberLauncherForActivityResult(
@@ -144,7 +143,7 @@ fun DeliveryDashboardScreen(
                         Icon(Icons.Default.Person, contentDescription = "Profile", tint = Color.White)
                     }
                     IconButton(onClick = {
-                        Firebase.auth.signOut()
+                        FirebaseAuth.getInstance().signOut()
                         navController.navigate("start") {
                             popUpTo("delivery_dashboard") { inclusive = true }
                         }

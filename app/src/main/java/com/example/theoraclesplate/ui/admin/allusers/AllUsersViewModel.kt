@@ -36,23 +36,20 @@ class AllUsersViewModel @Inject constructor(
 
     private fun getAllUsers() {
         adminUseCases.getAllUsers().onEach { result ->
-            _state.value = when {
-                result.isSuccess -> {
-                    state.value.copy(
-                        users = result.getOrNull() ?: emptyList(),
+            result.fold(
+                onSuccess = { users ->
+                    _state.value = state.value.copy(
+                        users = users,
+                        isLoading = false
+                    )
+                },
+                onFailure = { error ->
+                    _state.value = state.value.copy(
+                        error = error.message,
                         isLoading = false
                     )
                 }
-                result.isFailure -> {
-                    state.value.copy(
-                        error = result.exceptionOrNull()?.message,
-                        isLoading = false
-                    )
-                }
-                else -> {
-                    state.value.copy(isLoading = true)
-                }
-            }
+            )
         }.launchIn(viewModelScope)
     }
 }
