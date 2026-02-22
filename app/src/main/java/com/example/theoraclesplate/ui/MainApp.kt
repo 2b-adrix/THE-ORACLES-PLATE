@@ -6,13 +6,36 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.theoraclesplate.ui.admin.AdminDashboardScreen
+import com.example.theoraclesplate.ui.admin.AdminPanelScreen
 import com.example.theoraclesplate.ui.admin.allmenuitems.AllMenuItemsScreen
 import com.example.theoraclesplate.ui.admin.allorders.AllOrdersScreen
 import com.example.theoraclesplate.ui.admin.allusers.AllUsersScreen
 import com.example.theoraclesplate.ui.admin.analytics.AnalyticsScreen
 import com.example.theoraclesplate.ui.admin.deliverymanagement.DeliveryManagementScreen
 import com.example.theoraclesplate.ui.admin.pendingsellers.PendingSellersScreen
+import com.example.theoraclesplate.ui.auth.LoginScreen
+import com.example.theoraclesplate.ui.auth.SignUpScreen
+import com.example.theoraclesplate.ui.auth.admin.AdminLoginScreen
+import com.example.theoraclesplate.ui.auth.delivery.DeliveryLoginScreen
+import com.example.theoraclesplate.ui.auth.delivery.DeliverySignupScreen
+import com.example.theoraclesplate.ui.auth.seller.SellerLoginScreen
+import com.example.theoraclesplate.ui.auth.seller.SellerSignupScreen
+import com.example.theoraclesplate.ui.cart.CartScreen
+import com.example.theoraclesplate.ui.checkout.CheckoutScreen
+import com.example.theoraclesplate.ui.delivery.DeliveryDashboardScreen
+import com.example.theoraclesplate.ui.delivery.DeliveryProfileScreen
+import com.example.theoraclesplate.ui.details.DetailsScreen
+import com.example.theoraclesplate.ui.history.HistoryScreen
+import com.example.theoraclesplate.ui.main.MainScreen
+import com.example.theoraclesplate.ui.profile.EditProfileScreen
+import com.example.theoraclesplate.ui.profile.ProfileScreen
+import com.example.theoraclesplate.ui.seller.SellerDashboardScreen
+import com.example.theoraclesplate.ui.seller.SellerProfileScreen
+import com.example.theoraclesplate.ui.seller.menu.AddMenuItemScreen
 import com.example.theoraclesplate.ui.seller.menu.EditMenuItemScreen
+import com.example.theoraclesplate.ui.splash.SplashScreen
+import com.example.theoraclesplate.ui.start.StartScreen
 import com.example.theoraclesplate.ui.theme.THEORACLESPLATETheme
 
 @Composable

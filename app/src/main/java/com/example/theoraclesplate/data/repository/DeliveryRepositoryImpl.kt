@@ -20,11 +20,11 @@ class DeliveryRepositoryImpl @Inject constructor(
 
     private val ordersRef = database.reference.child("orders")
 
-    override fun getReadyForPickupOrders(): Flow<List<Order>> = callbackFlow {
+    private fun getOrdersByStatus(status: String): Flow<List<Order>> = callbackFlow {
+        val query = ordersRef.orderByChild("status").equalTo(status)
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val orders = snapshot.children.mapNotNull { it.getValue(Order::class.java) }
-                    .filter { it.status == "Ready" }
                 trySend(orders)
             }
 
@@ -32,41 +32,15 @@ class DeliveryRepositoryImpl @Inject constructor(
                 close(error.toException())
             }
         }
-        ordersRef.addValueEventListener(listener)
-        awaitClose { ordersRef.removeEventListener(listener) }
+        query.addValueEventListener(listener)
+        awaitClose { query.removeEventListener(listener) }
     }
 
-    override fun getOutForDeliveryOrders(): Flow<List<Order>> = callbackFlow {
-        val listener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val orders = snapshot.children.mapNotNull { it.getValue(Order::class.java) }
-                    .filter { it.status == "Out for Delivery" }
-                trySend(orders)
-            }
+    override fun getReadyForPickupOrders(): Flow<List<Order>> = getOrdersByStatus("Ready")
 
-            override fun onCancelled(error: DatabaseError) {
-                close(error.toException())
-            }
-        }
-        ordersRef.addValueEventListener(listener)
-        awaitClose { ordersRef.removeEventListener(listener) }
-    }
+    override fun getOutForDeliveryOrders(): Flow<List<Order>> = getOrdersByStatus("Out for Delivery")
 
-    override fun getDeliveredOrders(): Flow<List<Order>> = callbackFlow {
-        val listener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val orders = snapshot.children.mapNotNull { it.getValue(Order::class.java) }
-                    .filter { it.status == "Delivered" }
-                trySend(orders)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                close(error.toException())
-            }
-        }
-        ordersRef.addValueEventListener(listener)
-        awaitClose { ordersRef.removeEventListener(listener) }
-    }
+    override fun getDeliveredOrders(): Flow<List<Order>> = getOrdersByStatus("Delivered")
 
     override suspend fun acceptOrder(order: Order) {
         withContext(Dispatchers.IO) {

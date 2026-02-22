@@ -84,7 +84,7 @@ fun DeliveryDashboardScreen(
     navController: NavController,
     viewModel: DeliveryDashboardViewModel = hiltViewModel()
 ) {
-    val state by viewModel.state
+    val state = viewModel.state.value
     val context = LocalContext.current
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Ready for Pickup", "Out for Delivery", "Delivered")
@@ -245,11 +245,11 @@ fun DeliveryDashboardScreen(
                     }
                     when (selectedTabIndex) {
                         0 -> OrderList(orders = state.readyForPickupOrders, selectedOrder = selectedOrder, actionText = "Accept Order", onOrderClick = { selectedOrder = it }) {
-                            viewModel.onEvent(DeliveryDashboardEvent.AcceptOrder(it))
+                            viewModel.onEvent(DeliveryDashboardEvent.UpdateOrderStatus(it, "Out for Delivery"))
                         }
 
                         1 -> OrderList(orders = state.outForDeliveryOrders, selectedOrder = selectedOrder, actionText = "Mark as Delivered", onOrderClick = { selectedOrder = it }) {
-                            viewModel.onEvent(DeliveryDashboardEvent.UpdateOrderStatus(it.orderId, "Delivered"))
+                            viewModel.onEvent(DeliveryDashboardEvent.UpdateOrderStatus(it, "Delivered"))
                         }
 
                         2 -> OrderList(orders = state.deliveredOrders, selectedOrder = selectedOrder, actionText = null, onOrderClick = { selectedOrder = it }) {}
@@ -264,7 +264,7 @@ fun DeliveryDashboardScreen(
 }
 
 @Composable
-fun OrderList(orders: List<Order>, selectedOrder: Order?, actionText: String?, onOrderClick: (Order) -> Unit, onActionClick: (Order) -> Unit) {
+fun OrderList(orders: List<Order>, selectedOrder: Order?, actionText: String?, onOrderClick: (Order) -> Unit, onActionClick: (String) -> Unit) {
     LazyColumn(modifier = Modifier.padding(16.dp)) {
         items(orders) { order ->
             OrderCard(
@@ -272,7 +272,7 @@ fun OrderList(orders: List<Order>, selectedOrder: Order?, actionText: String?, o
                 isSelected = order.orderId == selectedOrder?.orderId,
                 actionText = actionText, 
                 onOrderClick = { onOrderClick(order) }, 
-                onActionClick = { onActionClick(order) }
+                onActionClick = onActionClick
             )
         }
     }
@@ -284,7 +284,7 @@ fun OrderCard(
     isSelected: Boolean,
     actionText: String?,
     onOrderClick: () -> Unit,
-    onActionClick: (Order) -> Unit
+    onActionClick: (String) -> Unit
 ) {
     val borderColor = if (isSelected) StartColor else Color.Transparent
     Card(
@@ -316,7 +316,7 @@ fun OrderCard(
             actionText?.let {
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { onActionClick(order) },
+                    onClick = { onActionClick(order.orderId) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = StartColor)
                 ) {
