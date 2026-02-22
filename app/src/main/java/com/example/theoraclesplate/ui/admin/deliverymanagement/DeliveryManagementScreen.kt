@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun DeliveryManagementScreen(viewModel: DeliveryManagementViewModel = hiltViewModel()) {
+fun DeliveryManagementScreen_Old(viewModel: DeliveryManagementViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {

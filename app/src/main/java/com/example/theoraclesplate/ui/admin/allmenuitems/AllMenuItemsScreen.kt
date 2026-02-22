@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun AllMenuItemsScreen(viewModel: AllMenuItemsViewModel = hiltViewModel()) {
+fun AllMenuItemsScreen_Old(viewModel: AllMenuItemsViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {

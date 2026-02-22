@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun PendingSellersScreen(viewModel: PendingSellersViewModel = hiltViewModel()) {
+fun PendingSellersScreen_Old(viewModel: PendingSellersViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {

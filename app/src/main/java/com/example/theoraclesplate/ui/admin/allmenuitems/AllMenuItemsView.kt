@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun AllMenuItemsViewItem(
+fun AllMenuItemsScreen(
     viewModel: AllMenuItemsViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.value

@@ -142,7 +142,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAdminUseCases(adminRepository: AdminRepository): AdminUseCases {
+    fun provideAdminUseCases(adminRepository: AdminRepository, menuRepository: MenuRepository): AdminUseCases {
         return AdminUseCases(
             getPendingSellers = GetPendingSellersUseCase(adminRepository),
             approveSeller = ApproveSellerUseCase(adminRepository),
@@ -154,7 +154,7 @@ object AppModule {
             getDeliveryUsers = GetDeliveryUsersUseCase(adminRepository),
             getAnalyticsData = GetAnalyticsDataUseCase(adminRepository),
             getAllMenuItems = GetAllMenuItemsUseCase(adminRepository),
-            deleteMenuItem = com.example.theoraclesplate.domain.use_case.admin.DeleteMenuItemUseCase(adminRepository)
+            deleteMenuItem = DeleteMenuItemUseCase(menuRepository)
         )
     }
 
