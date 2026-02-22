@@ -5,9 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.theoraclesplate.domain.repository.AuthRepository
+import com.example.theoraclesplate.domain.use_case.CartUseCases
 import com.example.theoraclesplate.domain.use_case.MenuUseCases
+import com.example.theoraclesplate.model.CartItem
 import com.example.theoraclesplate.model.FoodItem
-import com.example.theoraclesplate.ui.cart.CartViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -19,7 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class DetailsViewModel @Inject constructor(
     private val menuUseCases: MenuUseCases,
-    private val cartViewModel: CartViewModel,
+    private val cartUseCases: CartUseCases,
+    private val authRepository: AuthRepository,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -64,8 +67,23 @@ class DetailsViewModel @Inject constructor(
             is DetailsEvent.AddToCart -> {
                 viewModelScope.launch {
                     state.value.foodItem?.let {
-                        cartViewModel.addToCart(it)
-                        _eventFlow.emit(UiEvent.ShowToast("Added to cart"))
+                        val userId = authRepository.getCurrentUser()?.uid
+                        if (userId != null) {
+                            cartUseCases.addToCart(
+                                userId = userId,
+                                cartItem = CartItem(
+                                    id = it.id,
+                                    name = it.name,
+                                    price = it.price,
+                                    imageUrl = it.imageUrl,
+                                    sellerId = it.sellerId
+                                )
+                            )
+                            _eventFlow.emit(UiEvent.ShowToast("Added to cart"))
+                        } else {
+                            _eventFlow.emit(UiEvent.ShowToast("Please login to add items to cart"))
+                        }
+
                     }
                 }
             }
