@@ -1,1 +1,0 @@
-// This file is deprecated and can be deleted. The contents have been moved to ui/home/HomeScreen.kt

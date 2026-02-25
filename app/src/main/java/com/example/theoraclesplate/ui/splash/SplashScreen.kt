@@ -23,7 +23,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.ui.common.AnimatedCircleBackground
-import com.example.theoraclesplate.ui.splash.SplashViewModel
 
 @Composable
 fun SplashScreen(
