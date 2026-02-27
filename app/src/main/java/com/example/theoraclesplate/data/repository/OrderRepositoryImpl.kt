@@ -21,10 +21,10 @@ class OrderRepositoryImpl @Inject constructor(
     private val ordersRef = database.reference.child("orders")
 
     override fun getOrdersForSeller(sellerId: String): Flow<List<Order>> = callbackFlow {
+        val query = ordersRef.orderByChild("items/0/sellerId").equalTo(sellerId)
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val orders = snapshot.children.mapNotNull { it.getValue(Order::class.java) }
-                    .filter { order -> order.items.any { it.sellerId == sellerId } }
                 trySend(orders)
             }
 
@@ -32,8 +32,8 @@ class OrderRepositoryImpl @Inject constructor(
                 close(error.toException())
             }
         }
-        ordersRef.addValueEventListener(listener)
-        awaitClose { ordersRef.removeEventListener(listener) }
+        query.addValueEventListener(listener)
+        awaitClose { query.removeEventListener(listener) }
     }
 
     override suspend fun updateOrderStatus(orderId: String, newStatus: String) = withContext(Dispatchers.IO) {

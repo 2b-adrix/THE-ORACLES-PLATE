@@ -33,6 +33,9 @@ class LoginViewModel @Inject constructor(
             is LoginEvent.EnteredName -> { // From SignUpViewModel
                 _state.value = state.value.copy(name = event.value)
             }
+            is LoginEvent.EnteredRole -> { // From SignUpViewModel
+                _state.value = state.value.copy(role = event.value)
+            }
             is LoginEvent.Login -> {
                 viewModelScope.launch {
                     _state.value = state.value.copy(isLoading = true)
@@ -75,7 +78,7 @@ class LoginViewModel @Inject constructor(
                 viewModelScope.launch {
                     _state.value = state.value.copy(isLoading = true)
                     try {
-                        authUseCases.signupUser(state.value.email, state.value.password, state.value.name, "buyer")
+                        authUseCases.signupUser(state.value.email, state.value.password, state.value.name, state.value.role)
                         _eventFlow.emit(UiEvent.SignupSuccess)
                     } catch (e: Exception) {
                         _eventFlow.emit(UiEvent.ShowSnackbar(e.message ?: "Unknown error"))
@@ -98,6 +101,7 @@ data class LoginState(
     val name: String = "", // From SignUpState
     val email: String = "",
     val password: String = "",
+    val role: String = "buyer",
     val isLoading: Boolean = false
 )
 
@@ -105,7 +109,8 @@ sealed class LoginEvent {
     data class EnteredEmail(val value: String) : LoginEvent()
     data class EnteredPassword(val value: String) : LoginEvent()
     data class EnteredName(val value: String) : LoginEvent() // From SignUpEvent
+    data class EnteredRole(val value: String) : LoginEvent() // From SignUpEvent
     object Login : LoginEvent()
     object Signup : LoginEvent()
     data class LoginWithGoogle(val idToken: String) : LoginEvent()
-} 
+}

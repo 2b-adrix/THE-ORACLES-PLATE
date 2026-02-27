@@ -30,6 +30,10 @@ class HomeRepositoryImpl(private val menuRepository: MenuRepository, private val
     }
 
     override fun getPopularFood(): Flow<Result<List<FoodItem>>> {
-        return menuRepository.getAllMenuItems()
+        return menuRepository.getAllMenuItems().map { result ->
+            result.map { items ->
+                items.take(10)
+            }
+        }
     }
 }

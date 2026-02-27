@@ -1,13 +1,14 @@
 package com.example.theoraclesplate.ui.admin.pendingsellers
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.theoraclesplate.domain.repository.AdminRepository
 import com.example.theoraclesplate.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -16,55 +17,48 @@ class PendingSellersViewModel @Inject constructor(
     private val adminRepository: AdminRepository
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(PendingSellersState())
-    val state = _state.asStateFlow()
+    private val _state = mutableStateOf(PendingSellersState())
+    val state: State<PendingSellersState> = _state
 
     init {
         getPendingSellers()
     }
 
-    private fun getPendingSellers() {
-        viewModelScope.launch {
-            adminRepository.getPendingSellers().collectLatest { result ->
-                _state.value = when {
-                    result.isSuccess -> {
-                        state.value.copy(
-                            pendingSellers = result.getOrNull() ?: emptyList(),
-                            isLoading = false
-                        )
-                    }
-                    result.isFailure -> {
-                        state.value.copy(
-                            error = result.exceptionOrNull()?.message,
-                            isLoading = false
-                        )
-                    }
-                    else -> {
-                        state.value.copy(isLoading = true)
-                    }
-                }
-            }
-        }
-    }
-
     fun onEvent(event: PendingSellersEvent) {
-        viewModelScope.launch {
-            when (event) {
-                is PendingSellersEvent.ApproveSeller -> {
+        when (event) {
+            is PendingSellersEvent.ApproveSeller -> {
+                viewModelScope.launch {
                     adminRepository.approveSeller(event.userId)
                 }
-                is PendingSellersEvent.DeclineSeller -> {
+            }
+            is PendingSellersEvent.DeclineSeller -> {
+                viewModelScope.launch {
                     adminRepository.declineSeller(event.userId)
                 }
             }
         }
     }
+
+    private fun getPendingSellers() {
+        adminRepository.getPendingSellers().onEach { result ->
+            _state.value = when {
+                result.isSuccess -> {
+                    state.value.copy(pendingSellers = result.getOrNull() ?: emptyList(), isLoading = false)
+                }
+                result.isFailure -> {
+                    state.value.copy(isLoading = false)
+                }
+                else -> {
+                    state.value.copy(isLoading = true)
+                }
+            }
+        }.launchIn(viewModelScope)
+    }
 }
 
 data class PendingSellersState(
     val pendingSellers: List<User> = emptyList(),
-    val isLoading: Boolean = false,
-    val error: String? = null
+    val isLoading: Boolean = true
 )
 
 sealed class PendingSellersEvent {

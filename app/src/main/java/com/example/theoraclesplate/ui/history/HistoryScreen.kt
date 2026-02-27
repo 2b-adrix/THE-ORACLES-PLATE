@@ -1,5 +1,6 @@
 package com.example.theoraclesplate.ui.history
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -47,6 +48,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,12 +74,16 @@ fun HistoryScreen(
 ) {
     val historyState by viewModel.state.collectAsState()
     var showCancelDialog by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest {
             when(it) {
                 is HistoryViewModel.UiEvent.NavigateToCart -> {
                     navController.navigate("cart_screen")
+                }
+                is HistoryViewModel.UiEvent.ShowSnackbar -> {
+                    Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                 }
             }
         }

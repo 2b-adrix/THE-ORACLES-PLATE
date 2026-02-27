@@ -95,8 +95,7 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
     kapt(libs.androidx.hilt.compiler)
-
-    implementation(libs.androidx.hilt.navigation.compose)
+     implementation(libs.androidx.hilt.navigation.compose)
 
 // OpenStreetMap
     implementation("org.osmdroid:osmdroid-android:6.1.18")

@@ -1,10 +1,13 @@
 package com.example.theoraclesplate.ui.auth
 
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,9 +21,14 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -35,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -43,18 +52,42 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.theoraclesplate.ui.common.AnimatedCircleBackground
+import com.example.theoraclesplate.R
 import com.example.theoraclesplate.ui.auth.login.LoginEvent
 import com.example.theoraclesplate.ui.auth.login.LoginViewModel
+import com.example.theoraclesplate.ui.common.AnimatedCircleBackground
 import com.example.theoraclesplate.ui.theme.StartColor
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import kotlinx.coroutines.flow.collectLatest
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(navController: NavController, viewModel: LoginViewModel = hiltViewModel()) {
     val state = viewModel.state.value
     val context = LocalContext.current
     var passwordVisible by remember { mutableStateOf(false) }
     val isPasswordValid = state.password.length >= 6
+
+    var isRoleDropdownExpanded by remember { mutableStateOf(false) }
+    val roles = listOf("buyer", "seller", "delivery")
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+        onResult = {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                val idToken = account?.idToken
+                if (idToken != null) {
+                    viewModel.onEvent(LoginEvent.LoginWithGoogle(idToken))
+                }
+            } catch (e: ApiException) {
+                Toast.makeText(context, "Google sign in failed", Toast.LENGTH_SHORT).show()
+            }
+        }
+    )
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
@@ -67,7 +100,11 @@ fun SignUpScreen(navController: NavController, viewModel: LoginViewModel = hiltV
                         popUpTo("signup") { inclusive = true }
                     }
                 }
-                else -> {}
+                is LoginViewModel.UiEvent.LoginSuccess -> {
+                    navController.navigate("home_screen") { // Or your desired destination
+                        popUpTo("signup") { inclusive = true }
+                    }
+                }
             }
         }
     }
@@ -148,6 +185,40 @@ fun SignUpScreen(navController: NavController, viewModel: LoginViewModel = hiltV
                 shape = MaterialTheme.shapes.medium
             )
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ExposedDropdownMenuBox(
+                expanded = isRoleDropdownExpanded,
+                onExpandedChange = { isRoleDropdownExpanded = !isRoleDropdownExpanded }
+            ) {
+                OutlinedTextField(
+                    value = state.role,
+                    onValueChange = {},
+                    label = { Text("Role") },
+                    readOnly = true,
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = isRoleDropdownExpanded)
+                    },
+                    colors = textFieldColors,
+                    modifier = Modifier.fillMaxWidth().menuAnchor(),
+                    shape = MaterialTheme.shapes.medium
+                )
+                ExposedDropdownMenu(
+                    expanded = isRoleDropdownExpanded,
+                    onDismissRequest = { isRoleDropdownExpanded = false }
+                ) {
+                    roles.forEach { role ->
+                        DropdownMenuItem(
+                            text = { Text(role) },
+                            onClick = {
+                                viewModel.onEvent(LoginEvent.EnteredRole(role))
+                                isRoleDropdownExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
@@ -166,6 +237,30 @@ fun SignUpScreen(navController: NavController, viewModel: LoginViewModel = hiltV
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
                     Text(text = "Sign Up", fontSize = 18.sp, color = Color.White)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedButton(
+                onClick = {
+                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(context.getString(R.string.default_web_client_id))
+                        .requestEmail()
+                        .build()
+
+                    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                    googleSignInClient.signOut().addOnCompleteListener { 
+                        googleSignInLauncher.launch(googleSignInClient.signInIntent)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = MaterialTheme.shapes.medium,
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(painter = painterResource(id = R.drawable.ic_google_logo), contentDescription = "Google sign in", tint = Color.Unspecified)
+                    Spacer(modifier = Modifier.size(8.dp))
+                    Text(text = "Sign in with Google", color = Color.White)
                 }
             }
 

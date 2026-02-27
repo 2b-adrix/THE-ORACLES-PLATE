@@ -62,6 +62,20 @@ class SellerAuthViewModel @Inject constructor(
                         }.launchIn(this)
                 }
             }
+            is SellerAuthEvent.LoginWithGoogle -> {
+                viewModelScope.launch {
+                    _state.value = state.value.copy(isLoading = true)
+                    authUseCases.loginWithGoogle(event.idToken)
+                        .onEach { result ->
+                            _state.value = state.value.copy(isLoading = false)
+                            result.onSuccess {
+                                _eventFlow.emit(UiEvent.AuthSuccess)
+                            }.onFailure {
+                                _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Unknown error"))
+                            }
+                        }.launchIn(this)
+                }
+            }
             is SellerAuthEvent.Logout -> {
                 viewModelScope.launch {
                     authUseCases.logoutUser()
@@ -89,6 +103,7 @@ sealed class SellerAuthEvent {
     data class EnteredName(val value: String) : SellerAuthEvent()
     data class EnteredEmail(val value: String) : SellerAuthEvent()
     data class EnteredPassword(val value: String) : SellerAuthEvent()
+    data class LoginWithGoogle(val idToken: String) : SellerAuthEvent()
     object Login : SellerAuthEvent()
     object Signup : SellerAuthEvent()
     object Logout : SellerAuthEvent()

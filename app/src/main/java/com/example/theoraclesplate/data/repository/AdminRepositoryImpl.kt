@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -93,33 +94,48 @@ class AdminRepositoryImpl @Inject constructor(
     }
 
     override fun getAnalyticsData(): Flow<Result<Map<String, Any>>> = callbackFlow {
-        val listener = object : ValueEventListener {
+        val analyticsData = mutableMapOf<String, Any>()
+
+        val usersListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val users = snapshot.child("users").children.mapNotNull { it.getValue(User::class.java) }
-                val orders = snapshot.child("orders").children.mapNotNull { it.getValue(Order::class.java) }
-
-                val totalUsers = users.size
-                val totalSellers = users.count { it.role == "seller" }
-                val totalOrders = orders.size
-                val totalRevenue = orders.sumOf { it.totalAmount }
-                val pendingSellers = users.count { it.role == "seller" && it.status == "pending" }
-
-                val analyticsData = mapOf(
-                    "totalUsers" to totalUsers,
-                    "totalSellers" to totalSellers,
-                    "totalOrders" to totalOrders,
-                    "totalRevenue" to totalRevenue,
-                    "pendingSellers" to pendingSellers
-                )
-                trySend(Result.success(analyticsData))
+                val users = snapshot.children.mapNotNull { it.getValue(User::class.java) }
+                analyticsData["totalUsers"] = users.size
+                analyticsData["totalSellers"] = users.count { it.role == "seller" }
+                analyticsData["pendingSellers"] = users.count { it.role == "seller" && it.status == "pending" }
+                if (analyticsData.containsKey("totalOrders")) {
+                    trySend(Result.success(analyticsData))
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
                 trySend(Result.failure(error.toException()))
+                close(error.toException())
             }
         }
-        database.reference.addValueEventListener(listener)
-        awaitClose { database.reference.removeEventListener(listener) }
+
+        val ordersListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val orders = snapshot.children.mapNotNull { it.getValue(Order::class.java) }
+                analyticsData["totalOrders"] = orders.size
+                analyticsData["totalRevenue"] = orders.sumOf { it.totalAmount }
+                if (analyticsData.containsKey("totalUsers")) {
+                    trySend(Result.success(analyticsData))
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                trySend(Result.failure(error.toException()))
+                close(error.toException())
+            }
+        }
+
+        usersRef.addValueEventListener(usersListener)
+        ordersRef.addValueEventListener(ordersListener)
+
+        awaitClose {
+            usersRef.removeEventListener(usersListener)
+            ordersRef.removeEventListener(ordersListener)
+        }
     }
 
     override fun getDeliveryUsers(): Flow<Result<List<User>>> = callbackFlow {

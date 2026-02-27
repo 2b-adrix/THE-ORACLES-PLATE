@@ -8,6 +8,8 @@ import com.example.theoraclesplate.domain.use_case.AuthUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -59,6 +61,20 @@ class DeliveryAuthViewModel @Inject constructor(
                     }
                 }
             }
+            is DeliveryAuthEvent.LoginWithGoogle -> {
+                viewModelScope.launch {
+                    _state.value = state.value.copy(isLoading = true)
+                    authUseCases.loginWithGoogle(event.idToken)
+                        .onEach { result ->
+                            _state.value = state.value.copy(isLoading = false)
+                            result.onSuccess {
+                                _eventFlow.emit(UiEvent.AuthSuccess)
+                            }.onFailure {
+                                _eventFlow.emit(UiEvent.ShowSnackbar(it.message ?: "Unknown error"))
+                            }
+                        }.launchIn(this)
+                }
+            }
             is DeliveryAuthEvent.Logout -> {
                 viewModelScope.launch {
                     authUseCases.logoutUser()
@@ -86,6 +102,7 @@ sealed class DeliveryAuthEvent {
     data class EnteredName(val value: String) : DeliveryAuthEvent()
     data class EnteredEmail(val value: String) : DeliveryAuthEvent()
     data class EnteredPassword(val value: String) : DeliveryAuthEvent()
+    data class LoginWithGoogle(val idToken: String) : DeliveryAuthEvent()
     object Login : DeliveryAuthEvent()
     object Signup : DeliveryAuthEvent()
     object Logout : DeliveryAuthEvent()
