@@ -28,4 +28,6 @@ interface AdminRepository {
     suspend fun deleteUser(userId: String)
 
     suspend fun deleteMenuItem(sellerId: String, menuItemId: String)
+
+    suspend fun updateUserRole(userId: String, role: String)
 }

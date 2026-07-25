@@ -16,30 +16,35 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = StartColor,
-    secondary = EndColor,
-    tertiary = Pink80,
-    background = Black,
-    surface = Black,
+    primary = PrimaryRed,
     onPrimary = White,
+    primaryContainer = PrimaryDark,
+    onPrimaryContainer = White,
+    secondary = SecondaryBlue,
     onSecondary = White,
-    onTertiary = White,
-    onBackground = White,
-    onSurface = White,
+    tertiary = Success,
+    background = BackgroundDark,
+    surface = SurfaceDark,
+    onBackground = TextPrimaryDark,
+    onSurface = TextPrimaryDark,
+    error = Error,
+    onError = White
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = StartColor,
-    secondary = EndColor,
-    tertiary = Pink40,
-    background = White,
-    surface = White,
+    primary = PrimaryRed,
     onPrimary = White,
+    primaryContainer = PrimaryLight,
+    onPrimaryContainer = White,
+    secondary = SecondaryBlue,
     onSecondary = White,
-    onTertiary = White,
-    onBackground = Black,
-    onSurface = Black,
-
+    tertiary = Success,
+    background = BackgroundLight,
+    surface = SurfaceLight,
+    onBackground = TextPrimaryLight,
+    onSurface = TextPrimaryLight,
+    error = Error,
+    onError = White
 )
 
 @Composable
@@ -69,6 +74,7 @@ fun THEORACLESPLATETheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = Shapes,
         content = content
     )
 }

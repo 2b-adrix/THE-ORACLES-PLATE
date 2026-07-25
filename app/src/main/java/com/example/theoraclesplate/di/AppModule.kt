@@ -154,7 +154,8 @@ object AppModule {
             getDeliveryUsers = GetDeliveryUsersUseCase(adminRepository),
             getAnalyticsData = GetAnalyticsDataUseCase(adminRepository),
             getAllMenuItems = GetAllMenuItemsUseCase(adminRepository),
-            deleteMenuItem = DeleteMenuItemUseCase(menuRepository)
+            deleteMenuItem = DeleteMenuItemUseCase(menuRepository),
+            updateUserRole = UpdateUserRoleUseCase(adminRepository)
         )
     }
 

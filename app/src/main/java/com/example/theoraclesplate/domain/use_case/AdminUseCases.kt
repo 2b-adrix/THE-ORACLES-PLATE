@@ -11,5 +11,6 @@ data class AdminUseCases(
     val getDeliveryUsers: GetDeliveryUsersUseCase,
     val getAnalyticsData: GetAnalyticsDataUseCase,
     val getAllMenuItems: GetAllMenuItemsUseCase,
-    val deleteMenuItem: DeleteMenuItemUseCase
+    val deleteMenuItem: DeleteMenuItemUseCase,
+    val updateUserRole: UpdateUserRoleUseCase
 )

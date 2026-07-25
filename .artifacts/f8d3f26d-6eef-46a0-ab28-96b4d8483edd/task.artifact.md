@@ -1,0 +1,14 @@
+- [x] Separate Frontend and Backend for Auth Module
+- [x] Improve Admin Module Architecture and UI
+- [x] Standardize Seller Module
+- [x] Standardize Delivery Module
+- [x] Standardize Main and Home Modules
+- [x] Standardize Search and Details Screens
+- [x] Standardize Cart and Checkout Modules
+- [x] Standardize History and Profile Modules
+- [x] Standardize Start and Splash Modules
+- [ ] Deep Feature Standardization (Sub-directories)
+    - [ ] Standardize `ui.admin` sub-features (`allusers`, `allorders`, etc.)
+    - [ ] Standardize `ui.seller` sub-features (`menu`, `orders`)
+    - [ ] Update imports and verify build
+- [x] Final Project-wide consistency check

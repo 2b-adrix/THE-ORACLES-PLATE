@@ -197,4 +197,10 @@ class AdminRepositoryImpl @Inject constructor(
             menuItemsRef.child(sellerId).child(menuItemId).removeValue().await()
         }
     }
+
+    override suspend fun updateUserRole(userId: String, role: String) {
+        withContext(Dispatchers.IO) {
+            usersRef.child(userId).child("role").setValue(role).await()
+        }
+    }
 }
