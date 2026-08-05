@@ -1,33 +1,46 @@
-# Deep Feature Standardization Plan
+# Further Polish and Feature Enhancement Plan
 
-This plan aims to apply the final layer of architectural consistency by standardizing the sub-feature directories within the **Admin** and **Seller** modules.
+This plan aims to add high-value user features and further refine the project's adherence to Clean Architecture.
 
 ## Proposed Changes
 
-### 1. Admin Sub-Feature Standardization
-Every sub-feature under `ui.admin` will be reorganized to include `presentation` and `viewmodel` packages.
+### 1. Cart Badge System
 
-- **`allusers`**: Move `AllUsersScreen` to `presentation` and `AllUsersViewModel` to `viewmodel`.
-- **`allorders`**: Move `AllOrdersScreen` and cards to `presentation`, and `AllOrdersViewModel` to `viewmodel`.
-- **`allmenuitems`**: Move `AllMenuItemsScreen` and cards to `presentation`, and `AllMenuItemsViewModel` to `viewmodel`.
-- **`analytics`**: Move `AnalyticsScreen` and views to `presentation`, and `AnalyticsViewModel` to `viewmodel`.
-- **`deliverymanagement`**: Move `DeliveryManagementScreen` and views to `presentation`, and `DeliveryManagementViewModel` to `viewmodel`.
-- **`pendingsellers`**: Move `PendingSellersScreen` and views to `presentation`, and `PendingSellersViewModel` to `viewmodel`.
+Add a reactive badge to the Cart icon in the Bottom Navigation and on the Home Screen.
 
-### 2. Seller Sub-Feature Standardization
-Standardize the menu management and order management for sellers.
+#### [MODIFY] [MainScreen.kt](file:///C:/Users/vadit/OneDrive/Desktop/Remote-Patient-Monitor/THE-ORACLES-PLATE/app/src/main/java/com/example/theoraclesplate/ui/main/presentation/MainScreen.kt)
+- Use `CartViewModel` to collect the total item count.
+- Implement `BadgedBox` with a `Badge` in the `NavigationBarItem` for the Cart.
 
-- **`menu`**: Move `AddMenuItemScreen` and `EditMenuItemScreen` to `presentation`. (ViewModels are already in `ui.seller.viewmodel`).
-- **`orders`**: Move `SellerOrdersScreen` and list/cards to `presentation`. (ViewModel is already in `ui.seller.viewmodel`).
+### 2. Standardized UI Feedback
 
-### 3. Cleanup
-- Remove any remaining stray files in the root of these sub-feature directories.
-- Update all imports in `MainApp.kt` and cross-feature references.
+Create a centralized `Effect` and `Message` system to handle Snakbars and Errors across the app.
+
+#### [NEW] `com.example.theoraclesplate.ui.common.UiMessenger.kt`
+- A utility to handle global or screen-level messages.
+- Standardize `UiEvent` sealed classes in ViewModels to include a common `ShowMessage` event.
+
+### 3. Strict Dependency Isolation
+
+Remove the remaining direct calls to Firebase from the UI entry points.
+
+#### [MODIFY] [SellerDashboardScreen.kt](file:///C:/Users/vadit/OneDrive/Desktop/Remote-Patient-Monitor/THE-ORACLES-PLATE/app/src/main/java/com/example/theoraclesplate/ui/seller/presentation/SellerDashboardScreen.kt)
+#### [MODIFY] [ProfileScreen.kt](file:///C:/Users/vadit/OneDrive/Desktop/Remote-Patient-Monitor/THE-ORACLES-PLATE/app/src/main/java/com/example/theoraclesplate/ui/profile/presentation/ProfileScreen.kt)
+- Delegate authentication state and logout actions entirely to ViewModels using `AuthUseCases`.
+
+### 4. Quality Assurance (Sample Tests)
+
+Implement a robust unit test for a core ViewModel to serve as a template for future testing.
+
+#### [NEW] `com.example.theoraclesplate.ui.cart.viewmodel.CartViewModelTest.kt`
+- Test item addition, quantity updates, and total price calculation using mock repositories.
 
 ## Verification Plan
 
 ### Automated Tests
-- Ensure the project builds successfully after the final deep package reorganization.
+- Run the new unit tests using `./gradlew :app:testDebugUnitTest`.
 
 ### Manual Verification
-- Spot-check Previews for `AddMenuItemScreen`, `AllOrdersScreen`, and `AnalyticsScreen` to ensure they render correctly with the standardized structure.
+- Add items to the cart and verify the badge updates immediately in the bottom navigation.
+- Perform a logout and ensure it flow correctly through the ViewModel.
+- Verify that Snakbars appear correctly for success and error states.

@@ -1,14 +1,13 @@
-- [x] Separate Frontend and Backend for Auth Module
-- [x] Improve Admin Module Architecture and UI
-- [x] Standardize Seller Module
-- [x] Standardize Delivery Module
-- [x] Standardize Main and Home Modules
-- [x] Standardize Search and Details Screens
-- [x] Standardize Cart and Checkout Modules
-- [x] Standardize History and Profile Modules
-- [x] Standardize Start and Splash Modules
-- [ ] Deep Feature Standardization (Sub-directories)
-    - [ ] Standardize `ui.admin` sub-features (`allusers`, `allorders`, etc.)
-    - [ ] Standardize `ui.seller` sub-features (`menu`, `orders`)
-    - [ ] Update imports and verify build
+- [x] Comprehensive Architectural Refactor (All Modules)
+- [ ] Feature Enhancement: Cart Badge
+    - [ ] Integrate `CartViewModel` in `MainScreen`
+    - [ ] Add `BadgedBox` to Bottom Navigation
+- [ ] Refinement: Centralized Message System
+    - [ ] Create `UiMessenger` utility
+    - [ ] Update ViewModels to use standardized messaging
+- [ ] Refinement: Strict Dependency Isolation
+    - [ ] Remove `FirebaseAuth` from `SellerDashboardScreen`
+    - [ ] Remove `FirebaseAuth` from `ProfileScreen`
+- [ ] Quality: Unit Testing
+    - [ ] Add `CartViewModelTest`
 - [x] Final Project-wide consistency check

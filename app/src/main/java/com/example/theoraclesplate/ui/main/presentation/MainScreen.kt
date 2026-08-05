@@ -19,8 +19,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.theoraclesplate.R
 import com.example.theoraclesplate.ui.cart.presentation.CartScreen
+import com.example.theoraclesplate.ui.cart.viewmodel.CartViewModel
 import com.example.theoraclesplate.ui.common.PremiumBackground
 import com.example.theoraclesplate.ui.home.presentation.HomeScreen
 import com.example.theoraclesplate.ui.profile.presentation.ProfileScreen
@@ -28,19 +30,26 @@ import com.example.theoraclesplate.ui.search.presentation.SearchScreen
 import com.example.theoraclesplate.ui.theme.THEORACLESPLATETheme
 
 @Composable
-fun MainScreen(rootNavController: NavController) {
+fun MainScreen(
+    rootNavController: NavController,
+    cartViewModel: CartViewModel = hiltViewModel()
+) {
     val bottomNavController = rememberNavController()
+    val cartState by cartViewModel.cartState.collectAsState()
+    val cartCount = cartState.cartItems.sumOf { it.quantity }
     
     MainScreenContent(
         rootNavController = rootNavController,
-        bottomNavController = bottomNavController
+        bottomNavController = bottomNavController,
+        cartCount = cartCount
     )
 }
 
 @Composable
 fun MainScreenContent(
     rootNavController: NavController,
-    bottomNavController: NavHostController
+    bottomNavController: NavHostController,
+    cartCount: Int = 0
 ) {
     PremiumBackground {
         Scaffold(
@@ -63,7 +72,19 @@ fun MainScreenContent(
 
                     items.forEach { screen ->
                         NavigationBarItem(
-                            icon = { Icon(painterResource(id = screen.icon), contentDescription = null) },
+                            icon = { 
+                                BadgedBox(
+                                    badge = {
+                                        if (screen == BottomNavItem.Cart && cartCount > 0) {
+                                            Badge {
+                                                Text(text = cartCount.toString())
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Icon(painterResource(id = screen.icon), contentDescription = null)
+                                }
+                            },
                             label = { Text(screen.title) },
                             selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                             onClick = {
